@@ -1,5 +1,13 @@
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import type {
@@ -16,12 +24,14 @@ import {
   savedConversationQuery,
 } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import type { SourceRef } from "../../../modules/resources/contracts/public";
 import {
   Button,
   Disclosure,
   DisclosureTrigger,
   LoadingIndicator,
 } from "../../../modules/ui/renderer/public";
+import { ToolWorkbenchContext } from "../workbench/tool-inspector";
 import { ConversationItemView } from "./conversation";
 import { historyToolEvidenceMessage } from "./history";
 import { MessageMedia } from "./message-media";
@@ -32,6 +42,7 @@ export function SavedConversation({
   model,
   bridge,
   threadId,
+  threadTitle,
   active,
   positions,
   initializing = false,
@@ -39,11 +50,13 @@ export function SavedConversation({
   model: ConversationModel;
   bridge: HistoryBridge;
   threadId: string;
+  threadTitle?: string | undefined;
   active: boolean;
   positions?: ReadingPositions | undefined;
   initializing?: boolean;
 }) {
   const { t } = useI18n();
+  const workbench = useContext(ToolWorkbenchContext);
   // Only membership/identity changes repaint the timeline; deltas belong to rows.
   const identities = useStore(
     model.stateStore,
@@ -176,6 +189,32 @@ export function SavedConversation({
   const entries = pages.flatMap((page) =>
     page.kind === "page" ? page.entries : [],
   );
+  const savedSources = new Map(
+    pages.flatMap((page) =>
+      page.kind === "page" && page.nativeSessionKey
+        ? page.entries.map(
+            (entry) =>
+              [
+                entry.id,
+                {
+                  kind: "native-record" as const,
+                  threadId,
+                  nativeSessionKey: page.nativeSessionKey ?? "",
+                  recordId: entry.id,
+                  revision: page.source,
+                },
+              ] as const,
+          )
+        : [],
+    ),
+  );
+  const nativeSessionKey =
+    live.view?.nativeSessionKey ??
+    pages.flatMap((page) =>
+      page.kind === "page" && page.nativeSessionKey
+        ? [page.nativeSessionKey]
+        : [],
+    )[0];
   const nativeIds = new Set(entries.map((entry) => entry.id));
   // Presentation identity is view state, separate from native persistence identity.
   // A newly confirmed native ID adopts its already mounted live row.
@@ -229,6 +268,30 @@ export function SavedConversation({
       liveId,
     })),
   ];
+  useLayoutEffect(() => {
+    if (!active || !workbench || !nativeSessionKey) return;
+    return workbench.registerRows(
+      threadId,
+      nativeSessionKey,
+      (ref) =>
+        rows.find((row) => {
+          const item =
+            row.liveId === undefined
+              ? undefined
+              : model.stateStore.getState().itemsById.get(row.liveId);
+          if (ref.kind === "native-record")
+            return (
+              row.entry?.id === ref.recordId ||
+              item?.nativeRecordId === ref.recordId
+            );
+          return (
+            row.entry?.tool?.toolCallId === ref.toolCallId ||
+            (ref.connectionGeneration === generation &&
+              item?.tool?.toolCallId === ref.toolCallId)
+          );
+        })?.key,
+    );
+  }, [active, workbench, threadId, nativeSessionKey, rows, generation, model]);
   const tail = pages.at(-1);
   const incomplete = tail?.kind === "page" && tail.incompleteTail;
   const omitted = pages.reduce(
@@ -347,12 +410,16 @@ export function SavedConversation({
             <TimelineRow
               rowId={row.key}
               entry={row.entry}
+              savedSource={
+                row.entry ? savedSources.get(row.entry.id) : undefined
+              }
               liveId={row.liveId}
               model={model}
               positions={positions}
               source={source}
               bridge={bridge}
               threadId={threadId}
+              threadTitle={threadTitle}
             />
           ) : null;
         }}
@@ -431,21 +498,25 @@ function mergeToolObservation(
 function TimelineRow({
   rowId,
   entry,
+  savedSource,
   liveId,
   model,
   positions,
   source,
   bridge,
   threadId,
+  threadTitle,
 }: {
   rowId: string;
   entry?: HistoryEntry | undefined;
+  savedSource?: SourceRef | undefined;
   liveId?: number | undefined;
   model: ConversationModel;
   positions?: ReadingPositions | undefined;
   source: string;
   bridge: HistoryBridge;
   threadId: string;
+  threadTitle?: string | undefined;
 }) {
   const { t } = useI18n();
   const live = useStore(model.stateStore, (state) =>
@@ -531,6 +602,31 @@ function TimelineRow({
       rowId={rowId}
       positions={positions}
       source={source}
+      toolTarget={
+        tool && model.getSnapshot()?.nativeSessionKey && live
+          ? {
+              source: {
+                kind: "live-tool",
+                threadId,
+                nativeSessionKey: model.getSnapshot()?.nativeSessionKey ?? "",
+                connectionGeneration:
+                  model.getSnapshot()?.connectionGeneration ?? "",
+                toolCallId: tool.toolCallId,
+              },
+              title: tool.name,
+              threadTitle: threadTitle ?? threadId,
+              rowId,
+            }
+          : tool && savedSource && entry?.toolCursor
+            ? {
+                source: savedSource,
+                title: tool.name,
+                threadTitle: threadTitle ?? threadId,
+                rowId,
+                cursor: entry.toolCursor,
+              }
+            : undefined
+      }
       displayText={entry?.displayText}
       media={
         entry?.role === "user" && (

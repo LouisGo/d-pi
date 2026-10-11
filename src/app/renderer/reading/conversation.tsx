@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useContext, useLayoutEffect } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import type { ConversationItem } from "../../../modules/conversation/contracts/public";
@@ -15,6 +15,12 @@ import {
   EmptyState,
 } from "../../../modules/ui/renderer/public";
 import {
+  commandSummary,
+  ToolCard,
+  ToolWorkbenchContext,
+} from "../workbench/tool-inspector";
+import type { ToolTarget } from "../workbench/window-workbench";
+import {
   MessageActions,
   MessageStatus,
   ThinkingDisclosure,
@@ -30,12 +36,19 @@ export function Conversation({
   model,
   positions,
   initializing = false,
+  threadTitle,
 }: {
   model: ConversationModel;
   positions?: ReadingPositions | undefined;
   initializing?: boolean;
+  threadTitle?: string | undefined;
 }) {
   const { t } = useI18n();
+  const workbench = useContext(ToolWorkbenchContext);
+  const nativeSessionKey = useStore(
+    model.stateStore,
+    (state) => state.view?.nativeSessionKey,
+  );
   const itemIds = useStore(model.stateStore, (state) => state.itemIds);
   const threadId = useStore(model.stateStore, (state) => state.threadId);
   const generation = useStore(
@@ -51,6 +64,20 @@ export function Conversation({
     threadId && generation
       ? readingSourceKey({ kind: "live", threadId, generation })
       : undefined;
+  useLayoutEffect(() => {
+    if (!workbench || !threadId || !nativeSessionKey) return;
+    return workbench.registerRows(threadId, nativeSessionKey, (source) => {
+      const state = model.stateStore.getState();
+      const id = state.itemIds.find((id) => {
+        const item = state.itemsById.get(id);
+        return source.kind === "native-record"
+          ? item?.nativeRecordId === source.recordId
+          : source.connectionGeneration === state.view?.connectionGeneration &&
+              item?.tool?.toolCallId === source.toolCallId;
+      });
+      return id === undefined ? undefined : String(id);
+    });
+  }, [workbench, threadId, nativeSessionKey, itemIds, model]);
   return (
     <section
       className="conversation"
@@ -116,6 +143,7 @@ export function Conversation({
             model={model}
             positions={positions}
             source={source}
+            threadTitle={threadTitle}
           />
         )}
       />
@@ -128,11 +156,13 @@ function ConversationMessage({
   model,
   positions,
   source,
+  threadTitle,
 }: {
   id: number;
   model: ConversationModel;
   positions?: ReadingPositions | undefined;
   source?: string | undefined;
+  threadTitle?: string | undefined;
 }) {
   const item = useStore(model.stateStore, (state) => state.itemsById.get(id));
   if (!item) return null;
@@ -142,6 +172,26 @@ function ConversationMessage({
       rowId={id}
       positions={positions}
       source={source}
+      toolTarget={
+        item.tool &&
+        model.getSnapshot()?.nativeSessionKey &&
+        model.stateStore.getState().threadId
+          ? {
+              source: {
+                kind: "live-tool",
+                threadId: model.stateStore.getState().threadId ?? "",
+                nativeSessionKey: model.getSnapshot()?.nativeSessionKey ?? "",
+                connectionGeneration:
+                  model.getSnapshot()?.connectionGeneration ?? "",
+                toolCallId: item.tool.toolCallId,
+              },
+              title: item.tool.name,
+              threadTitle:
+                threadTitle ?? model.stateStore.getState().threadId ?? "",
+              rowId: String(id),
+            }
+          : undefined
+      }
     />
   );
 }
@@ -154,6 +204,7 @@ export function ConversationItemView({
   evidence,
   displayText,
   media,
+  toolTarget,
 }: {
   item: ConversationItem;
   rowId: string | number;
@@ -162,6 +213,7 @@ export function ConversationItemView({
   evidence?: ReactNode;
   displayText?: string | undefined;
   media?: ReactNode;
+  toolTarget?: ToolTarget | undefined;
 }) {
   const { t, formatMessage } = useI18n();
   const position =
@@ -209,13 +261,29 @@ export function ConversationItemView({
           evidence={evidence}
         >
           {item.detail && <p role="status">{item.detail}</p>}
-          {item.tool && <ToolObservationDetails tool={item.tool} />}
-          <ReadingBody
-            text={item.text || t("ui.conversation.waitingResult")}
-            raw
-            position={position}
-          />
-          <MessageActions text={item.text} label={t("ui.conversation.copy")} />
+          {item.tool?.name === "bash" || item.tool?.name === "exec" ? (
+            <ToolCard
+              target={toolTarget}
+              toolCallId={item.tool.toolCallId}
+              command={commandSummary(item.tool)}
+              partial={item.tool.coverage === "partial" || item.tool.truncated}
+              summary={item.text}
+              status={t(`workbench.tool.lifecycle.${item.tool.lifecycle}`)}
+            />
+          ) : (
+            <>
+              {item.tool && <ToolObservationDetails tool={item.tool} />}
+              <ReadingBody
+                text={item.text || t("ui.conversation.waitingResult")}
+                raw
+                position={position}
+              />
+              <MessageActions
+                text={item.text}
+                label={t("ui.conversation.copy")}
+              />
+            </>
+          )}
           {item.truncated && (
             <p role="status">
               {formatMessage({ code: "conversation.truncated" })}

@@ -168,3 +168,7 @@ Main 使用 platform/node/images 公共压缩方法，独立 Bun worker 二进�
 2026-10-10 内联标签展示使用 UI 公开面的 `composerTagMarkup`；input Renderer 单向依赖 UI，仅提供文件名、类型、大小和状态，不复制通用标签标记。编辑器原子节点的外层持有 `contenteditable=false`，名称内部保持单行，展示空格不参与草稿序列化。
 
 2026-10-11 连续 @：与固定 T3 的 inline placeholder whitespace boundary 策略一致，`attachmentMention` 将 PM 原子节点占位 `\ufffc` 视为合法触发边界。接受一个引用后可立即触发下一次 @；不写入额外草稿空格，不放宽邮箱正文或改变异步候选确认、Undo/Redo 与源跨度验证。
+
+## 工具输出引用（WB01）
+
+`FrozenContext` 是 resources 叶子的来源、内容版本、UTF-16选区、覆盖范围与冻结正文。input 用独立 `[d-pi:context:v1 …]` 长度封套、contextReference 原子节点及同一 draft parse/serialize 处理；不复用 file-selection，不将输出内附件标记作为附件权限。App 捕获唯一 Thread 草稿的 threadId、revision、sequence 后调用 ContextInsertIntent。DraftEditorCache 对活动 editor 和未挂载状态均以一笔独立 undo transaction 插入，Controller 保持原有持久化 owner；冲突、发送冻结、IME 与过大内容拒绝。引用只提交冻结文本和 provenance，不在提交时跨 Thread 读取资源。

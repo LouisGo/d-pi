@@ -17,11 +17,13 @@ import type {
   ThreadContext,
   ThreadMutation,
 } from "../../../modules/threads/contracts/public";
+import { ThreadIdSchema } from "../../../shared/identity";
 import type {
   Command,
   DesktopBridge,
   ReplyFor,
 } from "../../contracts/desktop-bridge";
+import { WindowWorkbench } from "../workbench/window-workbench";
 import { AttentionModel } from "./attention-model";
 import { SidebarModel } from "./sidebar-model";
 import { ThreadCommands } from "./thread-commands";
@@ -104,6 +106,7 @@ export class AppModel {
   readonly sidebar: SidebarModel;
   readonly commands: ThreadCommands;
   readonly draftEditors: DraftEditorCache;
+  readonly workbench: WindowWorkbench;
   private readonly store: AppStore = createAppStore();
   readonly stateStore: AppStateStore = this.store;
   readonly threadListStore = createStore<{
@@ -148,6 +151,19 @@ export class AppModel {
     this.commands = new ThreadCommands(this);
     this.draftEditors = new DraftEditorCache(undefined, bridge.attachments);
     this.attention = new AttentionModel(bridge.attention);
+    this.workbench = new WindowWorkbench({
+      conversation: bridge.conversation,
+      history: bridge.history,
+      insert: (key, controller, intent) =>
+        this.draftEditors.insertContext(key, controller, intent),
+      select: async (threadId, ticket) => {
+        const result = await this.selectThread(
+          ThreadIdSchema.parse(threadId),
+          ticket,
+        );
+        return result.kind === "applied";
+      },
+    });
   }
 
   private get state(): ViewState {
@@ -386,6 +402,7 @@ export class AppModel {
     for (const unsubscribe of this.cacheSubscriptions.values()) unsubscribe();
     this.cacheSubscriptions.clear();
     this.threads.clear();
+    this.workbench.dispose();
     this.draftEditors.dispose();
     this.attention.dispose();
     this.sidebar.dispose();
@@ -635,7 +652,18 @@ export class AppModel {
   }
   async selectThread(
     threadId: ThreadContext["threadId"],
+    sourceTicket?: number,
   ): Promise<ThreadTransitionResult> {
+    const returning = this.workbench.stateStore.getState().returning;
+    if (
+      sourceTicket === undefined &&
+      returning?.target.source.threadId === threadId &&
+      this.activeThread?.context.threadId === threadId
+    )
+      sourceTicket = returning.ticket;
+    if (sourceTicket === undefined) this.workbench.cancelReturn();
+    else if (!this.workbench.isNavigation(sourceTicket))
+      return { kind: "blocked", reason: "not-ready" };
     if (this.disposed || this.state.kind !== "ready")
       return { kind: "blocked", reason: "not-ready" };
     if (this.state.busy) return { kind: "blocked", reason: "busy" };
@@ -650,11 +678,14 @@ export class AppModel {
       this.activeThread?.context.threadId === threadId
     )
       return { kind: "applied", selection: this.state.threadSelection };
-    return this.changeThread({
-      kind: "select-thread",
-      threadId,
-      traceId: crypto.randomUUID(),
-    });
+    return this.changeThread(
+      {
+        kind: "select-thread",
+        threadId,
+        traceId: crypto.randomUUID(),
+      },
+      sourceTicket,
+    );
   }
   manageThread(
     threadId: ThreadContext["threadId"],
@@ -678,7 +709,11 @@ export class AppModel {
           | "thread-command";
       }
     >,
+    sourceTicket?: number,
   ): Promise<ThreadTransitionResult> {
+    if (sourceTicket === undefined) this.workbench.cancelReturn();
+    else if (!this.workbench.isNavigation(sourceTicket))
+      return { kind: "blocked", reason: "not-ready" };
     const state = this.state;
     if (this.disposed || state.kind !== "ready")
       return { kind: "blocked", reason: "not-ready" };

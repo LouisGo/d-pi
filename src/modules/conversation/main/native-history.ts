@@ -419,6 +419,17 @@ export async function readNativeHistory(
           parentId,
           role: message.role,
           text,
+          ...(toolObservation
+            ? {
+                toolCursor: {
+                  threadId: binding.threadId,
+                  source,
+                  offset: recordOffset,
+                  endOffset,
+                  prefixHash,
+                },
+              }
+            : {}),
           ...(timestamp !== undefined ? { timestamp } : {}),
           ...(images.length
             ? {
@@ -473,6 +484,7 @@ export async function readNativeHistory(
         kind: "page",
         entries,
         source,
+        nativeSessionKey: binding.sessionId,
         continuation: {
           threadId: binding.threadId,
           source,

@@ -118,3 +118,5 @@ flowchart TB
 模块页写清范围、所有权/生命周期、输入输出、失败处理及当前验收；依赖通过链接可追到提供方。共用的预算、错误字段和决定不复制多份，具体方法签名、SQL 表和内部类等到实际切片需要时确定。
 
 有价值的边界检查保留，例如数据来自外部、资源授权、版本冲突和结果未知；不为可信内部函数层层兜底，不用自动重试或默认成功掩盖失败。当前 G1 未知项只阻塞受影响切片，远期细节和完整 TUI 盘点不阻塞 M1。
+
+`resources/contracts/public.ts` 是 WB01 引入的来源/provenance 叶子（SourceRef、ToolDetail、FrozenContext）；只依赖 shared，不拥有执行、存储或 UI。窗口 Surface 编排归 App，原始详情缓存归 conversation Host。

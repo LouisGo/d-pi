@@ -105,3 +105,7 @@ full RPC message_update带完整message时以其text parts为正文真相，不�
 - 保存历史复用同一 Tool observation；只在本页已知父链能证明调用关系时关联参数，原生结果保留 record 来源及部分覆盖，不伪造瞬时进度或当前后台状态。与实时实体合并须同时匹配 nativeRecordId、toolCallId 和名称；只借用缺失参数/结果，保留实时生命周期、进度与 partial/truncated。Host/Main 共用 8 KiB、128 节点、深度 5 的结构化投影预算，图像字节不进入元数据。
 
 OMP JSONL 仍为事实来源；Main 继续授权与解析，未引入新数据库或 Worker。已加载历史内存、单条长正文与完整原生快照的解码成本并未消失，模型基准及有界 DOM 证据不代表整体 FPS 或 Main 延迟验收。实施与实际验证见[本轮记录](../../../.scratch/m2-first-release/spec.md#2026-10-10-架构与性能巩固)。
+
+## 命令详情读取（WB01）
+
+ConversationProjection 只供有界卡片。Host 在摘要前观察原始生命周期，ToolDetail reader 独立分发版本；live-tool 绑定真实 nativeSessionKey、Thread、代次与 toolCallId。native-record 读取沿用绑定与 history cursor 的可信路径、文件头、前缀身份校验。来源叶子见 `resources/contracts/public.ts`，不依赖 input 或 execution。Surface 关闭只释放读取，不改变执行。

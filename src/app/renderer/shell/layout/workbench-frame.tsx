@@ -27,6 +27,7 @@ export type WorkspaceTab = TabItem & { content: ReactNode };
 export type WorkspaceHost = {
   tabs: WorkspaceTab[];
   selected: string | null;
+  revealToken?: number;
   onSelect: (id: string) => void;
   onClose: (id: string) => void;
 };
@@ -75,6 +76,9 @@ export function WorkbenchFrame({
     return createLayoutModel(tokens.defaults, storage);
   });
   const intent = useStore(model.store, (value) => value);
+  useLayoutEffect(() => {
+    if (workspace?.revealToken !== undefined) model.reveal("workspace");
+  }, [workspace?.revealToken, model]);
   const [box, setBox] = useState({ width: 0, height: 0 });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const selectSettings = useSettingsSelect();

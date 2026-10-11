@@ -1,16 +1,27 @@
-import type { Editor } from "@tiptap/core";
+import { type Editor, generateText } from "@tiptap/core";
+import { closeHistory } from "@tiptap/pm/history";
 import type { EditorState, Transaction } from "@tiptap/pm/state";
-import { draftByteLength } from "../../../../shared/draft-text";
-import type { AttachmentBridge } from "../../contracts/public";
+import { TextSelection } from "@tiptap/pm/state";
+import {
+  DRAFT_MAX_BYTES,
+  draftByteLength,
+} from "../../../../shared/draft-text";
+import type {
+  AttachmentBridge,
+  ContextInsertIntent,
+  ContextInsertResult,
+} from "../../contracts/public";
 import { EditorHistoryModel } from "../../core/attachments/editor-history-model";
 import type { DraftController } from "../../core/draft-controller";
-import { parseDraftBlocks } from "../../core/public";
+import { parseDraftBlocks, serializeFrozenContext } from "../../core/public";
 import { attachmentIds } from "../references/attachment-reference";
 import { bindHistoryAdmission } from "./edit-action-history";
 import {
   clearDraftHistory,
   detachedDraftState,
+  draftState,
   onDraftHistoryClear,
+  plainTextEditorOptions,
 } from "./plain-text-editor";
 
 function documentIds(doc: EditorState["doc"]): Set<string> {
@@ -71,6 +82,121 @@ const MAX_WAITING_IDS = 80000;
 const admissionState = { pending: false, failed: true, limited: true };
 /** Window-owned, inactive EditorStates only. Draft persistence remains separate. */
 export class DraftEditorCache {
+  private readonly contextConfirmations = new Map<string, () => void>();
+  private releaseContextConfirmation(key: string): void {
+    this.contextConfirmations.get(key)?.();
+    this.contextConfirmations.delete(key);
+  }
+  private readonly contextOperations = new WeakMap<
+    DraftController,
+    Set<string>
+  >();
+  insertContext(
+    key: string,
+    controller: DraftController,
+    intent: ContextInsertIntent,
+  ): ContextInsertResult {
+    const completed =
+      this.contextOperations.get(controller) ?? new Set<string>();
+    if (completed.has(intent.operationId)) return { kind: "inserted" };
+    if (this.disposed) return { kind: "rejected", reason: "unavailable" };
+    if (!controller.acceptsContext(intent))
+      return { kind: "rejected", reason: "stale" };
+    const serialized = serializeFrozenContext(intent.context);
+    if (
+      draftByteLength(controller.getTextSnapshot()) +
+        draftByteLength(serialized) +
+        2 >
+      DRAFT_MAX_BYTES
+    )
+      return { kind: "rejected", reason: "too-large" };
+    const editor = this.activeEditors.get(key);
+    if (editor?.view.composing)
+      return { kind: "rejected", reason: "composing" };
+    if (editor && this.bindings.get(editor)?.controller !== controller)
+      return { kind: "rejected", reason: "unavailable" };
+    const snapshot = controller.getEditorSnapshot();
+    const cached = this.entries.get(key);
+    const state =
+      editor?.state ??
+      (cached &&
+      cached.controller === controller &&
+      cached.snapshot.revision === snapshot.revision &&
+      cached.snapshot.sequence === snapshot.sequence &&
+      cached.snapshot.text === snapshot.text
+        ? cached.state
+        : draftState(snapshot.text));
+    const reference = state.schema.nodes.contextReference;
+    const paragraph = state.schema.nodes.paragraph;
+    if (!reference || !paragraph)
+      return { kind: "rejected", reason: "unavailable" };
+    const tr = closeHistory(state.tr)
+      .insert(state.doc.content.size, [
+        reference.create({ value: intent.context }),
+        paragraph.create(),
+      ])
+      .setMeta("dpiIndependentAction", true);
+    tr.setSelection(
+      TextSelection.near(tr.doc.resolve(tr.doc.content.size - 1)),
+    );
+    if (editor) {
+      editor.view.dispatch(tr);
+      if (!editor.state.doc.eq(tr.doc))
+        return { kind: "rejected", reason: "unavailable" };
+      editor.view.dispatch(closeHistory(editor.state.tr));
+      editor.commands.focus();
+    } else {
+      const next = state.apply(tr);
+      // Serialize through the same schema extensions as a mounted Tiptap editor.
+      const text = generateText(
+        next.doc.toJSON(),
+        plainTextEditorOptions.extensions,
+        { blockSeparator: "\n" },
+      );
+      controller.editEditorText(text);
+      this.entries.delete(key);
+      this.entries.set(key, {
+        controller,
+        state: next,
+        snapshot: controller.getEditorSnapshot(),
+        bytes: draftByteLength(text),
+      });
+      this.releaseContextConfirmation(key);
+      this.contextConfirmations.set(
+        key,
+        controller.subscribeConfirmed((confirmed) => {
+          const entry = this.entries.get(key);
+          if (
+            entry?.controller === controller &&
+            entry.snapshot.sequence === confirmed.sequence &&
+            entry.snapshot.text === controller.getEditorSnapshot().text
+          )
+            entry.snapshot = {
+              ...entry.snapshot,
+              revision: confirmed.revision,
+            };
+        }),
+      );
+      let total = 0;
+      for (const entry of this.entries.values()) total += entry.bytes;
+      for (const [id, entry] of this.entries) {
+        if (
+          this.entries.size <= this.limits.threads &&
+          total <= this.limits.documentBytes
+        )
+          break;
+        this.entries.delete(id);
+        this.releaseContextConfirmation(id);
+        total -= entry.bytes;
+        if (!this.activeEditors.has(id)) this.releaseHistory(id);
+      }
+    }
+    completed.add(intent.operationId);
+    if (completed.size > 64)
+      completed.delete(completed.values().next().value ?? "");
+    this.contextOperations.set(controller, completed);
+    return { kind: "inserted" };
+  }
   private readonly entries = new Map<string, Entry>();
   private readonly leases = new Map<string, symbol>();
   private readonly bindings = new WeakMap<Editor, Binding>();
@@ -272,6 +398,7 @@ export class DraftEditorCache {
     const controller =
       this.controllerFor(key) ?? this.histories.get(key)?.controller;
     this.entries.delete(key);
+    this.releaseContextConfirmation(key);
     if (editor && !editor.isDestroyed) clearDraftHistory(editor);
     else if (controller) {
       const history = this.histories.get(key);
@@ -287,6 +414,7 @@ export class DraftEditorCache {
     const editor = this.activeEditors.get(key);
     if (editor && !editor.isDestroyed) return false;
     this.entries.delete(key);
+    this.releaseContextConfirmation(key);
     this.releaseHistory(key);
     return true;
   }
@@ -489,6 +617,7 @@ export class DraftEditorCache {
       )
         break;
       this.entries.delete(key);
+      this.releaseContextConfirmation(key);
       if (
         !this.activeEditors.has(key) ||
         this.activeEditors.get(key)?.isDestroyed
@@ -502,6 +631,7 @@ export class DraftEditorCache {
   }
 
   private restore(editor: Editor, binding: Binding): void {
+    this.releaseContextConfirmation(binding.key);
     const cached = this.entries.get(binding.key);
     this.entries.delete(binding.key);
     if (!cached || this.disposed) return;
@@ -527,6 +657,8 @@ export class DraftEditorCache {
   dispose(): void {
     this.disposed = true;
     this.entries.clear();
+    for (const key of this.contextConfirmations.keys())
+      this.releaseContextConfirmation(key);
     this.leases.clear();
     this.activeEditors.clear();
     for (const key of this.histories.keys()) this.releaseHistory(key);

@@ -15,6 +15,7 @@ import {
   AttachmentReference,
   attachmentParagraph,
 } from "../references/attachment-reference";
+import { ContextReference } from "../references/context-reference";
 import { FileReference } from "../references/file-reference-node";
 import { EditActionHistory } from "./edit-action-history";
 
@@ -30,6 +31,7 @@ const extensions = [
     },
   }),
   FileReference,
+  ContextReference,
   AttachmentReference,
   EditActionHistory,
   UndoRedo.configure({ depth: draftHistoryDepth }),
@@ -56,7 +58,9 @@ export function draftDocument(text: string) {
     content: parseDraftBlocks(text).map((block) =>
       block.kind === "selection"
         ? { type: "fileReference", attrs: block.value }
-        : attachmentParagraph(block.text),
+        : block.kind === "context"
+          ? { type: "contextReference", attrs: { value: block.value } }
+          : attachmentParagraph(block.text),
     ),
   };
 }
@@ -101,6 +105,14 @@ export function detachedDraftState(editor: Editor): EditorState {
   // Reconfigure retains history by its stable ProseMirror key. All Tiptap,
   // decoration and view plugin closures are omitted from the inactive cache.
   return editor.state.reconfigure({
+    plugins: [history({ depth: draftHistoryDepth })],
+  });
+}
+
+export function draftState(text: string): EditorState {
+  return EditorState.create({
+    schema,
+    doc: schema.nodeFromJSON(draftDocument(text)),
     plugins: [history({ depth: draftHistoryDepth })],
   });
 }

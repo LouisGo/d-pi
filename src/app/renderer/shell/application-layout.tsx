@@ -6,6 +6,10 @@ import { useI18n } from "../../../modules/preferences/renderer/public";
 import { Button, LoadingIndicator } from "../../../modules/ui/renderer/public";
 import { BUILD_INFO } from "../../../shared/build-info";
 import type { AppModel } from "../wiring/model";
+import {
+  ToolWorkbenchContext,
+  useToolWorkspace,
+} from "../workbench/tool-inspector";
 import { AttentionCenter, AttentionIndicator } from "./attention";
 import { ConversationStatus } from "./conversation-status";
 import { DeveloperTools, useConversationNavigation } from "./developer-tools";
@@ -70,44 +74,49 @@ function StartupFailure({ model }: { model: AppModel }) {
 
 function ReadyWorkbench({ model, children }: ApplicationLayoutProps) {
   const hosts = useContext(WorkbenchHostsContext);
+  const toolWorkspace = useToolWorkspace(model);
+  const workspace = hosts.workspace ?? toolWorkspace;
   const conversationNavigation = useConversationNavigation(model);
   return (
     <ShellFrame model={model}>
       <SettingsProvider>
-        <WorkbenchFrame
-          {...hosts}
-          {...conversationNavigation}
-          developerTools={<DeveloperTools />}
-          conversationIndicator={<AttentionIndicator model={model} />}
-          sidebar={<ProjectThreads model={model} />}
-          status={<ConversationStatus model={model} />}
-          version={
-            <span
-              title={`${BUILD_INFO.version} · ${BUILD_INFO.id} · ${BUILD_INFO.commit}`}
-            >
-              {BUILD_INFO.version}
-            </span>
-          }
-          toolbar={
-            <PreferenceToolbar
-              model={model}
-              title={conversationNavigation.developerTitle}
-            />
-          }
-          navigationControls={<ThreadNavigationControls model={model} />}
-          settingsNavigation={<SettingsNavigation />}
-          settings={<SettingsSurface model={model} />}
-        >
-          {conversationNavigation.developerActive ? (
-            (children ?? <Outlet />)
-          ) : (
-            <main className="workbench">
-              <ThreadNotice model={model} />
-              <AttentionCenter model={model} />
-              <div className="work-content">{children ?? <Outlet />}</div>
-            </main>
-          )}
-        </WorkbenchFrame>
+        <ToolWorkbenchContext value={model.workbench}>
+          <WorkbenchFrame
+            {...hosts}
+            {...(workspace ? { workspace } : {})}
+            {...conversationNavigation}
+            developerTools={<DeveloperTools />}
+            conversationIndicator={<AttentionIndicator model={model} />}
+            sidebar={<ProjectThreads model={model} />}
+            status={<ConversationStatus model={model} />}
+            version={
+              <span
+                title={`${BUILD_INFO.version} · ${BUILD_INFO.id} · ${BUILD_INFO.commit}`}
+              >
+                {BUILD_INFO.version}
+              </span>
+            }
+            toolbar={
+              <PreferenceToolbar
+                model={model}
+                title={conversationNavigation.developerTitle}
+              />
+            }
+            navigationControls={<ThreadNavigationControls model={model} />}
+            settingsNavigation={<SettingsNavigation />}
+            settings={<SettingsSurface model={model} />}
+          >
+            {conversationNavigation.developerActive ? (
+              (children ?? <Outlet />)
+            ) : (
+              <main className="workbench">
+                <ThreadNotice model={model} />
+                <AttentionCenter model={model} />
+                <div className="work-content">{children ?? <Outlet />}</div>
+              </main>
+            )}
+          </WorkbenchFrame>
+        </ToolWorkbenchContext>
       </SettingsProvider>
     </ShellFrame>
   );

@@ -31,7 +31,7 @@ import {
   parseDraftBlocks,
   readAttachmentTokens,
   readDraftAttachmentTokens,
-  serializeReference,
+  serializeDraftBlock,
 } from "../../core/public";
 import {
   type ClipboardSnapshot,
@@ -493,7 +493,7 @@ export class AttachmentStore {
       degraded = false;
     const body = parseDraftBlocks(text)
       .map((block) => {
-        if (block.kind === "selection") return serializeReference(block.value);
+        if (block.kind !== "paragraph") return serializeDraftBlock(block);
         const parsed = readAttachmentTokens(block.text);
         if (!parsed.ok) throw Error("invalid-token");
         let value = block.text;
@@ -763,8 +763,8 @@ export class AttachmentStore {
           }
           const text = parseDraftBlocks(acquired.snapshot.text)
             .map((block) =>
-              block.kind === "selection"
-                ? serializeReference(block.value)
+              block.kind !== "paragraph"
+                ? serializeDraftBlock(block)
                 : block.text.replace(
                     /\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
                     (token, id: string) =>

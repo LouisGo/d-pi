@@ -19,6 +19,7 @@
 @import "../components/ui/tab-strip.css";
 @import "../components/ui/modal.css";
 @import "../components/ui/status-preview.css";
+@import "../workbench/tool-inspector.css";
 @import "../components/ui/action-menu.css";
 @import "../components/ui/feedback.css";
 @import "../reading/message-parts.css";

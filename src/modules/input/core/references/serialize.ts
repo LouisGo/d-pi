@@ -2,10 +2,64 @@ import { z } from "zod";
 import { utf8ByteLength } from "../../../../shared/text/utf8";
 import type { FrozenSelection } from "../../../files/core/public";
 
+import {
+  type FrozenContext,
+  FrozenContextSchema,
+} from "../../../resources/contracts/public";
+
 type Selection = Extract<FrozenSelection, { kind: "selection" }>;
 export type DraftBlock =
   | { kind: "paragraph"; text: string }
-  | { kind: "selection"; value: Selection };
+  | { kind: "selection"; value: Selection }
+  | { kind: "context"; value: FrozenContext };
+const CONTEXT_PREFIX = "[d-pi:context:v1 ";
+const CONTEXT_SUFFIX = "\n[/d-pi:context]";
+export function serializeFrozenContext(raw: FrozenContext): string {
+  const { text, ...value } = FrozenContextSchema.parse(raw);
+  return `${CONTEXT_PREFIX}${JSON.stringify({ ...value, textLength: text.length })}]\n${text}${CONTEXT_SUFFIX}`;
+}
+export function serializeDraftBlock(block: DraftBlock): string {
+  if (block.kind === "paragraph") return block.text;
+  return block.kind === "context"
+    ? serializeFrozenContext(block.value)
+    : serializeReference(block.value);
+}
+function readContext(
+  body: string,
+  position: number,
+  lineEnd: number,
+): { value: FrozenContext; next: number } | null {
+  const line = body.slice(position, lineEnd);
+  if (!line.startsWith(CONTEXT_PREFIX) || !line.endsWith("]")) return null;
+  try {
+    const raw: unknown = JSON.parse(line.slice(CONTEXT_PREFIX.length, -1));
+    const header = z
+      .strictObject({
+        source: FrozenContextSchema.shape.source,
+        contentRevision: FrozenContextSchema.shape.contentRevision,
+        title: FrozenContextSchema.shape.title,
+        coverage: FrozenContextSchema.shape.coverage,
+        range: FrozenContextSchema.shape.range,
+        textLength: z.number().int().positive().max(65536),
+      })
+      .parse(raw);
+    const start = lineEnd + 1,
+      end = start + header.textLength;
+    if (!body.startsWith(CONTEXT_SUFFIX, end)) return null;
+    const next = end + CONTEXT_SUFFIX.length;
+    if (next < body.length && body[next] !== "\n") return null;
+    const { textLength: _length, ...fields } = header;
+    return {
+      value: FrozenContextSchema.parse({
+        ...fields,
+        text: body.slice(start, end),
+      }),
+      next,
+    };
+  } catch {
+    return null;
+  }
+}
 const PREFIX = "[d-pi:file-selection:v1 ";
 const SUFFIX = "\n[/d-pi:file-selection]";
 const ReferenceHeaderSchema = z.strictObject({
@@ -91,6 +145,13 @@ export function parseDraftBlocks(
     if (lineEnd < 0) {
       append({ kind: "paragraph", text: body.slice(position) }, position);
       break;
+    }
+    const context = readContext(body, position, lineEnd);
+    if (context) {
+      append({ kind: "context", value: context.value }, position);
+      if (context.next === body.length) break;
+      position = context.next + 1;
+      continue;
     }
     const reference = readReference(body, position, lineEnd);
     if (reference) {

@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  type SourceRef,
+  SourceRefSchema,
+  type ToolDetailReply,
+} from "../../resources/contracts/public";
 import { MessageTimestampSchema } from "./message-time";
 import { ToolExecutionObservationSchema } from "./tool-observation";
 export const HistoryCursorSchema = z.strictObject({
@@ -59,6 +64,7 @@ export const HistoryEntrySchema = z.strictObject({
   images: z.array(HistoryImageSchema).max(128).optional(),
   files: z.array(HistoryFileSchema).max(128).optional(),
   mediaCursor: HistoryCursorSchema.optional(),
+  toolCursor: HistoryCursorSchema.optional(),
   state: z.enum(["complete", "failed", "aborted"]).optional(),
   detail: z.string().max(4096).optional(),
   toolEvidence: z
@@ -82,6 +88,7 @@ export const HistoryPageSchema = z.discriminatedUnion("kind", [
     /** Last committed newline, including when next is null or the tail is partial. */
     continuation: HistoryCursorSchema.optional(),
     source: z.string(),
+    nativeSessionKey: z.string().max(512).optional(),
     coverage: z.literal("append-order"),
     incompleteTail: z.boolean(),
     omitted: z.number().int().nonnegative(),
@@ -104,7 +111,19 @@ export const HistoryRequestSchema = z.strictObject({
   threadId: z.uuid(),
   cursor: HistoryCursorSchema.nullable(),
 });
+export const HistoryToolRequestSchema = z.strictObject({
+  threadId: z.uuid(),
+  source: SourceRefSchema,
+  cursor: HistoryCursorSchema,
+  readerId: z.uuid(),
+  traceId: z.uuid(),
+});
 export interface HistoryBridge {
+  tool?(
+    source: SourceRef,
+    cursor: HistoryCursor,
+    readerId: string,
+  ): Promise<ToolDetailReply>;
   image?(
     threadId: string,
     cursor: HistoryCursor,

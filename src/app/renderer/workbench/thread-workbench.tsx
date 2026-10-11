@@ -64,11 +64,13 @@ export function ThreadWorkbench({
   const attentionFrame = useRef<number | null>(null);
   const scheduledTarget = useRef<typeof target>(null);
   const onReadingTakeover = useCallback(() => {
+    if (!props.model.workbench.locatingSource)
+      props.model.workbench.cancelReturn();
     if (attentionFrame.current === null) return;
     cancelAnimationFrame(attentionFrame.current);
     attentionFrame.current = null;
     located.current = scheduledTarget.current;
-  }, []);
+  }, [props.model]);
   const receiptAnchor = useRef<ReturnType<typeof attachReadingAnchor> | null>(
     null,
   );
@@ -161,6 +163,35 @@ const ThreadContent = memo(function ThreadContent({
 }) {
   const { thread, directoryAvailable } = threadSelection;
   const { submission } = thread;
+  const releaseSourceAnchor = useRef<(() => void) | null>(null);
+  const onSourceAnchorChange = useCallback(
+    (adapter: ReturnType<typeof attachReadingAnchor> | null) => {
+      releaseSourceAnchor.current?.();
+      releaseSourceAnchor.current = null;
+      if (adapter)
+        releaseSourceAnchor.current = model.workbench.registerAnchor(
+          thread.context.threadId,
+          (row) => {
+            const located = adapter.toRow(row);
+            if (located)
+              workspace.current
+                ?.querySelector<HTMLElement>("[data-reading-pane=conversation]")
+                ?.focus({ preventScroll: true });
+            return located;
+          },
+        );
+    },
+    [model, thread.context.threadId, workspace],
+  );
+  const returning = useStore(model.workbench.stateStore, (state) =>
+    state.returning?.target.source.threadId === thread.context.threadId
+      ? state.returning
+      : null,
+  );
+  useLayoutEffect(() => {
+    if (returning && readingView !== "conversation")
+      onReadingViewChange("conversation");
+  }, [returning, readingView, onReadingViewChange]);
   const { t } = useI18n();
   const initializing = useSyncExternalStore(
     useCallback(
@@ -296,6 +327,7 @@ const ThreadContent = memo(function ThreadContent({
           thread={thread}
           onTakeover={onReadingTakeover}
           view="conversation"
+          onAdapterChange={onSourceAnchorChange}
           active={readingView === "conversation"}
         >
           {thread.reading &&
@@ -305,6 +337,7 @@ const ThreadContent = memo(function ThreadContent({
                 model={thread.reading}
                 bridge={model.history}
                 threadId={thread.context.threadId}
+                threadTitle={thread.context.title}
                 active={readingView === "conversation"}
                 positions={thread.readingSources}
               />
@@ -319,6 +352,7 @@ const ThreadContent = memo(function ThreadContent({
                 <Conversation
                   initializing={initializing}
                   model={thread.reading}
+                  threadTitle={thread.context.title}
                   positions={thread.readingSources}
                 />
               </>

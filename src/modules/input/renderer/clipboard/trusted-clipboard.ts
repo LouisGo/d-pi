@@ -12,7 +12,7 @@ import type { AttachmentModel } from "../../core/attachments/attachment-model";
 import type { DraftController } from "../../core/draft-controller";
 import {
   parseDraftBlocks,
-  serializeReference,
+  serializeDraftBlock,
 } from "../../core/references/serialize";
 import {
   draftDocument,
@@ -258,8 +258,8 @@ export function createTrustedClipboard(options: {
           );
           const text = parseDraftBlocks(reply.text)
             .map((block) =>
-              block.kind === "selection"
-                ? serializeReference(block.value)
+              block.kind !== "paragraph"
+                ? serializeDraftBlock(block)
                 : block.text.replace(
                     /\[\[dpi-attachment:([0-9a-f-]{36})\]\]/g,
                     (token, id: string) => (omitted.has(id) ? "" : token),

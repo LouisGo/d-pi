@@ -4,11 +4,68 @@ import { closeHistory, undoDepth } from "@tiptap/pm/history";
 import { afterEach, expect, it } from "vitest";
 import { DraftSchema } from "../../contracts/public";
 import { DraftController } from "../../core/draft-controller";
+import { parseDraftBlocks } from "../../core/public";
 import { DraftEditorCache } from "./draft-editor-cache";
 import { draftDocument, plainTextEditorOptions } from "./plain-text-editor";
 
 const editors: Editor[] = [];
 const controllers: DraftController[] = [];
+it("inserts frozen context into the captured B draft with one undo, including a never mounted editor", async () => {
+  const cache = new DraftEditorCache();
+  const a = controller("A"),
+    b = controller("B");
+  const context = {
+    source: {
+      kind: "live-tool" as const,
+      threadId: a.threadId,
+      nativeSessionKey: "native",
+      connectionGeneration: crypto.randomUUID(),
+      toolCallId: "tool",
+    },
+    contentRevision: "2",
+    title: "bash",
+    text: "exact output",
+    coverage: "observed" as const,
+  };
+  const intent = {
+    operationId: crypto.randomUUID(),
+    draftId: b.threadId,
+    ...b.getEditorSnapshot(),
+    context,
+  };
+  expect(cache.insertContext("b", b, intent)).toEqual({ kind: "inserted" });
+  expect(cache.insertContext("b", b, intent)).toEqual({ kind: "inserted" });
+  expect(a.getTextSnapshot()).toBe("A");
+  expect(
+    parseDraftBlocks(b.getTextSnapshot()).filter(
+      (block) => block.kind === "context",
+    ),
+  ).toHaveLength(1);
+  await b.flush();
+  const editor = attach(cache, "b", b);
+  expect(editor.commands.undo()).toBe(true);
+  expect(b.getTextSnapshot()).toBe("B");
+  expect(editor.commands.redo()).toBe(true);
+  expect(b.getTextSnapshot()).toContain("exact output");
+  const stale = { ...intent, operationId: crypto.randomUUID() };
+  expect(cache.insertContext("b", b, stale)).toMatchObject({
+    kind: "rejected",
+    reason: "stale",
+  });
+  const active = {
+    ...intent,
+    operationId: crypto.randomUUID(),
+    ...b.getEditorSnapshot(),
+  };
+  expect(cache.insertContext("b", b, active)).toEqual({ kind: "inserted" });
+  expect(editor.commands.undo()).toBe(true);
+  expect(
+    parseDraftBlocks(b.getTextSnapshot()).filter(
+      (block) => block.kind === "context",
+    ),
+  ).toHaveLength(1);
+  cache.dispose();
+});
 it("Thread eviction releases only a detached editor state and leaves the saved draft intact", () => {
   const cache = new DraftEditorCache();
   const draft = controller("saved body");

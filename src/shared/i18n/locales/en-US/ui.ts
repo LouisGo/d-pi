@@ -1,4 +1,42 @@
 export const ui = {
+  "workbench.tool.open": "Open command details",
+  "workbench.tool.heading": "Command details",
+  "workbench.tool.sourceUnavailable": "Source identity is unavailable.",
+  "workbench.tool.pinned": "Pinned",
+  "workbench.tool.pin": "Pin",
+  "workbench.tool.origin": "Source Thread: {thread}",
+  "workbench.tool.return": "Return to source",
+  "workbench.tool.unavailable":
+    "Details are unavailable. Reopen from the source card to retry.",
+  "workbench.tool.output": "Command output — select text to freeze a reference",
+  "workbench.tool.saved": "Native record linked",
+  "workbench.tool.liveOnly": "Live source; native record not confirmed",
+  "workbench.tool.partial":
+    "Partial evidence or truncated output; shown content is not the complete result.",
+  "workbench.tool.frozen": "Selection frozen at revision {revision}",
+  "workbench.tool.newer": "New output available",
+  "workbench.tool.resume": "Resume live output",
+  "workbench.tool.destination": "Reference destination: Thread {thread} draft",
+  "workbench.tool.referenceSelection": "Reference selected text",
+  "workbench.tool.reference": "Reference output",
+  "workbench.tool.pending": "Jump to current question",
+  "workbench.tool.copyFailed": "Couldn't copy. Try again.",
+  "workbench.tool.issue.too-large": "Select a nonempty excerpt up to 64 KiB.",
+  "workbench.tool.issue.stale":
+    "The target draft changed or is unavailable. Try again when ready.",
+  "workbench.tool.issue.unavailable":
+    "The draft cannot accept this reference now.",
+  "workbench.tool.issue.composing": "Finish text composition before inserting.",
+  "workbench.tool.return.missing":
+    "The source is not in the loaded reading window. Load earlier records or reopen from the card.",
+  "workbench.tool.return.blocked":
+    "Thread navigation was blocked; your draft is preserved.",
+  "workbench.tool.lifecycle.running": "Running",
+  "workbench.tool.lifecycle.completed": "Completed",
+  "workbench.tool.lifecycle.failed": "Failed",
+  "workbench.tool.lifecycle.aborted": "Aborted",
+  "workbench.tool.lifecycle.unknown": "Execution state unknown",
+
   "ui.copy.copied": "Copied",
   "ui.copy.failed": "Couldn't copy. Try again.",
   "ui.copy.pending": "Copying…",

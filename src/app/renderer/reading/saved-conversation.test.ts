@@ -860,7 +860,7 @@ it("renders cold saved-only tool with shared disclosure, real name, call ID, arg
 
   // Shared ToolObservationDetails disclosure
   const observation = f.container.querySelector<HTMLDetailsElement>(
-    "[data-tool-observation]",
+    "[data-tool-observation], [data-command-card]",
   );
   expect(observation).not.toBeNull();
   expect(observation?.open).toBe(false);
@@ -980,7 +980,7 @@ it("retains live lifecycle and progress on same-nativeRecordId overlay while fil
 
   // 4. Observation details disclosure exists
   const observation = f.container.querySelector<HTMLDetailsElement>(
-    "[data-tool-observation]",
+    "[data-tool-observation], [data-command-card]",
   );
   expect(observation).not.toBeNull();
   await act(() => observation?.querySelector("summary")?.click());
@@ -1076,7 +1076,7 @@ it("does not graft saved arguments or result when live tool call identity mismat
   await act(() => outer?.querySelector("summary")?.click());
 
   const observation = f.container.querySelector<HTMLDetailsElement>(
-    "[data-tool-observation]",
+    "[data-tool-observation], [data-command-card]",
   );
   expect(observation).not.toBeNull();
   await act(() => observation?.querySelector("summary")?.click());
@@ -1159,7 +1159,7 @@ it("does not graft saved arguments when nativeRecordId mismatches even if tool i
   const savedOuter = savedRow?.querySelector<HTMLDetailsElement>("details");
   await act(() => savedOuter?.querySelector("summary")?.click());
   const savedObservation = savedRow?.querySelector<HTMLDetailsElement>(
-    "[data-tool-observation]",
+    "[data-tool-observation], [data-command-card]",
   );
   await act(() => savedObservation?.querySelector("summary")?.click());
   expect(savedObservation?.textContent).toContain("saved_only_cmd");
@@ -1170,7 +1170,7 @@ it("does not graft saved arguments when nativeRecordId mismatches even if tool i
   const liveOuter = liveRow?.querySelector<HTMLDetailsElement>("details");
   await act(() => liveOuter?.querySelector("summary")?.click());
   const liveObservation = liveRow?.querySelector<HTMLDetailsElement>(
-    "[data-tool-observation]",
+    "[data-tool-observation], [data-command-card]",
   );
   await act(() => liveObservation?.querySelector("summary")?.click());
   expect(liveObservation?.textContent).not.toContain("saved_only_cmd");

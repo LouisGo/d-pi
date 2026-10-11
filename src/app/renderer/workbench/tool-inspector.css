@@ -1,0 +1,61 @@
+@layer components {
+  .command-card {
+    display: grid;
+    gap: var(--layout-gap);
+    min-width: 0;
+  }
+  .command-card > code {
+    overflow-wrap: anywhere;
+    color: var(--foreground);
+  }
+  .command-card > pre {
+    margin: 0;
+    font: inherit;
+    font-family: monospace;
+    color: var(--muted-foreground);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .tool-inspector {
+    display: flex;
+    flex-direction: column;
+    gap: var(--layout-gap);
+    padding: var(--layout-gap);
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    overflow: auto;
+  }
+  .tool-inspector header,
+  .tool-inspector footer {
+    display: grid;
+    gap: var(--layout-gap);
+    flex: none;
+  }
+  .tool-inspector-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--layout-gap);
+  }
+  .tool-inspector-arguments {
+    max-height: var(--turn-preview-width);
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-family: monospace;
+  }
+  .tool-inspector-output {
+    flex: 1 0 var(--turn-preview-width);
+    width: 100%;
+    min-height: var(--turn-preview-width);
+    resize: vertical;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--layout-gap);
+    background: var(--surface);
+    color: var(--foreground);
+    font-family: monospace;
+    font-size: var(--text-body);
+    white-space: pre;
+  }
+}

@@ -269,6 +269,7 @@ function indexedSnapshot(
   return {
     kind: "snapshot",
     connectionGeneration: view.connectionGeneration,
+    nativeSessionKey: view.nativeSessionKey,
     seq,
     gap,
     get items() {

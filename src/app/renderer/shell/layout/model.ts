@@ -77,6 +77,10 @@ export function createLayoutModel(
       getInitialState: store.getInitialState,
       subscribe: store.subscribe,
     },
+    reveal(region: Region) {
+      const value = store.getState()[region];
+      write(region, { ...value, open: true });
+    },
     toggle(region: Region) {
       const value = store.getState()[region];
       write(region, { ...value, open: !value.open });

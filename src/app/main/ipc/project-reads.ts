@@ -8,6 +8,7 @@ import {
 import {
   HistoryImageRequestSchema,
   HistoryRequestSchema,
+  HistoryToolRequestSchema,
   ProjectHistoryRequestSchema,
 } from "../../../modules/conversation/contracts/public";
 import {
@@ -25,6 +26,7 @@ import {
   listProjectFiles,
   readProjectFile,
 } from "../../../modules/files/main/public";
+import type { ToolDetailReply } from "../../../modules/resources/contracts/public";
 import {
   ReadCancellationSchema,
   ReadCancelledError,
@@ -150,7 +152,8 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
     event: Parameters<ProjectReadContext["sourceValid"]>[0],
     request:
       | ReturnType<typeof HistoryRequestSchema.parse>
-      | ReturnType<typeof HistoryImageRequestSchema.parse>,
+      | ReturnType<typeof HistoryImageRequestSchema.parse>
+      | ReturnType<typeof HistoryToolRequestSchema.parse>,
   ) => {
     const { threadId, cursor } = request;
     const thread = activeThreadFor(
@@ -173,6 +176,70 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
       );
     };
     const read = async (root: string, directory?: string) => {
+      if ("readerId" in request) {
+        const source = request.source;
+        const unavailable = (
+          reason: "missing" | "identity-changed",
+        ): ToolDetailReply => ({
+          kind: "tool-unavailable",
+          readerId: request.readerId,
+          reason,
+        });
+        if (
+          source.kind !== "native-record" ||
+          source.threadId !== threadId ||
+          source.nativeSessionKey !== binding.sessionId ||
+          source.revision !== cursor?.source ||
+          cursor.threadId !== threadId
+        )
+          return unavailable("identity-changed");
+        const page = await readNativeHistory(
+          root,
+          binding,
+          cursor,
+          undefined,
+          directory,
+        );
+        if (
+          !bindingCurrent() ||
+          page.kind !== "page" ||
+          page.source !== source.revision
+        )
+          return unavailable("identity-changed");
+        const entry = page.entries.find((item) => item.id === source.recordId);
+        if (!entry?.tool) return unavailable("missing");
+        const textBytes = Buffer.from(entry.text),
+          argsBytes = Buffer.from(
+            JSON.stringify(entry.tool.arguments?.value ?? ""),
+          );
+        const bound = (bytes: Buffer, limit: number) => {
+          let end = Math.min(bytes.length, limit);
+          while (end < bytes.length && (bytes[end] ?? 0) >> 6 === 2) end--;
+          return bytes.subarray(0, end).toString("utf8");
+        };
+        const truncated =
+          textBytes.length > 262144 ||
+          argsBytes.length > 32768 ||
+          entry.tool.truncated;
+        return {
+          kind: "tool-detail",
+          readerId: request.readerId,
+          detail: {
+            source,
+            contentRevision: page.source,
+            nativeRecordId: entry.id,
+            toolName: entry.tool.name,
+            argumentsText: bound(argsBytes, 32768),
+            text: bound(textBytes, 262144),
+            lifecycle:
+              entry.tool.lifecycle === "running"
+                ? "unknown"
+                : entry.tool.lifecycle,
+            coverage: truncated ? "partial" : entry.tool.coverage,
+            truncated,
+          },
+        } satisfies ToolDetailReply;
+      }
       if ("recordId" in request) {
         const blobsDirectory = await context.nativeBlobsPath?.(
           threadId,
@@ -237,6 +304,25 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
     }
     return read(root, thread.directory);
   };
+  context.ipcMain.handle("history:tool", async (event, raw: unknown) => {
+    const request = HistoryToolRequestSchema.parse(raw);
+    const reply = await recordRead(
+      context,
+      {
+        traceId: request.traceId,
+        threadId: request.threadId,
+        operation: "history:tool",
+      },
+      () => boundRead(event, request),
+    );
+    return reply.kind === "tool-detail" || reply.kind === "tool-unavailable"
+      ? reply
+      : {
+          kind: "tool-unavailable",
+          readerId: request.readerId,
+          reason: "identity-changed",
+        };
+  });
   context.ipcMain.handle("history:read", (event, raw: unknown) =>
     boundRead(event, HistoryRequestSchema.parse(raw)),
   );

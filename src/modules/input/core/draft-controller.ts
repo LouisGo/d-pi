@@ -3,7 +3,7 @@ import { DRAFT_MAX_BYTES, draftByteLength } from "../../../shared/draft-text";
 import { createId } from "../../../shared/identity";
 import type { Draft, Failure, SaveReply } from "../contracts/draft";
 import { attachmentToken } from "./attachments/tokens";
-import { parseDraftBlocks, serializeReference } from "./references/serialize";
+import { parseDraftBlocks, serializeDraftBlock } from "./references/serialize";
 export type SaveState =
   | { kind: "saved" }
   | { kind: "dirty" }
@@ -27,6 +27,15 @@ const timerHost = globalThis as typeof globalThis & TimerHost;
 export class DraftController {
   private state: SaveState = { kind: "saved" };
   private readonly listeners = new Set<() => void>();
+  private readonly confirmations = new Set<
+    (snapshot: { sequence: number; revision: number }) => void
+  >();
+  subscribeConfirmed(
+    listener: (snapshot: { sequence: number; revision: number }) => void,
+  ): () => void {
+    this.confirmations.add(listener);
+    return () => this.confirmations.delete(listener);
+  }
   private revision: number;
   private sequence = 0;
   private confirmed = 0;
@@ -171,8 +180,8 @@ export class DraftController {
     if (lastParagraph < 0) return `${tokens}\n${text}`;
     return blocks
       .map((block, index) =>
-        block.kind === "selection"
-          ? serializeReference(block.value)
+        block.kind !== "paragraph"
+          ? serializeDraftBlock(block)
           : block.text + (index === lastParagraph ? tokens : ""),
       )
       .join("\n");
@@ -187,8 +196,7 @@ export class DraftController {
     );
     return blocks
       .flatMap((block) => {
-        if (block.kind === "selection")
-          return [serializeReference(block.value)];
+        if (block.kind !== "paragraph") return [serializeDraftBlock(block)];
         const next = transform(block.text);
         // A selection-only body stores image metadata in its own source line.
         // Preserve authored empty lines; remove only that token-only carrier.
@@ -206,6 +214,24 @@ export class DraftController {
         return [next];
       })
       .join("\n");
+  }
+  acceptsContext(expected: {
+    draftId: string;
+    revision: number;
+    sequence: number;
+  }): boolean {
+    return (
+      !this.disposed &&
+      !this.capture &&
+      !this.captured &&
+      this.canSaveInput() &&
+      this.state.kind !== "conflict" &&
+      this.state.kind !== "failed" &&
+      this.state.kind !== "checking" &&
+      expected.draftId === this.threadId &&
+      expected.revision === this.revision &&
+      expected.sequence === this.sequence
+    );
   }
   getEditorSnapshot = () => ({
     revision: this.revision,
@@ -335,6 +361,8 @@ export class DraftController {
           this.baselineText = snapshot.text;
           this.attempted = null;
           this.confirmed = snapshot.sequence;
+          for (const listener of this.confirmations)
+            listener({ sequence: snapshot.sequence, revision });
           return true;
         })
         .with({ kind: "failed" }, ({ error }) => {
@@ -521,6 +549,7 @@ export class DraftController {
     this.capture = null;
     timerHost.clearTimeout(this.timer);
     this.listeners.clear();
+    this.confirmations.clear();
     this.detachedAttachments.clear();
   }
 }

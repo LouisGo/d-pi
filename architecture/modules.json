@@ -79,7 +79,8 @@
           "preferences",
           "shared",
           "threads",
-          "configuration"
+          "configuration",
+          "resources"
         ],
         "host": [
           "conversation",
@@ -92,7 +93,8 @@
           "files",
           "shared",
           "configuration",
-          "input"
+          "input",
+          "resources"
         ],
         "renderer": [
           "changes",
@@ -104,7 +106,8 @@
           "shared",
           "threads",
           "configuration",
-          "ui"
+          "ui",
+          "resources"
         ]
       }
     },
@@ -199,21 +202,25 @@
         "contracts": [
           "shared",
           "threads",
-          "files"
+          "files",
+          "resources"
         ],
         "core": [
           "files",
-          "shared"
+          "shared",
+          "resources"
         ],
         "main": [
           "platform",
           "threads",
-          "shared"
+          "shared",
+          "resources"
         ],
         "renderer": [
           "files",
           "shared",
-          "ui"
+          "ui",
+          "resources"
         ]
       },
       "materialized": true
@@ -310,15 +317,18 @@
       ],
       "dependsOn": {
         "contracts": [
-          "shared"
+          "shared",
+          "resources"
         ],
         "core": [],
         "host": [
           "platform",
-          "shared"
+          "shared",
+          "resources"
         ],
         "main": [
-          "threads"
+          "threads",
+          "resources"
         ]
       },
       "materialized": true
@@ -421,6 +431,19 @@
         "renderer/public.ts"
       ],
       "dependsOn": [],
+      "materialized": true
+    },
+    "resources": {
+      "root": "src/modules/resources",
+      "environments": [
+        "contracts"
+      ],
+      "public": [
+        "contracts/public.ts"
+      ],
+      "dependsOn": [
+        "shared"
+      ],
       "materialized": true
     }
   }

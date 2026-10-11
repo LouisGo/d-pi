@@ -33,6 +33,10 @@ export interface HostMessagePort {
   start(): void;
   close(): void;
   postMessage(event: unknown): void;
+  on?(
+    event: "message" | "close",
+    listener: (event: { data: unknown }) => void,
+  ): void;
 }
 export interface SessionHostSupervisionEvent {
   kind: "submission-correlation-expired";
@@ -44,7 +48,14 @@ export interface SessionHostOptions {
   onStart?: (value: HostStart) => void;
   onNativeFrame?: (frame: NativeFrame) => void;
   onSupervisionEvent?: (event: SessionHostSupervisionEvent) => void;
-  onAttach?: (port?: HostMessagePort) => void;
+  onAttach?: (
+    port?: HostMessagePort,
+    identity?: {
+      threadId: string;
+      connectionGeneration: string;
+      nativeSessionKey: string;
+    },
+  ) => void;
   onDispose?: () => void;
 }
 export interface SessionHost {
@@ -844,7 +855,16 @@ export function createSessionHost(
         return Promise.resolve();
       })
       .with({ kind: "attach" }, () => {
-        options.onAttach?.(port);
+        options.onAttach?.(
+          port,
+          start && state?.sessionId
+            ? {
+                threadId: start.threadId,
+                connectionGeneration: start.connectionGeneration,
+                nativeSessionKey: state.sessionId,
+              }
+            : undefined,
+        );
         replayEvidence();
         return Promise.resolve();
       })

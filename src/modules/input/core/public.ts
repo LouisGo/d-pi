@@ -23,5 +23,7 @@ export {
 export {
   type DraftBlock,
   parseDraftBlocks,
+  serializeDraftBlock,
+  serializeFrozenContext,
   serializeReference,
 } from "./references/serialize";

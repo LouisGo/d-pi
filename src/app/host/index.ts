@@ -6,6 +6,10 @@ type HostPort = {
   start(): void;
   close(): void;
   postMessage(event: unknown): void;
+  on?(
+    event: "message" | "close",
+    listener: (event: { data: unknown }) => void,
+  ): void;
 };
 type ParentPort = {
   postMessage(message: unknown): void;
@@ -33,9 +37,10 @@ parent.on("message", ({ data, ports }) => {
         parent.postMessage({ scopeId, message: { kind: "scope-closed" } });
       },
       {
-        onStart: (value) => conversation.start(value.connectionGeneration),
+        onStart: (value) =>
+          conversation.start(value.connectionGeneration, value.threadId),
         onNativeFrame: (frame) => conversation.accept(frame),
-        onAttach: (port) => conversation.attach(port),
+        onAttach: (port, identity) => conversation.attach(port, identity),
         onDispose: () => conversation.dispose(),
       },
     );

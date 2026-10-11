@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { UiMessageSchema } from "../../../shared/messages/contracts";
+import type { ToolDetailPort } from "../../resources/contracts/public";
 import { MessageTimestampSchema } from "./message-time";
 import { ToolExecutionObservationSchema } from "./tool-observation";
 
@@ -71,6 +72,7 @@ export const ConversationItemSchema = z.strictObject({
 export type ConversationItem = z.infer<typeof ConversationItemSchema>;
 export const ConversationSnapshotSchema = z.strictObject({
   kind: z.literal("snapshot"),
+  nativeSessionKey: z.string().max(512).optional(),
   connectionGeneration: z.uuid(),
   seq: z.number().int().nonnegative(),
   items: z.array(ConversationItemSchema),
@@ -93,6 +95,7 @@ export const ConversationEventSchema = z.discriminatedUnion("kind", [
 export type ConversationEvent = z.infer<typeof ConversationEventSchema>;
 
 export interface ConversationPort {
+  watchTool?: ToolDetailPort["watchTool"];
   connect(
     threadId: string,
     listener: (event: ConversationEvent) => void,

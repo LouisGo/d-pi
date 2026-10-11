@@ -8,6 +8,7 @@ import {
   HistoryImageRequestSchema,
   HistoryPageSchema,
   HistoryRequestSchema,
+  HistoryToolRequestSchema,
   ProjectHistoryCatalogSchema,
   ProjectHistoryRequestSchema,
 } from "../../../modules/conversation/contracts/public";
@@ -15,6 +16,7 @@ import {
   FileRequestSchema,
   FileResponseSchema,
 } from "../../../modules/files/contracts/public";
+import { ToolDetailReplySchema } from "../../../modules/resources/contracts/public";
 import {
   ReadCancellationSchema,
   ReadCancelReplySchema,
@@ -44,6 +46,20 @@ export function createProjectReadBridge(
   }
   return {
     history: {
+      async tool(source, cursor, readerId) {
+        return ToolDetailReplySchema.parse(
+          await ipcRenderer.invoke(
+            "history:tool",
+            HistoryToolRequestSchema.parse({
+              source,
+              cursor,
+              readerId,
+              threadId: source.threadId,
+              traceId: readerId,
+            }),
+          ),
+        );
+      },
       async image(threadId, cursor, recordId, index, traceId) {
         return HistoryImageReplySchema.parse(
           await ipcRenderer.invoke(
