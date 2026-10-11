@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "bcbd2b0db1d7074ef3436d9c62b1def52cf0b7dcb1e9f552064b75b3ab4c67ca",
+  "inputsHash": "08ce92bf134b443b3c94e7c2ba041683660ecba8ca12b32cb977d71e2b098b00",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 658,
-    "scannedFiles": 658,
+    "sourceFiles": 661,
+    "scannedFiles": 661,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 295,
-      "lines": 59081,
+      "files": 296,
+      "lines": 59103,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -36,6 +36,10 @@
         },
         {
           "path": "src/app/host/index.ts",
+          "exists": true
+        },
+        {
+          "path": "src/app/host/subagent-worker.ts",
           "exists": true
         },
         {
@@ -315,7 +319,7 @@
       ],
       "materialized": true,
       "files": 45,
-      "lines": 11134,
+      "lines": 11165,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -347,8 +351,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 60,
-      "lines": 15416,
+      "files": 62,
+      "lines": 15863,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -2898,6 +2902,27 @@
     },
     {
       "from": "src/app/host/index.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "../../modules/execution/host/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/host/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/app/host/subagent-worker.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "node:worker_threads",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/host/subagent-worker.ts",
       "sourceModule": "app",
       "sourceEnvironment": "host",
       "test": false,
@@ -33606,6 +33631,18 @@
       "sourceModule": "execution",
       "sourceEnvironment": "host",
       "test": true,
+      "specifier": "./subagent-read",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/host/native/subagent-read.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-observation.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
       "specifier": "./subagent-observation",
       "kind": "import",
       "resolution": "module",
@@ -33618,12 +33655,111 @@
       "sourceModule": "execution",
       "sourceEnvironment": "host",
       "test": false,
+      "specifier": "../../../../platform/omp/protocol/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/omp/protocol/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "omp"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-observation.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "./subagent-read",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/host/native/subagent-read.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-read.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-read.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
       "specifier": "node:fs/promises",
       "kind": "import",
       "resolution": "external"
     },
     {
-      "from": "src/modules/execution/host/native/subagent-observation.ts",
+      "from": "src/modules/execution/host/native/subagent-read.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-read.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-read.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-read.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": true,
+      "specifier": "./subagent-read",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/host/native/subagent-read.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-read.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-read.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "node:fs/promises",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-read.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-read.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "host",
       "test": false,
@@ -33632,7 +33768,19 @@
       "resolution": "external"
     },
     {
-      "from": "src/modules/execution/host/native/subagent-observation.ts",
+      "from": "src/modules/execution/host/native/subagent-read.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "../../../../platform/node/reads/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/node/reads/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
+    },
+    {
+      "from": "src/modules/execution/host/native/subagent-read.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "host",
       "test": false,
@@ -33652,6 +33800,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/execution/host/native/native-session.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/execution/host/public.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "./native/subagent-read",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/execution/host/native/subagent-read.ts",
       "targetModule": "execution",
       "targetEnvironment": "host"
     },
@@ -33973,6 +34133,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/execution/host/native/subagent-observation.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/execution/host/session-host.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "./native/subagent-read",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/host/native/subagent-read.ts",
       "targetModule": "execution",
       "targetEnvironment": "host"
     },

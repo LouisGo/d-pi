@@ -260,3 +260,30 @@ it("makes unknown child events and oversized native snapshots visible rather tha
   ).toBe(true);
   p.dispose();
 });
+
+it("preserves worker truncation evidence after the body was already bounded", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept(lifecycle());
+  p.accept(lifecycle("completed"));
+  p.accept({
+    type: "d_pi_subagent_transcript",
+    payload: {
+      id: "same-name",
+      parentToolCallId: "call-a",
+      sessionFile: "/native/call-a.jsonl",
+      status: "available",
+      text: "bounded",
+      truncated: true,
+    },
+  });
+  expect(p.snapshot().items[0]).toMatchObject({
+    text: "bounded",
+    truncated: true,
+    subagent: {
+      resultSource: "transcript",
+      coverage: "partial",
+      reason: "truncated",
+    },
+  });
+  p.dispose();
+});

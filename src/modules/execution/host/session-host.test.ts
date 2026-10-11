@@ -1868,3 +1868,94 @@ it.each([
     native.observers[0]?.({ kind: "exited" });
   },
 );
+
+it("binds terminal reads to the actual parent and delays scope closure until the cancelled worker exits", async () => {
+  native.controlRequest.mockResolvedValue({
+    success: true,
+    data: {
+      paused: false,
+      stopping: false,
+      pendingAsync: false,
+      admitted: false,
+      streaming: false,
+      compacting: false,
+      queued: 0,
+      background: 0,
+      queue: [],
+    },
+  });
+  let finish: (
+    reply: import("./native/subagent-read").NativeSubagentReadReply,
+  ) => void = () => {};
+  const readSubagent = vi.fn(
+    async (
+      _task: import("./native/subagent-read").NativeSubagentReadTask,
+      _signal: AbortSignal,
+    ) =>
+      new Promise<import("./native/subagent-read").NativeSubagentReadReply>(
+        (resolve) => {
+          finish = resolve;
+        },
+      ),
+  );
+  const exit = vi.fn();
+  const threadId = ThreadIdSchema.parse(crypto.randomUUID()),
+    connectionGeneration = crypto.randomUUID(),
+    traceId = crypto.randomUUID();
+  const host = createSessionHost(() => {}, exit, { readSubagent });
+  await host.handle({
+    kind: "start",
+    threadId,
+    traceId,
+    processInstanceId: crypto.randomUUID(),
+    connectionGeneration,
+    configContextId: "fixture",
+    binary: "/fixture/omp",
+    sdkEntry: "/fixture/sdk",
+    identity: { directory: "/project", device: "1", inode: "2" },
+    environment: {},
+    sessionDirectory: "/sessions",
+  });
+  native.observers[0]?.({
+    kind: "frame",
+    frame: {
+      type: "subagent_lifecycle",
+      payload: {
+        id: "child",
+        index: 0,
+        agent: "task",
+        agentSource: "builtin",
+        status: "completed",
+        parentToolCallId: "native-call",
+        sessionFile: "/sessions/session/child.jsonl",
+      },
+    },
+  });
+  expect(readSubagent).toHaveBeenCalledTimes(1);
+  const task = readSubagent.mock.calls[0]?.[0];
+  expect(task).toMatchObject({
+    parentSessionId: "session",
+    parentSessionFile: "/sessions/session.jsonl",
+    traceId,
+    owner: {
+      id: "child",
+      parentToolCallId: "native-call",
+      sessionFile: "/sessions/session/child.jsonl",
+    },
+  });
+  const closing = host.handle({ kind: "close-idle" });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(readSubagent.mock.calls[0]?.[1].aborted).toBe(true);
+  expect(exit).not.toHaveBeenCalled();
+  if (!task) throw Error("Missing read task");
+  finish({
+    operationId: task.operationId,
+    traceId,
+    status: "available",
+    childSessionId: "child-native",
+    text: "late",
+    truncated: false,
+  });
+  await closing;
+  expect(exit).toHaveBeenCalledWith(0);
+});

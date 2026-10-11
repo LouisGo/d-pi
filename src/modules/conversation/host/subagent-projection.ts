@@ -319,6 +319,7 @@ export class SubagentProjection {
           status: z.enum(["available", "unavailable"]),
           text: z.string().optional(),
           reset: z.boolean().optional(),
+          truncated: z.boolean().optional(),
           reason: z
             .enum([
               "transcript-unavailable",
@@ -335,6 +336,7 @@ export class SubagentProjection {
       if (!run?.item.subagent) return true;
       run.item = {
         ...run.item,
+        ...(value.truncated ? { truncated: true } : {}),
         ...(value.status === "available" && value.text
           ? { text: value.text }
           : {}),
@@ -343,12 +345,14 @@ export class SubagentProjection {
           ...(value.status === "available" && value.text
             ? { resultSource: "transcript" as const }
             : {}),
-          ...(value.status === "unavailable" || value.reset
+          ...(value.status === "unavailable" || value.reset || value.truncated
             ? {
                 coverage: "partial" as const,
-                reason: value.reset
-                  ? ("transcript-reset" as const)
-                  : (value.reason ?? ("transcript-unavailable" as const)),
+                reason: value.truncated
+                  ? ("truncated" as const)
+                  : value.reset
+                    ? ("transcript-reset" as const)
+                    : (value.reason ?? ("transcript-unavailable" as const)),
               }
             : {}),
         },

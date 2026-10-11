@@ -10,6 +10,7 @@ export default defineConfig({
       rollupOptions: {
         input: {
           "native-warm": resolve("validation/m2/native-warm.ts"),
+          "subagent-worker": resolve("src/app/host/subagent-worker.ts"),
           "session-host": resolve("src/app/host/index.ts"),
         },
       },

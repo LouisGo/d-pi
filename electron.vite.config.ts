@@ -41,6 +41,7 @@ export default defineConfig(({ command }) => {
           input: {
             index: resolve("src/app/main/index.ts"),
             "session-host": resolve("src/app/host/index.ts"),
+            "subagent-worker": resolve("src/app/host/subagent-worker.ts"),
             "history-worker": resolve("src/app/main/history-worker.ts"),
           },
         },

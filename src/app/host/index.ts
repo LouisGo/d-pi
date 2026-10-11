@@ -1,6 +1,9 @@
 import { createConversationHost } from "../../modules/conversation/host/public";
 import { HostTransportCommandSchema } from "../../modules/execution/contracts/public";
-import { createSessionHost } from "../../modules/execution/host/public";
+import {
+  createNativeSubagentReader,
+  createSessionHost,
+} from "../../modules/execution/host/public";
 
 type HostPort = {
   start(): void;
@@ -21,6 +24,9 @@ type ParentPort = {
 const parent = (process as NodeJS.Process & { parentPort?: ParentPort })
   .parentPort;
 if (!parent) throw Error("SessionHost requires an Electron parent port");
+const subagentReader = createNativeSubagentReader(
+  new URL("./subagent-worker.js", import.meta.url),
+);
 const scopes = new Map<string, ReturnType<typeof createSessionHost>>();
 parent.on("message", ({ data, ports }) => {
   const parsed = HostTransportCommandSchema.safeParse(data);
@@ -37,6 +43,7 @@ parent.on("message", ({ data, ports }) => {
         parent.postMessage({ scopeId, message: { kind: "scope-closed" } });
       },
       {
+        readSubagent: subagentReader.read,
         onStart: (value) =>
           conversation.start(value.connectionGeneration, value.threadId),
         onNativeFrame: (frame) => conversation.accept(frame),

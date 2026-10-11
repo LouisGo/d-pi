@@ -52,6 +52,7 @@
         "main/index.ts",
         "main/history-worker.ts",
         "host/index.ts",
+        "host/subagent-worker.ts",
         "preload/index.ts",
         "renderer/main.tsx"
       ],

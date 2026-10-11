@@ -33,6 +33,12 @@ Main 的提交协调拥有 App 收据和草稿交接；Host 的执行协调负�
 
 本增量工程完成与验证见[05a](../../../.scratch/m2-first-release/issues/05a-native-queue-management.md)、[队列证据](../../../.scratch/m2-first-release/queue-management.md)。Host实例与未保存稿不随视图卸载结束；真正退出或Host故障后的执行恢复继续遵守D-24只读边界。无头/React/SQLite与固定SDK localhost通过，不替代真实macOS关窗、视觉、候选试用或完整M2认可。
 
+## 子会话终态读取（WB03）
+
+Host以原生生命周期的id、parentToolCallId、sessionFile关联只读结果；父sessionFile/ID来自同实例实际get_state。App utility入口装配单一createNativeSubagentReader，并传入独立subagent-worker构建入口，所有scope共用2个物理名额及5s限时。任务携带独立operationId与原traceId，回复校验相关身份；正文不走控制RPC。Worker核实固定OMP artifact路径、文件头parentSession与真实父ID、规范路径及文件identity，最多1MiB/1000完整记录，结果最多64KiB UTF-8，截断明确partial。
+
+观察owner替换/dispose中断读信号，读取绑定既有Effect Scope；逻辑取消后仍等待Worker exit才释放物理名额与完成Host dispose。过载/来源变化/无法校验明确unavailable；没有创建App子Thread，不改变原生任务终态或未知执行结果。
+
 ## 交接
 
 ### 独立交互操作（2026-10-11）

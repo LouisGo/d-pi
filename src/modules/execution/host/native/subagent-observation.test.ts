@@ -1,5 +1,16 @@
 import { expect, it, vi } from "vitest";
 import type { NativeFrame } from "../../../../platform/omp/protocol/public";
+import type { NativeSubagentReadReply } from "./subagent-read";
+
+const reply = (text: string): NativeSubagentReadReply => ({
+  operationId: crypto.randomUUID(),
+  traceId: crypto.randomUUID(),
+  status: "available",
+  text,
+  truncated: false,
+  childSessionId: "child",
+});
+
 import { NativeSubagentObservation } from "./subagent-observation";
 
 const owner = {
@@ -10,141 +21,28 @@ const owner = {
   agent: "task",
   agentSource: "builtin",
 };
-it("subscribes before sampling, reads a terminal by native identity only and drops disposed replies", async () => {
-  const frames: NativeFrame[] = [];
-  const calls: unknown[] = [];
-  let resolve: (value: NativeFrame) => void = () => {};
+it("cancels a reused native owner's terminal read without putting transcript bodies on the control RPC", async () => {
   const request = vi.fn(
-    async (type: string, payload?: unknown): Promise<NativeFrame> => {
-      calls.push([type, payload]);
-      if (type === "set_subagent_subscription")
-        return { type: "response", success: true, data: { level: "events" } };
-      if (type === "get_subagents")
-        return { type: "response", success: true, data: { subagents: [] } };
-      return new Promise((r) => {
-        resolve = r;
-      });
-    },
+    async (_type: string): Promise<NativeFrame> => ({
+      type: "response",
+      success: true,
+      data: { subagents: [] },
+    }),
   );
-  const observation = new NativeSubagentObservation(
-    request,
-    (frame) => frames.push(frame),
-    async () => ({ size: 100 }),
-  );
-  await observation.start();
-  expect(
-    calls.map((value) => (Array.isArray(value) ? value[0] : null)),
-  ).toEqual(["set_subagent_subscription", "get_subagents"]);
-  observation.accept({
-    type: "subagent_lifecycle",
-    payload: { ...owner, status: "started" },
-  });
-  observation.accept({
-    type: "subagent_lifecycle",
-    payload: { ...owner, status: "completed" },
-  });
-  await Promise.resolve();
-  await Promise.resolve();
-  expect(calls[2]).toEqual([
-    "get_subagent_messages",
-    { subagentId: "native-id" },
-  ]);
-  observation.dispose();
-  resolve({
-    type: "response",
-    success: true,
-    data: {
-      sessionFile: owner.sessionFile,
-      fromByte: 0,
-      nextByte: 100,
-      reset: false,
-      messages: [],
-    },
-  });
-  await Promise.resolve();
-  await Promise.resolve();
-  expect(
-    frames.filter((frame) => frame.type === "d_pi_subagent_transcript"),
-  ).toHaveLength(0);
-});
-it("limits transcript reads and names missing/large evidence without pretending an empty result", async () => {
-  const frames: NativeFrame[] = [];
-  const request = vi.fn(async () => ({
-    type: "response",
-    success: true,
-    data: { subagents: [] },
-  }));
-  const observation = new NativeSubagentObservation(
-    request,
-    (frame) => frames.push(frame),
-    async () => ({ size: 2 * 1024 * 1024 }),
-  );
-  observation.accept({
-    type: "subagent_lifecycle",
-    payload: { ...owner, status: "started" },
-  });
-  observation.accept({
-    type: "subagent_lifecycle",
-    payload: { ...owner, status: "completed" },
-  });
-  await Promise.resolve();
-  await Promise.resolve();
-  expect(request).not.toHaveBeenCalled();
-  expect(frames).toMatchObject([
-    {
-      type: "d_pi_subagent_transcript",
-      payload: { status: "unavailable", reason: "transcript-too-large" },
-    },
-  ]);
-  observation.dispose();
-});
-it.each([
-  {
-    args: {
-      data: { result: "NEW_RUN_RESULT" },
-      error: null,
-      type: null,
-    },
-    expected: '{"result":"NEW_RUN_RESULT"}',
-  },
-  {
-    args: { data: null, error: "Execution failed: exact cause", type: null },
-    expected: "Execution failed: exact cause",
-  },
-])(
-  "reads native identities reused by later parent calls without merging old transcript replies",
-  async ({ args, expected }) => {
-    const frames: NativeFrame[] = [];
-    const request = vi.fn(
-      async (_type: string, _payload?: unknown): Promise<NativeFrame> => ({
-        type: "response",
-        success: true,
-        data: {
-          sessionFile: "/native/new.jsonl",
-          fromByte: 0,
-          nextByte: 100,
-          reset: false,
-          messages: [
-            {
-              role: "assistant",
-              content: [
-                { type: "text", text: "Finished." },
-                {
-                  type: "toolCall",
-                  name: "yield",
-                  arguments: args,
-                },
-              ],
-            },
-          ],
-        },
+  let finish: (reply: NativeSubagentReadReply) => void = () => {};
+  const read = vi.fn(
+    async (_owner: unknown, _signal?: AbortSignal) =>
+      new Promise<NativeSubagentReadReply>((resolve) => {
+        finish = resolve;
       }),
-    );
-    const observation = new NativeSubagentObservation(
-      request,
-      (frame) => frames.push(frame),
-      async () => ({ size: 100 }),
-    );
+  );
+  const frames: NativeFrame[] = [];
+  const observation = new NativeSubagentObservation(
+    request,
+    (frame) => frames.push(frame),
+    read,
+  );
+  try {
     observation.accept({
       type: "subagent_lifecycle",
       payload: { ...owner, status: "started" },
@@ -153,30 +51,144 @@ it.each([
       type: "subagent_lifecycle",
       payload: { ...owner, status: "completed" },
     });
-    const next = {
-      ...owner,
-      parentToolCallId: "new-parent",
-      sessionFile: "/native/new.jsonl",
-    };
+    await Promise.resolve();
+    expect(read).toHaveBeenCalledWith(
+      expect.objectContaining(owner),
+      expect.any(AbortSignal),
+    );
+    const signal = read.mock.calls[0]?.[1];
+    expect(signal?.aborted).toBe(false);
     observation.accept({
       type: "subagent_lifecycle",
-      payload: { ...next, status: "started" },
-    });
-    observation.accept({
-      type: "subagent_lifecycle",
-      payload: { ...next, status: "completed" },
-    });
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(frames).toMatchObject([
-      {
-        type: "d_pi_subagent_transcript",
-        payload: {
-          parentToolCallId: "new-parent",
-          status: "available",
-          text: expected,
-        },
+      payload: {
+        ...owner,
+        parentToolCallId: "new-call",
+        sessionFile: "/native/new.jsonl",
+        status: "started",
       },
-    ]);
+    });
+    expect(signal?.aborted).toBe(true);
+    expect(request).not.toHaveBeenCalled();
+  } finally {
     observation.dispose();
-  },
-);
+    finish(reply("OLD_RESULT"));
+    await Promise.resolve();
+    await Promise.resolve();
+  }
+  expect(frames).toHaveLength(0);
+});
+it("subscribes before sampling and waits for physical read finalization on dispose", async () => {
+  const request = vi.fn(
+    async (_type: string): Promise<NativeFrame> => ({
+      type: "response",
+      success: true,
+      data: { subagents: [] },
+    }),
+  );
+  const frames: NativeFrame[] = [];
+  let finish: (reply: NativeSubagentReadReply) => void = () => {};
+  const read = vi.fn(
+    async (_owner: unknown, _signal: AbortSignal) =>
+      new Promise<NativeSubagentReadReply>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const observation = new NativeSubagentObservation(
+    request,
+    (frame) => frames.push(frame),
+    read,
+  );
+  await observation.start();
+  expect(request.mock.calls.map((call) => call[0])).toEqual([
+    "set_subagent_subscription",
+    "get_subagents",
+  ]);
+  observation.accept({
+    type: "subagent_lifecycle",
+    payload: { ...owner, status: "completed" },
+  });
+  let released = false;
+  const closing = observation.dispose().then(() => {
+    released = true;
+  });
+  await Promise.resolve();
+  expect(read.mock.calls[0]?.[1].aborted).toBe(true);
+  expect(released).toBe(false);
+  finish(reply("final"));
+  await closing;
+  expect(
+    frames.filter((frame) => frame.type === "d_pi_subagent_transcript"),
+  ).toHaveLength(0);
+});
+it("names oversized evidence without using a transcript control RPC", async () => {
+  const frames: NativeFrame[] = [];
+  const request = vi.fn(
+    async (_type: string): Promise<NativeFrame> => ({ type: "response" }),
+  );
+  const observation = new NativeSubagentObservation(
+    request,
+    (frame) => frames.push(frame),
+    async () => ({
+      operationId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+      status: "unavailable",
+      reason: "transcript-too-large",
+    }),
+  );
+  observation.accept({
+    type: "subagent_lifecycle",
+    payload: { ...owner, status: "completed" },
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(request).not.toHaveBeenCalled();
+  expect(frames).toMatchObject([
+    { payload: { status: "unavailable", reason: "transcript-too-large" } },
+  ]);
+  await observation.dispose();
+});
+it("keeps a physical permit through old-owner cancellation and attributes only the replacement", async () => {
+  const frames: NativeFrame[] = [];
+  const finish: ((reply: NativeSubagentReadReply) => void)[] = [];
+  const read = vi.fn(
+    async (_owner: unknown, _signal: AbortSignal) =>
+      new Promise<NativeSubagentReadReply>((resolve) => {
+        finish.push(resolve);
+      }),
+  );
+  const observation = new NativeSubagentObservation(
+    async () => ({ type: "response" }),
+    (frame) => frames.push(frame),
+    read,
+  );
+  for (const candidate of [owner, { ...owner, id: "other" }])
+    observation.accept({
+      type: "subagent_lifecycle",
+      payload: { ...candidate, status: "completed" },
+    });
+  const next = {
+    ...owner,
+    parentToolCallId: "new-call",
+    sessionFile: "/native/new.jsonl",
+  };
+  observation.accept({
+    type: "subagent_lifecycle",
+    payload: { ...next, status: "started" },
+  });
+  observation.accept({
+    type: "subagent_lifecycle",
+    payload: { ...next, status: "completed" },
+  });
+  expect(read).toHaveBeenCalledTimes(2);
+  expect(read.mock.calls[0]?.[1].aborted).toBe(true);
+  finish[0]?.(reply("old"));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(read).toHaveBeenCalledTimes(3);
+  finish[1]?.(reply("other"));
+  finish[2]?.(reply("new"));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(frames.map((frame) => frame.payload)).toMatchObject([
+    { id: "other", text: "other" },
+    { id: "native-id", parentToolCallId: "new-call", text: "new" },
+  ]);
+  await observation.dispose();
+});

@@ -28,6 +28,10 @@ import { PendingInteractions } from "./interactions/interactions";
 import { nativeData, nativeFailureOf } from "./native/native-request-failure";
 import { type NativeObservation, NativeSession } from "./native/native-session";
 import { NativeSubagentObservation } from "./native/subagent-observation";
+import type {
+  NativeSubagentReadReply,
+  NativeSubagentReadTask,
+} from "./native/subagent-read";
 
 export interface HostMessagePort {
   start(): void;
@@ -45,6 +49,10 @@ export interface SessionHostSupervisionEvent {
   traceId: FrozenSubmission["traceId"];
 }
 export interface SessionHostOptions {
+  readSubagent?: (
+    task: NativeSubagentReadTask,
+    signal: AbortSignal,
+  ) => Promise<NativeSubagentReadReply>;
   hasReadingDemand?: () => boolean;
   onStart?: (value: HostStart) => void;
   onNativeFrame?: (frame: NativeFrame) => void;
@@ -311,9 +319,9 @@ export function createSessionHost(
     prompts.clear();
     confirmedPrompts.clear();
   }
-  function disposeHost(): void {
-    void tasks.close();
-    subagentObservation?.dispose();
+  function disposeHost(): Promise<void> {
+    const taskExit = tasks.close();
+    const readExit = subagentObservation?.dispose();
     subagentObservation = null;
     permit?.(false);
     permit = null;
@@ -324,6 +332,7 @@ export function createSessionHost(
     clearDefaultAnswerTimers();
     interactions.dispose();
     options.onDispose?.();
+    return Promise.allSettled([taskExit, readExit]).then(() => {});
   }
   function observe(event: NativeObservation): void {
     if (event.kind === "exited") {
@@ -340,8 +349,7 @@ export function createSessionHost(
       if (!closing) {
         closing = true;
         observationVersion++;
-        disposeHost();
-        exit(0);
+        void disposeHost().then(() => exit(0));
       }
       return;
     }
@@ -667,6 +675,45 @@ export function createSessionHost(
             tasks.run((signal) => instance.request(type, payload, { signal })),
           (frame) => {
             if (!disconnected && !closing) options.onNativeFrame?.(frame);
+          },
+          async (owner, signal) => {
+            const operationId = randomUUID();
+            if (
+              !state?.sessionFile ||
+              !state.sessionId ||
+              !owner.sessionFile ||
+              !owner.parentToolCallId ||
+              !options.readSubagent
+            )
+              return {
+                operationId,
+                traceId: value.traceId,
+                status: "unavailable",
+                reason: "transcript-unavailable",
+              };
+            const read = options.readSubagent;
+            const task: NativeSubagentReadTask = {
+              operationId,
+              traceId: value.traceId,
+              parentSessionFile: state.sessionFile,
+              parentSessionId: state.sessionId,
+              owner: {
+                id: owner.id,
+                parentToolCallId: owner.parentToolCallId,
+                sessionFile: owner.sessionFile,
+              },
+            };
+            let physical: Promise<NativeSubagentReadReply> | undefined;
+            try {
+              return await tasks.run((scopeSignal) => {
+                physical = read(task, AbortSignal.any([signal, scopeSignal]));
+                return physical;
+              });
+            } finally {
+              // Effect interruption ends the wait, not the worker. The observer
+              // retains its permit and dispose waits for the physical exit.
+              await physical?.catch(() => {});
+            }
           },
         );
         await subagentObservation.start();
@@ -1288,7 +1335,7 @@ export function createSessionHost(
           send({ kind: "cooldown-committed", ...command.cooldown });
         await native?.close();
         await tasks.close();
-        disposeHost();
+        await disposeHost();
         exit(0);
       })
       .exhaustive()
@@ -1323,7 +1370,7 @@ export function createSessionHost(
         if (command.kind === "start") {
           closing = true;
           await native?.close();
-          disposeHost();
+          await disposeHost();
           exit(1);
         }
       });

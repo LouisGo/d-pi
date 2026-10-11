@@ -1,13 +1,11 @@
-import { stat } from "node:fs/promises";
-import { z } from "zod";
 import {
   type NativeFrame,
   type NativeSubagentLifecycle,
   NativeSubagentLifecycleSchema,
   NativeSubagentsResultSchema,
-  NativeSubagentTranscriptSchema,
-  nativeSubagentResultText,
 } from "../../../../platform/omp/protocol/public";
+
+import type { NativeSubagentReadReply } from "./subagent-read";
 
 const terminal = (value: NativeSubagentLifecycle) => value.status !== "started";
 const sameOwner = (a: NativeSubagentLifecycle, b: NativeSubagentLifecycle) =>
@@ -20,13 +18,18 @@ export class NativeSubagentObservation {
   private reads = new Set<string>();
   private queued: NativeSubagentLifecycle[] = [];
   private activeReads = 0;
+  private readonly controllers = new Map<string, AbortController>();
+  private readonly completions = new Set<Promise<void>>();
   constructor(
     private readonly request: (
       type: string,
       payload?: Record<string, unknown>,
     ) => Promise<NativeFrame>,
     private readonly emit: (frame: NativeFrame) => void,
-    private readonly sizeOf: (path: string) => Promise<{ size: number }> = stat,
+    private readonly readTranscript: (
+      owner: NativeSubagentLifecycle,
+      signal: AbortSignal,
+    ) => Promise<NativeSubagentReadReply>,
   ) {}
   async start(): Promise<void> {
     try {
@@ -70,10 +73,15 @@ export class NativeSubagentObservation {
       !terminal(value)
     )
       return;
+    if (previous && !sameOwner(previous, value))
+      this.controllers.get(value.id)?.abort();
     this.owners.set(value.id, value);
     while (this.owners.size > 128) {
       const key = this.owners.keys().next().value;
-      if (key) this.owners.delete(key);
+      if (key) {
+        this.controllers.get(key)?.abort();
+        this.owners.delete(key);
+      }
     }
     const key = JSON.stringify([
       value.id,
@@ -121,54 +129,29 @@ export class NativeSubagentObservation {
     while (!this.disposed && this.activeReads < 2) {
       const owner = this.queued.shift();
       if (!owner) return;
+      if (!this.current(owner)) continue;
       this.activeReads++;
-      void this.read(owner).finally(() => {
+      const controller = new AbortController();
+      this.controllers.set(owner.id, controller);
+      const completion = this.read(owner, controller.signal).finally(() => {
+        this.completions.delete(completion);
+        if (this.controllers.get(owner.id) === controller)
+          this.controllers.delete(owner.id);
         this.activeReads--;
         this.drain();
       });
+      this.completions.add(completion);
     }
   }
-  private async read(owner: NativeSubagentLifecycle): Promise<void> {
+  private async read(
+    owner: NativeSubagentLifecycle,
+    signal: AbortSignal,
+  ): Promise<void> {
     try {
-      if (!owner.sessionFile) {
-        this.unavailable(owner, "transcript-unavailable");
-        return;
-      }
-      const file = await this.sizeOf(owner.sessionFile);
-      if (!this.current(owner)) return;
-      // Official RPC reads to EOF. Reject oversized files before issuing that
-      // read, preserving bounded live output as explicitly partial evidence.
-      if (file.size > 1024 * 1024) {
-        this.unavailable(owner, "transcript-too-large");
-        return;
-      }
-      const response = await this.request("get_subagent_messages", {
-        subagentId: owner.id,
-      });
-      if (!this.current(owner)) return;
-      const parsed = NativeSubagentTranscriptSchema.safeParse(response.data);
-      if (
-        response.success !== true ||
-        !parsed.success ||
-        parsed.data.sessionFile !== owner.sessionFile
-      ) {
-        this.unavailable(owner, "transcript-unavailable");
-        return;
-      }
-      let finalText = "";
-      for (const item of parsed.data.messages) {
-        const message = z
-          .object({
-            role: z.literal("assistant"),
-            content: z.array(z.unknown()),
-          })
-          .safeParse(item);
-        if (!message.success) continue;
-        const text = nativeSubagentResultText(message.data.content);
-        if (text) finalText = text;
-      }
-      if (!finalText) {
-        this.unavailable(owner, "transcript-empty");
+      const reply = await this.readTranscript(owner, signal);
+      if (!this.current(owner) || signal.aborted) return;
+      if (reply.status === "unavailable") {
+        this.unavailable(owner, reply.reason);
         return;
       }
       this.emit({
@@ -178,18 +161,20 @@ export class NativeSubagentObservation {
           parentToolCallId: owner.parentToolCallId,
           sessionFile: owner.sessionFile,
           status: "available",
-          text: finalText,
-          reset: parsed.data.reset,
+          text: reply.text,
+          truncated: reply.truncated,
         },
       });
     } catch {
       this.unavailable(owner, "transcript-unavailable");
     }
   }
-  dispose(): void {
+  dispose(): Promise<void> {
     this.disposed = true;
+    for (const controller of this.controllers.values()) controller.abort();
     this.owners.clear();
     this.reads.clear();
     this.queued = [];
+    return Promise.allSettled([...this.completions]).then(() => {});
   }
 }

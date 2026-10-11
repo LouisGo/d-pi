@@ -214,6 +214,11 @@ WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sour
 
 驻留收据核实：`submissions.list()`原有100条展示上限不能用于证明全部结清。旧prepared后追加101个rejected的真实SQLite反例先复现nativeResidency误报warm，现由partial index的hasUnsettled存在性查询覆盖全部收据；共享的modelSelection、releaseEligible与cooldownReason都采用同一判定，不加载正文。原生Runtime完整59/59，加索引/未知或损坏状态/实际EXPLAIN QUERY PLAN四项为63/63；索引派生现有receipt、不改变事实或展示分页，读取失败仍拒绝。后续验证与review覆盖该增量。
 
+
+子会话读取接线（2026-10-11）：固定OMP18.8.9的task artifact路径及SessionHeader.parentSession为依据，参考本地T3 usageTranscriptReader的完整行/固定byte范围原则。正式Host注入跨全部scope的单一WorkerReadOwner（2并发、5s限时），终态正文不再调用get_subagent_messages控制RPC；绑定真实父sessionFile/ID、原生id/parentToolCallId与独立operationId，原trace传入Worker。父/子文件canonical范围与inode校验拒绝外来路径、symlink逃逸及身份变化；兼容macOS /var与/private/var路径别名，原生字符串仍精确关联。源文件最多1MiB/1000完整记录，assistant/yield结果在Worker内UTF-8限64KiB；不完整尾行或输出截断明确partial。旧owner复用、淘汰、dispose会取消实际读信号，跨scope名额保持到物理exit；Host读任务绑定既有Effect Scope，关闭同样等待实际读finalization，不将Effect中断当作Worker退出。过载显式transcript-unavailable，不创建替代App Thread、不影响原生执行。
+
+验证：原owner复用失败反例与Worker截断投影失败反例转绿；7项读取身份/边界、4项观察取消/关闭/复用、9项投影，以及Host41和App7共68项目标回归通过；Host类型及架构边界通过。独立构建validation/m2/subagent-read.ts在Node24.21.0与Electron44.4.5各spawn5次真实Worker，peakActive=2、final active=0，包含已有两名额时第三读取拒绝、取消保留名额至exit、随后可读与UTF-8截断。文件是官方协议fixture，尚不是新正式Host到实际OMP子任务的组合实测，不冒称完整WB03或GUI/IME/工作台trace；后续继续WB04。平台监督抽取固定355003a..d1bb825独立复核未发现可行动高价值问题。正式生产构建、Main/Host类型、40项架构测试与快速门禁通过；验证wrapper再指定正式out/main/subagent-worker.js入口，在Node/Electron同样5次spawn、peak2、final0。最新独立native-warm构建实跑保留3个真实OMP会话、同身份冷恢复、真实lease释放与4次native退出，模型请求0；仍限Main链路，不代表GUI或新子任务的实际OMP组合。
+
 ### WB00 milestone（2026-10-11）
 
 - 先写 InteractionOperation/InteractionDraft 与执行模块合同。红灯确认同题双击两次派发、Host respond 缺失；实现后对应反例转绿。Thread-owned RuntimeModel 保留表单、冻结回答、操作结果和后续收据关联；Main 等待精确 Host 结果，授权 await 后再次校验代次，Host 单次 write 兜底。普通 interaction 状态和 answer operation 改名 written，收据 ACK 不变。
