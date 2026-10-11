@@ -12,12 +12,6 @@ import {
   ProjectHistoryRequestSchema,
 } from "../../../modules/conversation/contracts/public";
 import {
-  listProjectNativeHistory,
-  readNativeImage,
-  readNativeTool,
-  readProjectNativeHistory,
-} from "../../../modules/conversation/main/public";
-import {
   type FileReply,
   type FileRequest,
   FileRequestSchema,
@@ -49,13 +43,14 @@ type ActiveThread = NonNullable<
 function activeThreadFor(
   context: ProjectReadContext,
   event: Parameters<ProjectReadContext["sourceValid"]>[0],
-  sourceError: string,
   threadId: string,
 ): ActiveThread {
   const store = context.getStore();
-  if (!context.sourceValid(event) || !store) throw Error(sourceError);
+  if (!context.sourceValid(event) || !store)
+    throw new ReadOperationError("invalid-source");
   const thread = store.threads.activeThread();
-  if (!thread || thread.threadId !== threadId) throw Error("Foreign Thread");
+  if (!thread || thread.threadId !== threadId)
+    throw new ReadOperationError("foreign-thread");
   return thread;
 }
 
@@ -111,41 +106,41 @@ async function recordRead<T extends { kind: string; reason?: string }>(
 export function registerHistoryIpc(context: ProjectReadContext): void {
   context.ipcMain.handle("history:project", async (event, raw: unknown) => {
     const request = ProjectHistoryRequestSchema.parse(raw);
-    const thread = activeThreadFor(
-      context,
-      event,
-      "Invalid history source",
-      request.threadId,
-    );
-    return recordRead(
-      context,
-      {
-        traceId: request.traceId,
-        threadId: request.threadId,
-        operation: `history:project-${request.kind}`,
-      },
-      async () => {
-        const root = await context.projectNativeSessionsPath(
-          thread.threadId,
-          request.traceId,
-        );
-        activeThreadFor(
-          context,
-          event,
-          "Invalid history source",
-          request.threadId,
-        );
-        if (!root) return { kind: "unavailable", reason: "invalid" } as const;
-        return request.kind === "list"
-          ? listProjectNativeHistory(root, thread.directory)
-          : readProjectNativeHistory(
-              root,
-              thread.directory,
-              thread.threadId,
-              request.key,
-              request.cursor,
-            );
-      },
+    const thread = activeThreadFor(context, event, request.threadId);
+    return context.reads.run(event, request, (signal) =>
+      recordRead(
+        context,
+        {
+          traceId: request.traceId,
+          operationId: request.operationId,
+          threadId: request.threadId,
+          operation: `history:project-${request.kind}`,
+        },
+        async () => {
+          const root = await context.projectNativeSessionsPath(
+            thread.threadId,
+            request.traceId,
+          );
+          activeThreadFor(context, event, request.threadId);
+          if (!root) return { kind: "unavailable", reason: "invalid" } as const;
+          signal.throwIfAborted();
+          const task = {
+            operationId: request.operationId,
+            traceId: request.traceId,
+            root,
+            directory: thread.directory,
+            threadId: thread.threadId,
+          };
+          const reply = await (request.kind === "list"
+            ? context.historyReader.projectList(task, signal)
+            : context.historyReader.projectRead(
+                { ...task, key: request.key, cursor: request.cursor },
+                signal,
+              ));
+          activeThreadFor(context, event, thread.threadId);
+          return reply;
+        },
+      ),
     );
   });
   const boundRead = async (
@@ -158,17 +153,17 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
   ) => {
     const { threadId, cursor } = request;
     const toolRead = "readerId" in request;
-    if (!context.sourceValid(event)) throw Error("Invalid history source");
+    if (!context.sourceValid(event))
+      throw new ReadOperationError("invalid-source");
     const thread = toolRead
       ? context.getStore()?.threads.threadContext(threadId)
-      : activeThreadFor(context, event, "Invalid history source", threadId);
+      : activeThreadFor(context, event, threadId);
     if (!thread) throw Error("Missing Thread");
     const binding = context.getStore()?.threads.nativeSessionBinding(threadId);
     if (!binding) return { kind: "unavailable", reason: "unbound" };
     const bindingCurrent = () => {
       if (!context.sourceValid(event)) return false;
-      if (!toolRead)
-        activeThreadFor(context, event, "Invalid history source", threadId);
+      if (!toolRead) activeThreadFor(context, event, threadId);
       const current = context
         .getStore()
         ?.threads.nativeSessionBinding(threadId);
@@ -179,6 +174,14 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
       );
     };
     const read = async (root: string, directory?: string) => {
+      signal?.throwIfAborted();
+      const task = {
+        operationId: request.operationId,
+        traceId: request.traceId,
+        root,
+        binding,
+        ...(directory ? { projectDirectory: directory } : {}),
+      };
       if ("readerId" in request) {
         const source = request.source;
         const unavailable = (
@@ -200,14 +203,9 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
         const recordId =
           source.kind === "native-record" ? source.recordId : request.recordId;
         if (!recordId) return unavailable("missing");
-        const reply = await readNativeTool(
-          root,
-          binding,
-          source,
-          cursor,
-          recordId,
-          request.readerId,
-          directory,
+        const reply = await context.historyReader.tool(
+          { ...task, source, cursor, recordId, readerId: request.readerId },
+          signal,
         );
         return bindingCurrent() ? reply : unavailable("identity-changed");
       }
@@ -218,14 +216,16 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
         );
         if (!bindingCurrent())
           return { kind: "unavailable", reason: "changed" } as const;
-        const image = await readNativeImage(
-          root,
-          binding,
-          request.cursor,
-          request.recordId,
-          request.index,
-          directory,
-          blobsDirectory ?? undefined,
+        signal?.throwIfAborted();
+        const image = await context.historyReader.image(
+          {
+            ...task,
+            cursor: request.cursor,
+            recordId: request.recordId,
+            index: request.index,
+            ...(blobsDirectory ? { blobsDirectory } : {}),
+          },
+          signal,
         );
         return bindingCurrent()
           ? image
@@ -283,22 +283,25 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
   };
   context.ipcMain.handle("history:tool", async (event, raw: unknown) => {
     const request = HistoryToolRequestSchema.parse(raw);
-    const reply = await recordRead(
-      context,
-      {
-        traceId: request.traceId,
-        threadId: request.threadId,
-        operation: "history:tool",
-      },
-      () => boundRead(event, request),
-    );
-    return reply.kind === "tool-detail" || reply.kind === "tool-unavailable"
-      ? reply
-      : {
-          kind: "tool-unavailable",
-          readerId: request.readerId,
-          reason: "identity-changed",
-        };
+    return context.reads.run(event, request, async (signal) => {
+      const reply = await recordRead(
+        context,
+        {
+          traceId: request.traceId,
+          operationId: request.operationId,
+          threadId: request.threadId,
+          operation: "history:tool",
+        },
+        () => boundRead(event, request, signal),
+      );
+      return reply.kind === "tool-detail" || reply.kind === "tool-unavailable"
+        ? reply
+        : {
+            kind: "tool-unavailable",
+            readerId: request.readerId,
+            reason: "identity-changed",
+          };
+    });
   });
   context.ipcMain.handle("history:read", (event, raw: unknown) => {
     const request = HistoryRequestSchema.parse(raw);
@@ -317,14 +320,17 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
   });
   context.ipcMain.handle("history:image", (event, raw: unknown) => {
     const request = HistoryImageRequestSchema.parse(raw);
-    return recordRead(
-      context,
-      {
-        traceId: request.traceId,
-        threadId: request.threadId,
-        operation: "history:image",
-      },
-      () => boundRead(event, request),
+    return context.reads.run(event, request, (signal) =>
+      recordRead(
+        context,
+        {
+          traceId: request.traceId,
+          operationId: request.operationId,
+          threadId: request.threadId,
+          operation: "history:image",
+        },
+        () => boundRead(event, request, signal),
+      ),
     );
   });
 }

@@ -127,6 +127,14 @@
 
 按行为逐段 TDD：独立回答/双击/重连/重挂载，详情更新与final，跨Thread草稿/Undo/来源定位/lease释放与晚到导航。只跑相关类型、行为、边界和文档门禁；必要的真实 SDK/生产链路验收有界执行，不重复 provider/系统 IME 或包矩阵。
 
+### WB03 milestone：同链路工具、图像与 CLI 历史（2026-10-11）
+
+- 固定 `c8372ad..d548e3d` 独立 Spec/Standards review未发现可行动高价值问题；没有代跑验证，也不覆盖本段扩展。
+- 工具详情、原生图像、CLI目录和历史页均复用同一Main operation限额/取消与2个活Worker上限。私有 task 按 kind 做Zod解码，Main继续核对捕获来源/实际绑定与读取后身份；Worker运行已有原生只读合同，不接受Renderer任意路径，不接管OMP执行。
+- 图像与项目历史Query通过纯operation身份传播取消；Inspector最后一个Surface关闭、窗口dispose和读取超时均取消其原生读取，固定A切到B仍保留捕获A来源。关闭不会发送执行abort。先失败的图像Worker/Query和Inspector读取反例转绿；四种Main资源取消回归证明ACK之后仍占名额直到底层settle。
+- 八文件105/105通过，包括51运行时集成、真实Workbench两条生产组合与历史集成（现有React act提示保留）。Core/Main/Preload类型、design/i18n通过；Renderer仍只有既有composer-tag.tsx:134基线。构建Main实际Worker在Node24.21.0/Electron44.4.5完成page/tail/backward/append、工具实际祖先参数、原生图像及CLI发现/读取，8次退出active=0。此smoke没有GUI窗口，不冒称完整Electron性能trace。
+- WB03完整artifact/子会话读取、Viewer/native warm/可见性预算及生产工作台trace，WB02 SourceTarget和WB04完整交互仍未完成；继续现有goal，不推送或发布。
+
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。
 
 ### WB00 milestone（2026-10-11）

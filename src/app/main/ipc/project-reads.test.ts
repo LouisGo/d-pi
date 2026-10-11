@@ -4,8 +4,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { IpcMain, IpcMainInvokeEvent } from "electron";
 import { afterEach, expect, it, vi } from "vitest";
+import {
+  HistoryImageReplySchema,
+  HistoryPageSchema,
+  ProjectHistoryCatalogSchema,
+} from "../../../modules/conversation/contracts/public";
 import { runNativeHistoryWorker } from "../../../modules/conversation/main/public";
 import { AttachmentStore } from "../../../modules/input/main/public";
+import { ToolDetailReplySchema } from "../../../modules/resources/contracts/public";
 import type { DiagnosticEvent } from "../../../platform/main/diagnostics/public";
 import { requestReadOperation } from "../../../shared/read-operation";
 import { AppStorage } from "../wiring/app-storage";
@@ -55,7 +61,28 @@ function setup() {
     ipcMain: { handle },
     sourceValid: () => true,
     reads: new ProjectReadOperations(),
-    historyReader: { read: (task) => runNativeHistoryWorker(task) },
+    historyReader: {
+      read: async (task) =>
+        HistoryPageSchema.parse(
+          await runNativeHistoryWorker({ ...task, kind: "page" }),
+        ),
+      tool: async (task) =>
+        ToolDetailReplySchema.parse(
+          await runNativeHistoryWorker({ ...task, kind: "tool" }),
+        ),
+      image: async (task) =>
+        HistoryImageReplySchema.parse(
+          await runNativeHistoryWorker({ ...task, kind: "image" }),
+        ),
+      projectList: async (task) =>
+        ProjectHistoryCatalogSchema.parse(
+          await runNativeHistoryWorker({ ...task, kind: "project-list" }),
+        ),
+      projectRead: async (task) =>
+        HistoryPageSchema.parse(
+          await runNativeHistoryWorker({ ...task, kind: "project-page" }),
+        ),
+    },
     gitReader: {
       list: reads.listGit,
       diff: reads.readGit,
@@ -89,12 +116,15 @@ function setup() {
         sender: { id: senderId },
         senderFrame: { processId: 11, routingId: 22 },
       } as IpcMainInvokeEvent;
-      if (channel === "history:read") {
+      if (channel.startsWith("history:") && channel !== "history:cancel") {
         if (typeof raw !== "object" || raw === null)
           throw Error("Expected history request DTO");
         const identity = {
           operationId: crypto.randomUUID(),
-          traceId: crypto.randomUUID(),
+          traceId:
+            "traceId" in raw && typeof raw.traceId === "string"
+              ? raw.traceId
+              : crypto.randomUUID(),
         };
         return requestReadOperation(
           {
@@ -129,7 +159,7 @@ it("shares history operation limits and keeps cancellation ownership and finaliz
       });
     },
   );
-  f.context.historyReader = { read };
+  f.context.historyReader = { ...f.context.historyReader, read };
   const identity = {
     operationId: crypto.randomUUID(),
     traceId: crypto.randomUUID(),
@@ -162,6 +192,78 @@ it("shares history operation limits and keeps cancellation ownership and finaliz
   });
   expect(f.context.reads.size).toBe(0);
 });
+
+it.each(["tool", "image", "projectList", "projectRead"] as const)(
+  "keeps %s read ownership until its worker settles after cancellation",
+  async (kind) => {
+    const f = setup();
+    f.store.threads.bindNativeSession({
+      threadId: f.thread.threadId,
+      configContextId: "fixture",
+      sessionId: "session",
+      sessionFile: "/fixture/session.jsonl",
+    });
+    let finish: () => void = () => {};
+    const sample = vi.fn(
+      (_task, _signal) =>
+        new Promise<never>((_resolve, reject) => {
+          finish = () => reject(Error("stopped"));
+        }),
+    );
+    f.context.historyReader = { ...f.context.historyReader, [kind]: sample };
+    const identity = {
+      operationId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+    };
+    const cursor = { threadId: f.thread.threadId, source: "frozen", offset: 1 };
+    const channel = kind.startsWith("project")
+      ? "history:project"
+      : `history:${kind}`;
+    const handler = vi
+      .mocked(f.context.ipcMain.handle)
+      .mock.calls.find(([name]) => name === channel)?.[1];
+    if (!handler) throw Error("missing handler");
+    const event = {
+      sender: { id: 1 },
+      senderFrame: { processId: 11, routingId: 22 },
+    } as IpcMainInvokeEvent;
+    const command = {
+      ...identity,
+      threadId: f.thread.threadId,
+      ...(kind === "tool"
+        ? {
+            cursor,
+            readerId: crypto.randomUUID(),
+            source: {
+              kind: "native-record",
+              threadId: f.thread.threadId,
+              nativeSessionKey: "session",
+              recordId: "record",
+              revision: "frozen",
+            },
+          }
+        : {}),
+      ...(kind === "image" ? { cursor, recordId: "record", index: 0 } : {}),
+      ...(kind === "projectList" ? { kind: "list" } : {}),
+      ...(kind === "projectRead"
+        ? { kind: "read", key: "a".repeat(64), cursor: null }
+        : {}),
+    };
+    const pending = handler(event, command);
+    await vi.waitFor(() => expect(sample).toHaveBeenCalledOnce());
+    expect(sample.mock.calls[0]?.[0]).toMatchObject(identity);
+    f.store.threads.create("/another");
+    await f.request("history:cancel", identity);
+    expect(sample.mock.calls[0]?.[1]?.aborted).toBe(true);
+    expect(f.context.reads.size).toBe(1);
+    finish();
+    await expect(pending).resolves.toMatchObject({
+      kind: "cancelled",
+      ...identity,
+    });
+    expect(f.context.reads.size).toBe(0);
+  },
+);
 
 it.each(["files", "git"] as const)(
   "records %s received while I/O is pending and a bounded terminal after it settles",
@@ -241,7 +343,7 @@ it("rejects foreign CLI history and rechecks the active Thread after configurati
       threadId: fixture.thread.threadId,
       traceId: crypto.randomUUID(),
     }),
-  ).rejects.toThrow("Foreign Thread");
+  ).rejects.toMatchObject({ code: "foreign-thread" });
   let resolveRoot: (root: string) => void = () => {};
   const source = new Promise<string>((resolve) => {
     resolveRoot = resolve;
@@ -254,7 +356,7 @@ it("rejects foreign CLI history and rechecks the active Thread after configurati
   });
   fixture.store.threads.create("/third");
   resolveRoot("/unused");
-  await expect(read).rejects.toThrow("Foreign Thread");
+  await expect(read).rejects.toMatchObject({ code: "foreign-thread" });
   expect(fixture.events.at(-1)).toMatchObject({
     operation: "history:project-list",
     stage: "failed",
@@ -498,20 +600,20 @@ it("gates lazy message images by the sender and the active Thread", async () => 
     index: 0,
   };
   f.context.sourceValid = () => false;
-  await expect(f.request("history:image", request)).rejects.toThrow(
-    "Invalid history source",
-  );
+  await expect(f.request("history:image", request)).rejects.toMatchObject({
+    code: "invalid-source",
+  });
   f.context.sourceValid = () => true;
   await expect(
     f.request("history:image", { ...request, threadId: crypto.randomUUID() }),
-  ).rejects.toThrow("Foreign Thread");
+  ).rejects.toMatchObject({ code: "foreign-thread" });
   expect(await f.request("history:image", request)).toEqual({
     kind: "unavailable",
     reason: "unbound",
   });
-  expect(() =>
+  await expect(
     f.request("history:image", { ...request, index: 128 }),
-  ).toThrow();
+  ).rejects.toThrow();
 });
 
 it("reads a bound blob image and rechecks the active Thread after resolving SDK storage", async () => {
@@ -588,7 +690,7 @@ it("reads a bound blob image and rechecks the active Thread after resolving SDK 
   });
   f.store.threads.create("/new-active-thread");
   finish(blobs);
-  await expect(pending).rejects.toThrow("Foreign Thread");
+  await expect(pending).rejects.toMatchObject({ code: "foreign-thread" });
 });
 
 it("projects real mixed attachment receipts through history IPC and its durable presentation index", async () => {

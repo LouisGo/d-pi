@@ -5,6 +5,49 @@ import type { ToolDetailReply } from "../../../modules/resources/contracts/publi
 import { WindowWorkbench } from "./window-workbench";
 
 afterEach(() => vi.useRealTimers());
+it("cancels the native detail read when the last surface closes without cancelling execution", async () => {
+  const source = {
+    kind: "native-record" as const,
+    threadId: crypto.randomUUID(),
+    nativeSessionKey: "native",
+    revision: "frozen",
+    recordId: "record",
+  };
+  const requestTool = vi.fn(() => new Promise<never>(() => {}));
+  const cancelRead = vi.fn(async (identity) => ({
+    kind: "acknowledged" as const,
+    ...identity,
+  }));
+  const work = new WindowWorkbench({
+    history: {
+      requestTool,
+      cancelRead,
+      tool: vi.fn(),
+      read: vi.fn(),
+      projectList: vi.fn(),
+      projectRead: vi.fn(),
+    },
+    insert: vi.fn(),
+    select: async () => true,
+  });
+  const id = work.open({
+    source,
+    title: "bash",
+    threadTitle: "A",
+    rowId: "record",
+    cursor: { threadId: source.threadId, source: "frozen", offset: 1 },
+  });
+  if (!id) throw Error("missing surface");
+  await vi.waitFor(() => expect(requestTool).toHaveBeenCalledOnce());
+  const request = requestTool.mock.calls[0]?.[0];
+  work.close(id);
+  expect(cancelRead).toHaveBeenCalledWith({
+    operationId: request?.operationId,
+    traceId: request?.traceId,
+  });
+  expect(work.stateStore.getState().surfaces).toHaveLength(0);
+  work.dispose();
+});
 it("pins A across B, freezes the selected output revision, targets B explicitly, and closes only its read lease", async () => {
   const source = {
     kind: "live-tool" as const,

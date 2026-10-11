@@ -9,9 +9,84 @@ import { HistoryImageRequestSchema } from "../contracts/public";
 import {
   historyCacheBytes,
   nativeImageQuery,
+  projectHistoryCatalogQuery,
+  projectHistoryPageQuery,
   refreshSavedConversation,
   savedConversationQuery,
 } from "./history-queries";
+
+it.each(["list", "read"] as const)(
+  "cancels the actual project history %s operation when its query releases",
+  async (kind) => {
+    const client = new QueryClient();
+    const threadId = crypto.randomUUID();
+    const request = vi.fn(() => new Promise<never>(() => {}));
+    const cancelRead = vi.fn<NonNullable<HistoryBridge["cancelRead"]>>(
+      async (identity) => ({ kind: "acknowledged", ...identity }),
+    );
+    const bridge: HistoryBridge = {
+      requestProjectList: request,
+      requestProjectRead: request,
+      cancelRead,
+      read: vi.fn(),
+      projectRead: vi.fn(),
+      projectList: vi.fn(),
+    };
+    const options =
+      kind === "list"
+        ? projectHistoryCatalogQuery(bridge, threadId)
+        : projectHistoryPageQuery(bridge, threadId, "a".repeat(64), null);
+    const pending = client.fetchQuery(options).catch(() => {});
+    await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+    await client.cancelQueries({ queryKey: options.queryKey });
+    expect(request.mock.calls[0]?.[0]).toMatchObject({ kind, threadId });
+    const command = request.mock.calls[0]?.[0];
+    expect(cancelRead).toHaveBeenCalledWith({
+      operationId: command?.operationId,
+      traceId: command?.traceId,
+    });
+    await pending;
+    client.clear();
+  },
+);
+
+it("cancels a native image operation rather than only dropping its late query result", async () => {
+  const client = new QueryClient();
+  const threadId = crypto.randomUUID();
+  const requestImage = vi.fn<NonNullable<HistoryBridge["requestImage"]>>(
+    () => new Promise(() => {}),
+  );
+  const cancelRead = vi.fn<NonNullable<HistoryBridge["cancelRead"]>>(
+    async (identity) => ({ kind: "acknowledged", ...identity }),
+  );
+  const bridge: HistoryBridge = {
+    requestImage,
+    cancelRead,
+    read: vi.fn(),
+    projectRead: vi.fn(),
+    projectList: vi.fn(),
+  };
+  const options = nativeImageQuery(
+    bridge,
+    threadId,
+    { threadId, source: "frozen", offset: 1 },
+    "record",
+    0,
+    () => crypto.randomUUID(),
+  );
+  const pending = client.fetchQuery(options).catch(() => {});
+  await vi.waitFor(() => expect(requestImage).toHaveBeenCalledOnce());
+  await client.cancelQueries({ queryKey: options.queryKey });
+  const request = requestImage.mock.calls[0]?.[0];
+  expect(request).toMatchObject({ threadId, recordId: "record", index: 0 });
+  expect(cancelRead).toHaveBeenCalledWith({
+    operationId: request?.operationId,
+    traceId: request?.traceId,
+  });
+  await pending;
+  expect(client.getQueryData(options.queryKey)).toBeUndefined();
+  client.clear();
+});
 
 it("cancels the actual history operation when query ownership ends and rejects a late reply", async () => {
   const client = new QueryClient();
@@ -232,6 +307,7 @@ it("binds lazy image reads to the exact message source and drops a cancelled lat
     image.mock.calls[0]!;
   expect(
     HistoryImageRequestSchema.parse({
+      operationId: crypto.randomUUID(),
       threadId: actualThread,
       cursor: actualCursor,
       recordId,

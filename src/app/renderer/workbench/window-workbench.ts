@@ -17,6 +17,7 @@ import {
   type ToolDetail,
   type ToolDetailReply,
 } from "../../../modules/resources/contracts/public";
+import { requestReadOperation } from "../../../shared/read-operation";
 
 export interface ToolTarget {
   source: SourceRef;
@@ -50,6 +51,7 @@ type Reader = {
   release: () => void;
   durable: boolean;
   handoff: string | null;
+  abortNative: () => void;
 };
 const keyOf = sourceKey;
 
@@ -158,9 +160,35 @@ export class WindowWorkbench {
       release: () => {},
       durable: false,
       handoff: null,
+      abortNative: () => {},
     };
     this.readers.set(key, reader);
     const current = reader;
+    const nativeAbort = new AbortController();
+    current.abortNative = () => nativeAbort.abort();
+    const history = this.ports.history;
+    const readNative = (cursor: HistoryCursor | null, recordId?: string) => {
+      const request = history?.requestTool?.bind(history);
+      const cancel = history?.cancelRead?.bind(history);
+      if (request && cancel) {
+        const command = {
+          operationId: crypto.randomUUID(),
+          traceId: id,
+          threadId: target.source.threadId,
+          source: target.source,
+          cursor,
+          readerId: id,
+          ...(recordId ? { recordId } : {}),
+        };
+        return requestReadOperation(
+          { request: () => request(command), cancel },
+          command,
+          nativeAbort.signal,
+        );
+      }
+      if (!history?.tool) throw Error("Missing historical reader");
+      return history.tool(target.source, cursor, id, recordId);
+    };
     const receive = (reply: ToolDetailReply) => {
       if (this.disposed || this.readers.get(key) !== current) return;
       if (reply.kind === "tool-detail" && keyOf(reply.detail.source) !== key)
@@ -176,15 +204,14 @@ export class WindowWorkbench {
           unavailable: current.unavailable,
         });
     };
-    const timeout = setTimeout(
-      () =>
-        receive({
-          kind: "tool-unavailable",
-          readerId: id,
-          reason: "transport",
-        }),
-      5000,
-    );
+    const timeout = setTimeout(() => {
+      current.abortNative();
+      receive({
+        kind: "tool-unavailable",
+        readerId: id,
+        reason: "transport",
+      });
+    }, 5000);
     const accept = (reply: ToolDetailReply) => {
       clearTimeout(timeout);
       receive(reply);
@@ -197,7 +224,7 @@ export class WindowWorkbench {
       ) {
         const recordId = reply.detail.nativeRecordId;
         current.handoff = recordId;
-        void this.ports.history.tool(target.source, null, id, recordId).then(
+        void readNative(null, recordId).then(
           (persisted) => {
             if (
               this.disposed ||
@@ -238,15 +265,13 @@ export class WindowWorkbench {
       target.cursor &&
       this.ports.history?.tool
     ) {
-      void this.ports.history
-        .tool(target.source, target.cursor, id)
-        .then(accept, () =>
-          accept({
-            kind: "tool-unavailable",
-            readerId: id,
-            reason: "transport",
-          }),
-        );
+      void readNative(target.cursor).then(accept, () =>
+        accept({
+          kind: "tool-unavailable",
+          readerId: id,
+          reason: "transport",
+        }),
+      );
       current.release = () => clearTimeout(timeout);
     } else {
       clearTimeout(timeout);
@@ -275,6 +300,7 @@ export class WindowWorkbench {
       reader = this.readers.get(key);
     reader?.users.delete(id);
     if (!reader?.users.size) {
+      reader?.abortNative();
       reader?.release();
       this.readers.delete(key);
     }
@@ -468,7 +494,10 @@ export class WindowWorkbench {
   dispose(): void {
     this.disposed = true;
     this.cancelReturn();
-    for (const reader of this.readers.values()) reader.release();
+    for (const reader of this.readers.values()) {
+      reader.abortNative();
+      reader.release();
+    }
     this.readers.clear();
     this.rows.clear();
     this.anchors.clear();

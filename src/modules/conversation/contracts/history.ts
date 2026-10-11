@@ -9,6 +9,7 @@ import {
   type SourceRef,
   SourceRefSchema,
   type ToolDetailReply,
+  ToolDetailReplySchema,
 } from "../../resources/contracts/public";
 import { MessageTimestampSchema } from "./message-time";
 import { ToolExecutionObservationSchema } from "./tool-observation";
@@ -128,6 +129,7 @@ export const HistoryRequestSchema = z.strictObject({
 export type HistoryRequest = z.infer<typeof HistoryRequestSchema>;
 export const HistoryResponseSchema = readResponseSchema(HistoryPageSchema);
 export const HistoryToolRequestSchema = z.strictObject({
+  operationId: z.uuid(),
   threadId: z.uuid(),
   source: SourceRefSchema,
   cursor: HistoryCursorSchema.nullable(),
@@ -135,9 +137,25 @@ export const HistoryToolRequestSchema = z.strictObject({
   readerId: z.uuid(),
   traceId: z.uuid(),
 });
+export type HistoryToolRequest = z.infer<typeof HistoryToolRequestSchema>;
+export const HistoryToolResponseSchema = readResponseSchema(
+  ToolDetailReplySchema,
+);
 export interface HistoryBridge {
   requestRead?(request: HistoryRequest): Promise<ReadResponse<HistoryPage>>;
   cancelRead?(identity: ReadIdentity): Promise<ReadCancelReply>;
+  requestTool?(
+    request: HistoryToolRequest,
+  ): Promise<ReadResponse<ToolDetailReply>>;
+  requestImage?(
+    request: HistoryImageRequest,
+  ): Promise<ReadResponse<HistoryImageReply>>;
+  requestProjectList?(
+    request: Extract<ProjectHistoryRequest, { kind: "list" }>,
+  ): Promise<ReadResponse<ProjectHistoryCatalog>>;
+  requestProjectRead?(
+    request: Extract<ProjectHistoryRequest, { kind: "read" }>,
+  ): Promise<ReadResponse<HistoryPage>>;
   tool?(
     source: SourceRef,
     cursor: HistoryCursor | null,
@@ -164,12 +182,14 @@ export interface HistoryBridge {
   ): Promise<HistoryPage>;
 }
 export const HistoryImageRequestSchema = z.strictObject({
+  operationId: z.uuid(),
   traceId: z.uuid(),
   threadId: z.uuid(),
   cursor: HistoryCursorSchema,
   recordId: z.string().min(1).max(512),
   index: z.number().int().nonnegative().max(127),
 });
+export type HistoryImageRequest = z.infer<typeof HistoryImageRequestSchema>;
 export const HistoryImageReplySchema = z.discriminatedUnion("kind", [
   z.strictObject({
     kind: z.literal("image"),
@@ -192,6 +212,9 @@ export const HistoryImageReplySchema = z.discriminatedUnion("kind", [
   }),
 ]);
 export type HistoryImageReply = z.infer<typeof HistoryImageReplySchema>;
+export const HistoryImageResponseSchema = readResponseSchema(
+  HistoryImageReplySchema,
+);
 
 export const ProjectHistoryCatalogSchema = z.discriminatedUnion("kind", [
   z.strictObject({
@@ -215,14 +238,20 @@ export type ProjectHistoryCatalog = z.infer<typeof ProjectHistoryCatalogSchema>;
 export const ProjectHistoryRequestSchema = z.discriminatedUnion("kind", [
   z.strictObject({
     kind: z.literal("list"),
+    operationId: z.uuid(),
     threadId: z.uuid(),
     traceId: z.uuid(),
   }),
   z.strictObject({
     kind: z.literal("read"),
+    operationId: z.uuid(),
     threadId: z.uuid(),
     traceId: z.uuid(),
     key: z.string().regex(/^[a-f0-9]{64}$/),
     cursor: HistoryCursorSchema.nullable(),
   }),
 ]);
+export type ProjectHistoryRequest = z.infer<typeof ProjectHistoryRequestSchema>;
+export const ProjectHistoryResponseSchema = readResponseSchema(
+  ProjectHistoryCatalogSchema,
+);

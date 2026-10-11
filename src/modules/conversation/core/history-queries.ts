@@ -7,6 +7,8 @@ import {
 import { createId } from "../../../shared/identity";
 import {
   type ReadAbortSignal,
+  type ReadIdentity,
+  type ReadResponse,
   requestReadOperation,
   throwIfReadCancelled,
 } from "../../../shared/read-operation";
@@ -16,6 +18,28 @@ import type {
   HistoryPage,
 } from "../contracts/public";
 
+async function readHistoryOperation<T>(
+  bridge: HistoryBridge,
+  request: ((identity: ReadIdentity) => Promise<ReadResponse<T>>) | undefined,
+  fallback: () => Promise<T>,
+  signal?: ReadAbortSignal,
+  traceId?: string,
+): Promise<T> {
+  throwIfReadCancelled(signal);
+  const cancel = bridge.cancelRead?.bind(bridge);
+  if (!request || !cancel) {
+    const reply = await fallback();
+    throwIfReadCancelled(signal);
+    return reply;
+  }
+  const identity = { operationId: createId(), traceId: traceId ?? createId() };
+  return requestReadOperation(
+    { request: () => request(identity), cancel },
+    identity,
+    signal,
+  );
+}
+
 async function readHistoryPage(
   bridge: HistoryBridge,
   threadId: string,
@@ -23,32 +47,22 @@ async function readHistoryPage(
   range?: "tail",
   signal?: ReadAbortSignal,
 ): Promise<HistoryPage> {
-  throwIfReadCancelled(signal);
   const request = bridge.requestRead?.bind(bridge);
-  const cancel = bridge.cancelRead?.bind(bridge);
-  if (!request || !cancel) {
-    const page = range
-      ? await bridge.read(threadId, cursor, range)
-      : await bridge.read(threadId, cursor);
-    throwIfReadCancelled(signal);
-    return page;
-  }
-  const identity = {
-    operationId: createId(),
-    traceId: createId(),
-  };
-  return requestReadOperation(
-    {
-      request: () =>
-        request({
-          ...identity,
-          threadId,
-          cursor,
-          ...(range ? { range } : {}),
-        }),
-      cancel,
-    },
-    identity,
+  return readHistoryOperation(
+    bridge,
+    request
+      ? (identity) =>
+          request({
+            ...identity,
+            threadId,
+            cursor,
+            ...(range ? { range } : {}),
+          })
+      : undefined,
+    () =>
+      range
+        ? bridge.read(threadId, cursor, range)
+        : bridge.read(threadId, cursor),
     signal,
   );
 }
@@ -188,7 +202,18 @@ export function projectHistoryCatalogQuery(
   return queryOptions({
     queryKey: ["project-native-history", threadId] as const,
     networkMode: "always",
-    queryFn: () => bridge.projectList(threadId),
+    retry: false,
+    queryFn: ({ signal }) => {
+      const request = bridge.requestProjectList?.bind(bridge);
+      return readHistoryOperation(
+        bridge,
+        request
+          ? (identity) => request({ ...identity, kind: "list", threadId })
+          : undefined,
+        () => bridge.projectList(threadId),
+        signal,
+      );
+    },
   });
 }
 export function projectHistoryPageQuery(
@@ -201,7 +226,20 @@ export function projectHistoryPageQuery(
     queryKey: ["project-native-history-page", threadId, key, cursor] as const,
     networkMode: "always",
     enabled: key !== null,
-    queryFn: () => (key ? bridge.projectRead(threadId, key, cursor) : null),
+    retry: false,
+    queryFn: ({ signal }) => {
+      if (!key) return null;
+      const request = bridge.requestProjectRead?.bind(bridge);
+      return readHistoryOperation(
+        bridge,
+        request
+          ? (identity) =>
+              request({ ...identity, kind: "read", threadId, key, cursor })
+          : undefined,
+        () => bridge.projectRead(threadId, key, cursor),
+        signal,
+      );
+    },
   });
 }
 
@@ -373,9 +411,20 @@ export function nativeImageQuery(
     staleTime: Infinity,
     queryFn: async ({ signal }) => {
       signal.throwIfAborted();
-      const reply =
-        (await bridge.image?.(threadId, cursor, recordId, index, newTrace())) ??
-        ({ kind: "unavailable", reason: "unsupported" } as const);
+      const request = bridge.requestImage?.bind(bridge);
+      const traceId = newTrace();
+      const reply = await readHistoryOperation(
+        bridge,
+        request
+          ? (identity) =>
+              request({ ...identity, threadId, cursor, recordId, index })
+          : undefined,
+        async () =>
+          (await bridge.image?.(threadId, cursor, recordId, index, traceId)) ??
+          ({ kind: "unavailable", reason: "unsupported" } as const),
+        signal,
+        traceId,
+      );
       signal.throwIfAborted();
       return reply;
     },

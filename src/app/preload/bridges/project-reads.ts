@@ -1,23 +1,26 @@
 import type { IpcRenderer } from "electron";
+import type { z } from "zod";
 import {
   GitRequestSchema,
   GitResponseSchema,
 } from "../../../modules/changes/contracts/public";
 import {
-  HistoryImageReplySchema,
+  type HistoryImageRequest,
   HistoryImageRequestSchema,
-  HistoryPageSchema,
+  HistoryImageResponseSchema,
   HistoryRequestSchema,
   HistoryResponseSchema,
+  type HistoryToolRequest,
   HistoryToolRequestSchema,
-  ProjectHistoryCatalogSchema,
+  HistoryToolResponseSchema,
+  type ProjectHistoryRequest,
   ProjectHistoryRequestSchema,
+  ProjectHistoryResponseSchema,
 } from "../../../modules/conversation/contracts/public";
 import {
   FileRequestSchema,
   FileResponseSchema,
 } from "../../../modules/files/contracts/public";
-import { ToolDetailReplySchema } from "../../../modules/resources/contracts/public";
 import {
   ReadCancellationSchema,
   ReadCancelReplySchema,
@@ -56,66 +59,114 @@ export function createProjectReadBridge(
     if (!response.success) throw new ReadOperationError("invalid-reply");
     return correlated(value, response.data);
   }
+  async function historyRequest<T>(
+    channel: string,
+    value: ReadIdentity,
+    schema: z.ZodType<ReadResponse<T>>,
+  ) {
+    const response = schema.safeParse(await ipcRenderer.invoke(channel, value));
+    if (!response.success) throw new ReadOperationError("invalid-reply");
+    return correlated(value, response.data);
+  }
+  async function requestTool(command: HistoryToolRequest) {
+    const value = HistoryToolRequestSchema.parse(command);
+    const response = await historyRequest(
+      "history:tool",
+      value,
+      HistoryToolResponseSchema,
+    );
+    if (
+      response.kind === "completed" &&
+      response.reply.readerId !== value.readerId
+    )
+      throw new ReadOperationError("invalid-reply");
+    return response;
+  }
+  const requestImage = (command: HistoryImageRequest) =>
+    historyRequest(
+      "history:image",
+      HistoryImageRequestSchema.parse(command),
+      HistoryImageResponseSchema,
+    );
+  const requestProjectList = (
+    command: Extract<ProjectHistoryRequest, { kind: "list" }>,
+  ) =>
+    historyRequest(
+      "history:project",
+      ProjectHistoryRequestSchema.parse(command),
+      ProjectHistoryResponseSchema,
+    );
+  const requestProjectRead = (
+    command: Extract<ProjectHistoryRequest, { kind: "read" }>,
+  ) =>
+    historyRequest(
+      "history:project",
+      ProjectHistoryRequestSchema.parse(command),
+      HistoryResponseSchema,
+    );
+  const cancelHistory = (identity: ReadIdentity) =>
+    cancel("history:cancel", identity);
   return {
     history: {
       requestRead: requestHistory,
-      cancelRead: (identity) => cancel("history:cancel", identity),
+      requestTool,
+      requestImage,
+      requestProjectList,
+      requestProjectRead,
+      cancelRead: cancelHistory,
       async tool(source, cursor, readerId, recordId) {
-        const reply = ToolDetailReplySchema.parse(
-          await ipcRenderer.invoke(
-            "history:tool",
-            HistoryToolRequestSchema.parse({
-              source,
-              cursor,
-              ...(recordId ? { recordId } : {}),
-              readerId,
-              threadId: source.threadId,
-              traceId: readerId,
-            }),
-          ),
+        const command = {
+          operationId: crypto.randomUUID(),
+          traceId: readerId,
+          threadId: source.threadId,
+          source,
+          cursor,
+          readerId,
+          ...(recordId ? { recordId } : {}),
+        };
+        return requestReadOperation(
+          { request: () => requestTool(command), cancel: cancelHistory },
+          command,
         );
-        if (reply.readerId !== readerId)
-          throw new ReadOperationError("invalid-reply");
-        return reply;
       },
       async image(threadId, cursor, recordId, index, traceId) {
-        return HistoryImageReplySchema.parse(
-          await ipcRenderer.invoke(
-            "history:image",
-            HistoryImageRequestSchema.parse({
-              threadId,
-              cursor,
-              recordId,
-              index,
-              traceId,
-            }),
-          ),
+        const command = {
+          operationId: crypto.randomUUID(),
+          traceId,
+          threadId,
+          cursor,
+          recordId,
+          index,
+        };
+        return requestReadOperation(
+          { request: () => requestImage(command), cancel: cancelHistory },
+          command,
         );
       },
       async projectList(threadId) {
-        return ProjectHistoryCatalogSchema.parse(
-          await ipcRenderer.invoke(
-            "history:project",
-            ProjectHistoryRequestSchema.parse({
-              kind: "list",
-              threadId,
-              traceId: crypto.randomUUID(),
-            }),
-          ),
+        const command = {
+          kind: "list" as const,
+          operationId: crypto.randomUUID(),
+          traceId: crypto.randomUUID(),
+          threadId,
+        };
+        return requestReadOperation(
+          { request: () => requestProjectList(command), cancel: cancelHistory },
+          command,
         );
       },
       async projectRead(threadId, key, cursor) {
-        return HistoryPageSchema.parse(
-          await ipcRenderer.invoke(
-            "history:project",
-            ProjectHistoryRequestSchema.parse({
-              kind: "read",
-              threadId,
-              key,
-              cursor,
-              traceId: crypto.randomUUID(),
-            }),
-          ),
+        const command = {
+          kind: "read" as const,
+          operationId: crypto.randomUUID(),
+          traceId: crypto.randomUUID(),
+          threadId,
+          key,
+          cursor,
+        };
+        return requestReadOperation(
+          { request: () => requestProjectRead(command), cancel: cancelHistory },
+          command,
         );
       },
       async read(threadId, cursor, range) {

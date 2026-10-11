@@ -18,6 +18,11 @@ import {
   registerHistoryIpc,
 } from "../../src/app/main/ipc/project-reads";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
+import {
+  HistoryImageReplySchema,
+  HistoryPageSchema,
+  ProjectHistoryCatalogSchema,
+} from "../../src/modules/conversation/contracts/public";
 import { runNativeHistoryWorker } from "../../src/modules/conversation/main/public";
 import {
   HostTransportCommandSchema,
@@ -32,6 +37,7 @@ import { RuntimeService } from "../../src/modules/execution/main/public";
 import { SessionExecutionLease } from "../../src/modules/execution/main/transport/session-execution-lease";
 import { RuntimeModel } from "../../src/modules/execution/renderer/runtime/runtime-model";
 import type { ContentPreparationResult } from "../../src/modules/input/contracts/public";
+import { ToolDetailReplySchema } from "../../src/modules/resources/contracts/public";
 import { TraceIdSchema } from "../../src/shared/identity";
 
 const electron = vi.hoisted(() => ({ fork: vi.fn() }));
@@ -1975,7 +1981,28 @@ it("uses the Runtime canonical file reference for frozen TXT+PNG presentation af
       ipcMain: { handle },
       sourceValid: (input) => input === event,
       reads: new ProjectReadOperations(),
-      historyReader: { read: (task) => runNativeHistoryWorker(task) },
+      historyReader: {
+        read: async (task) =>
+          HistoryPageSchema.parse(
+            await runNativeHistoryWorker({ ...task, kind: "page" }),
+          ),
+        tool: async (task) =>
+          ToolDetailReplySchema.parse(
+            await runNativeHistoryWorker({ ...task, kind: "tool" }),
+          ),
+        image: async (task) =>
+          HistoryImageReplySchema.parse(
+            await runNativeHistoryWorker({ ...task, kind: "image" }),
+          ),
+        projectList: async (task) =>
+          ProjectHistoryCatalogSchema.parse(
+            await runNativeHistoryWorker({ ...task, kind: "project-list" }),
+          ),
+        projectRead: async (task) =>
+          HistoryPageSchema.parse(
+            await runNativeHistoryWorker({ ...task, kind: "project-page" }),
+          ),
+      },
       getStore: () => reopened,
       getDiagnostics: () => undefined,
       nativeSessionsPath: () => join(f.root, "native-sessions"),

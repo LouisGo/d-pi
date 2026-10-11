@@ -2,6 +2,55 @@ import { EventEmitter } from "node:events";
 import { expect, it, vi } from "vitest";
 import { HistoryReadRunner } from "./history-read-runner";
 
+it("supervises image reads with their own schema and holds cancellation until exit", async () => {
+  const worker = Object.assign(new EventEmitter(), {
+    terminate: vi.fn(async () => 1),
+  });
+  const runner = new HistoryReadRunner(new URL("file:///fixture-worker.js"), {
+    maxActive: 1,
+    spawn: () => worker,
+  });
+  const threadId = crypto.randomUUID();
+  const task = {
+    operationId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+    root: "/fixture",
+    binding: {
+      threadId,
+      configContextId: "fixture",
+      sessionId: "session",
+      sessionFile: "/fixture/session.jsonl",
+    },
+    cursor: { threadId, source: "version", offset: 1 },
+    recordId: "record",
+    index: 0,
+  };
+  const pending = runner.image(task).catch((error: unknown) => error);
+  worker.emit("message", {
+    kind: "image",
+    dataUrl: "data:image/png;base64,YQ==",
+  });
+  expect(runner.snapshot().active).toBe(1);
+  worker.emit("exit", 0);
+  expect(await pending).toEqual({
+    kind: "image",
+    dataUrl: "data:image/png;base64,YQ==",
+  });
+  const wrong = runner.image(task).catch((error: unknown) => error);
+  worker.emit("message", { kind: "catalog", sessions: [], partial: false });
+  worker.emit("exit", 0);
+  expect(await wrong).toMatchObject({ code: "malformed-output" });
+  const controller = new AbortController();
+  const stopped = runner
+    .image(task, controller.signal)
+    .catch((error: unknown) => error);
+  controller.abort();
+  expect(runner.snapshot().active).toBe(1);
+  worker.emit("exit", 1);
+  expect(await stopped).toMatchObject({ name: "AbortError" });
+  expect(runner.snapshot().active).toBe(0);
+});
+
 it("keeps the worker permit after cancellation until actual exit and then admits another read", async () => {
   const worker = Object.assign(new EventEmitter(), {
     terminate: vi.fn(async () => 1),

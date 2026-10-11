@@ -40,7 +40,10 @@ export type SubmissionContext = IpcSourceContext & {
 export type ProjectReadContext = Omit<IpcSourceContext, "ipcMain"> & {
   ipcMain: Pick<IpcMain, "handle">;
   reads: ProjectReadOperations;
-  historyReader: Pick<HistoryReadRunner, "read">;
+  historyReader: Pick<
+    HistoryReadRunner,
+    "read" | "tool" | "image" | "projectList" | "projectRead"
+  >;
   gitReader: ProjectGitReader;
   getStore: () => AppStorage | undefined;
   getDiagnostics: () =>
