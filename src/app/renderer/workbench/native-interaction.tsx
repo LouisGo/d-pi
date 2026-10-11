@@ -103,7 +103,9 @@ export function NativeInteraction({
   const selection = draft?.selection ?? null;
   const sent = !!operation && operation.status !== "not-dispatched";
   const setValue = (value: string) =>
-    model.editAnswerDraft(item.id, { value }, surface, editorHandle);
+    item.status === "written" && item.defaultAnswered && surface === "timeline"
+      ? model.editFollowUpDraft(item.id, value, editorHandle)
+      : model.editAnswerDraft(item.id, { value }, surface, editorHandle);
   const setSelection = (selection: NonNullable<typeof draft>["selection"]) =>
     model.editAnswerDraft(item.id, { selection }, surface, editorHandle);
   // A native update must not silently retarget an already selected answer.
@@ -138,7 +140,7 @@ export function NativeInteraction({
       followUpInFlight
     )
       return;
-    void model.followUpInteraction(item.id, onFollowUp);
+    void model.followUpInteraction(item.id, onFollowUp, editorHandle);
   };
   const answer = (response: Parameters<RuntimeModel["answer"]>[1]) => {
     if (!enabled || (!trusted && response.kind !== "cancel")) return;

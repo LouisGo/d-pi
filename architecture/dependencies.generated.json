@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "a4bcca160f4ac9553d27412732fdf133d1f4969731e43375cbdedfb28b9f64ed",
+  "inputsHash": "c3e860f79e8d9dd314dfe71026e54d10514d75da0280b8d456cb59f2caf82ff0",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 675,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 303,
-      "lines": 60276,
+      "lines": 60442,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -352,7 +352,7 @@
       ],
       "materialized": true,
       "files": 69,
-      "lines": 18142,
+      "lines": 18170,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -19176,6 +19176,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../shell/layout/conversation-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/conversation-visibility.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "./answer-history",
       "kind": "import",
       "resolution": "module",
@@ -19269,6 +19281,30 @@
       "to": "src/shared/identity.ts",
       "targetModule": "shared",
       "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../shell/layout/conversation-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/shell/layout/conversation-visibility.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./window-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/window-visibility.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/app/renderer/workbench/attachment-controls.test.ts",

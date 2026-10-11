@@ -273,3 +273,9 @@ AnswerHistory通过execution只读Query公开面接App持久事实：离线可�
   }
 ]
 ```
+
+### WB04 复核闭合：默认回答后的补充与隐藏历史（2026-10-11）
+
+- 固定 `69c7dbe..a617606` 独立综合 review 确认两项 P2。已先以实际反例复现：普通问题转至 Dock 后默认回答，Timeline 补充输入被旧 pending owner 拦住；打开历史后 shell/document 隐藏，正文与 Query observer 仍驻留。
+- 默认回答后的 steer 编辑使用独立入口，保留半成品与原回答冻结值，继续校验来源/编辑 handle；pending 编辑入口拒绝终态及已发送操作，迟到 Dock 回调不能覆盖补充。正式 follow-up 发送也校验捕获 handle。隐藏历史只保留轻量页码/展开 ID，释放正文与查询；回来按同页重采样，保留展开位置，不把旧样本当当前事实。
+- 三个受影响测试文件 33/33 通过，包含 Timeline/Dock 同时挂载→默认回答→中文改写→旧回调拒绝→实际 steer 回调参数，以及 shell/window 隐藏后的 gc、无额外读取、恢复原页与详情。Renderer 类型、design、fast 门禁通过；结构报告已刷新。日志 `/tmp/d-pi-rich-review-red.log` 与 `green2.log`。没有新增实机/provider/系统 IME 证据，完整 WB02–WB04 继续推进。

@@ -475,12 +475,38 @@ export class RuntimeModel {
     surface: InteractionEditorSurface,
     handle?: InteractionEditorHandle,
   ): void {
+    const item = this.getSnapshot()?.interactions?.items.find(
+      (item) => item.id === id,
+    );
+    const operation = this.interactionOperation(id);
     if (
+      item?.status !== "pending" ||
+      (operation && operation.status !== "not-dispatched") ||
       !this.editorCurrent(id, handle) ||
       (this.interactionDraft(id)?.editorSurface ?? "timeline") !== surface
     )
       return;
     this.editInteraction(id, patch);
+  }
+  editFollowUpDraft(
+    id: string,
+    value: string,
+    handle?: InteractionEditorHandle,
+  ): void {
+    const item = this.getSnapshot()?.interactions?.items.find(
+      (item) => item.id === id,
+    );
+    // The pending answer owner ends with the native default. Timeline owns the
+    // separate steer input; this never modifies the frozen answer or resends it.
+    if (
+      item?.status !== "written" ||
+      !item.defaultAnswered ||
+      item.method === "ask" ||
+      !this.editorCurrent(id, handle) ||
+      this.interactionDraft(id)?.followUpSending
+    )
+      return;
+    this.editInteraction(id, { value });
   }
   editAsk(
     id: string,
@@ -543,7 +569,9 @@ export class RuntimeModel {
       message: UiMessage | null;
       submissionId: string | null;
     }>,
+    handle?: InteractionEditorHandle,
   ): Promise<void> {
+    if (!this.editorCurrent(id, handle)) return;
     const key = this.interactionKey(id);
     const draft = this.interactionDraft(id);
     if (!key || !draft || draft.followUpSending || !draft.value.trim()) return;

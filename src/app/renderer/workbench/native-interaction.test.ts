@@ -561,3 +561,50 @@ it("mounts Timeline and Dock together with one editable field and transfers ordi
     await view.cleanup();
   }
 });
+
+it("keeps the Timeline follow-up editable after a Dock-owned ordinary request defaults, rejecting late pending editor callbacks", async () => {
+  const view = await setup(item, true, true);
+  try {
+    await typeAnswer(view.host, "尚未提交");
+    await act(() => view.button("移到待办区").click());
+    const stale = view.model.captureInteractionEditor(item.id)!;
+    await view.render({ ...item, status: "written", defaultAnswered: true });
+    expect(
+      view.host.querySelector('[data-editor-surface="dock"] textarea'),
+    ).toBeNull();
+    const input = view.host.querySelector<HTMLTextAreaElement>("textarea")!;
+    expect(input.disabled).toBe(false);
+    await act(() => {
+      Object.getOwnPropertyDescriptor(
+        HTMLTextAreaElement.prototype,
+        "value",
+      )?.set?.call(input, "修正后的中文补充");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    expect(input.value).toBe("修正后的中文补充");
+    expect(view.model.interactionDraft(item.id)?.value).toBe(
+      "修正后的中文补充",
+    );
+    await act(() =>
+      view.model.editAnswerDraft(
+        item.id,
+        { value: "迟到 Dock 回调" },
+        "dock",
+        stale,
+      ),
+    );
+    expect(view.model.interactionDraft(item.id)?.value).toBe(
+      "修正后的中文补充",
+    );
+    const send = vi.fn(async () => ({
+      ok: true,
+      message: null,
+      submissionId: "steer-1",
+    }));
+    await act(() => view.model.followUpInteraction(item.id, send));
+    expect(send).toHaveBeenCalledExactlyOnceWith("修正后的中文补充");
+    expect(view.answer).not.toHaveBeenCalled();
+  } finally {
+    await view.cleanup();
+  }
+});

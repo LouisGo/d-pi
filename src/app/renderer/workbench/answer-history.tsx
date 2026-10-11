@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { match } from "ts-pattern";
 import type {
   Answer,
@@ -19,6 +19,8 @@ import {
   LoadingIndicator,
 } from "../../../modules/ui/renderer/public";
 import type { ThreadId } from "../../../shared/identity";
+import { ConversationVisibilityContext } from "../shell/layout/conversation-visibility";
+import { useDocumentVisible } from "./window-visibility";
 
 function AnswerText({ answer }: { answer: Answer }) {
   const { t } = useI18n();
@@ -46,9 +48,21 @@ function AnswerText({ answer }: { answer: Answer }) {
     ))
     .exhaustive();
 }
-function HistoryEntry({ entry }: { entry: AnswerHistoryEntry }) {
+function entryIdentity(entry: AnswerHistoryEntry): string {
+  return entry.kind === "answer"
+    ? entry.operationId
+    : JSON.stringify(entry.requestKey);
+}
+function HistoryEntry({
+  entry,
+  open,
+  onToggle,
+}: {
+  entry: AnswerHistoryEntry;
+  open: boolean;
+  onToggle: (open: boolean) => void;
+}) {
   const { t, locale } = useI18n();
-  const [open, setOpen] = useState(false);
   const state = match(entry)
     .with({ kind: "request" }, ({ presence }) =>
       match(presence)
@@ -82,7 +96,10 @@ function HistoryEntry({ entry }: { entry: AnswerHistoryEntry }) {
           )}
         </p>
       )}
-      <Disclosure onToggle={(event) => setOpen(event.currentTarget.open)}>
+      <Disclosure
+        open={open}
+        onToggle={(event) => onToggle(event.currentTarget.open)}
+      >
         <DisclosureTrigger>
           {t("ui.interaction.historyDetails")}
         </DisclosureTrigger>
@@ -131,12 +148,19 @@ function HistoryEntry({ entry }: { entry: AnswerHistoryEntry }) {
 function HistoryPage({
   bridge,
   threadId,
+  cursor,
+  setCursor,
+  expanded,
+  setExpanded,
 }: {
   bridge: AnswerHistoryBridge;
   threadId: ThreadId;
+  cursor: number | null;
+  setCursor: (cursor: number | null) => void;
+  expanded: ReadonlySet<string>;
+  setExpanded: (id: string, open: boolean) => void;
 }) {
   const { t } = useI18n();
-  const [cursor, setCursor] = useState<number | null>(null);
   const query = useQuery(answerHistoryPageQuery(bridge, threadId, cursor));
   return (
     <div className="answer-history-page">
@@ -170,12 +194,10 @@ function HistoryPage({
       )}
       {query.data?.entries.map((entry) => (
         <HistoryEntry
-          key={
-            entry.kind === "answer"
-              ? entry.operationId
-              : JSON.stringify(entry.requestKey)
-          }
+          key={entryIdentity(entry)}
           entry={entry}
+          open={expanded.has(entryIdentity(entry))}
+          onToggle={(open) => setExpanded(entryIdentity(entry), open)}
         />
       ))}
       {query.data?.entries.length === 0 && (
@@ -193,7 +215,7 @@ function HistoryPage({
     </div>
   );
 }
-export function AnswerHistory({
+function HistorySession({
   bridge,
   threadId,
 }: {
@@ -202,16 +224,52 @@ export function AnswerHistory({
 }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const [cursor, setCursor] = useState<number | null>(null);
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const { visible } = useContext(ConversationVisibilityContext);
+  const documentVisible = useDocumentVisible();
   return (
     <section className="answer-history">
       <Disclosure onToggle={(event) => setOpen(event.currentTarget.open)}>
         <DisclosureTrigger>
           {t("ui.runtime.interactionRecords")}
         </DisclosureTrigger>
-        {open && (
-          <HistoryPage key={threadId} bridge={bridge} threadId={threadId} />
+        {open && visible && documentVisible && (
+          <HistoryPage
+            bridge={bridge}
+            threadId={threadId}
+            cursor={cursor}
+            setCursor={(next) => {
+              setCursor(next);
+              setExpanded(new Set());
+            }}
+            expanded={expanded}
+            setExpanded={(id, value) => {
+              setExpanded((previous) => {
+                const next = new Set(previous);
+                if (value) next.add(id);
+                else next.delete(id);
+                return next;
+              });
+            }}
+          />
         )}
       </Disclosure>
     </section>
+  );
+}
+
+export function AnswerHistory(props: {
+  bridge: AnswerHistoryBridge;
+  threadId: ThreadId;
+}) {
+  return (
+    <HistorySession
+      key={props.threadId}
+      bridge={props.bridge}
+      threadId={props.threadId}
+    />
   );
 }
