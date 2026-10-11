@@ -191,6 +191,8 @@
 
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。
 
+可见性组合修正：固定 `efcaf40..0ca5a6e` 独立review发现P2，ReadingPane隐藏会卸载FilePanel的轻位置owner，先前直接挂FilePanel的回归没有覆盖该生产组合。新增真实ReadingPane→FilePanel的file/Diff×page/shell/window六个反例均先复现返回目标丢失；files现保留轻owner，内部Viewer继续卸载Query/Monaco。三文件38/38通过，包含组合目标/取消/晚到/重采样及轻坐标接棒、实际Monaco adapter同版本恢复/旧版本拒绝；Renderer仍只有既有composer-tag基线。该修正不保留隐藏文件正文或Editor实例。
+
 ### WB00 milestone（2026-10-11）
 
 - 先写 InteractionOperation/InteractionDraft 与执行模块合同。红灯确认同题双击两次派发、Host respond 缺失；实现后对应反例转绿。Thread-owned RuntimeModel 保留表单、冻结回答、操作结果和后续收据关联；Main 等待精确 Host 结果，授权 await 后再次校验代次，Host 单次 write 兜底。普通 interaction 状态和 answer operation 改名 written，收据 ACK 不变。

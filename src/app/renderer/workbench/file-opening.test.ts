@@ -8,15 +8,25 @@ import type {
   GitReply,
   GitRequest,
 } from "../../../modules/changes/contracts/public";
+import { ReadingPositions } from "../../../modules/conversation/core/public";
 import type {
   FileBridge,
   FileReply,
   FileRequest,
 } from "../../../modules/files/contracts/public";
-import type { CodeLocation } from "../../../modules/files/core/public";
-import type { CodeView } from "../../../modules/files/renderer/public";
+import {
+  type CodeLocation,
+  type CodeReadingPosition,
+  codeViewIdentity,
+} from "../../../modules/files/core/public";
+import type {
+  CodeView,
+  FileEditorComponent,
+} from "../../../modules/files/renderer/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { ThreadContextSchema } from "../../../modules/threads/contracts/public";
+import { ReadingPane } from "../reading/reading-pane";
+import { ConversationVisibilityContext } from "../shell/layout/conversation-visibility";
 import { FilePanel } from "./file-panel";
 import type { WorkspaceSourceTarget } from "./source-target";
 
@@ -139,10 +149,17 @@ it("retires collapsed browser requests and list payloads, and resamples only whe
   }
 });
 
-it.each(["file", "diff", "hidden-window"] as const)(
-  "releases a hidden %s reader and viewer, retains the target, and resamples on return",
+it.each([
+  { kind: "file", hiddenBy: "page" },
+  { kind: "diff", hiddenBy: "page" },
+  { kind: "file", hiddenBy: "window" },
+  { kind: "diff", hiddenBy: "window" },
+  { kind: "file", hiddenBy: "shell" },
+  { kind: "diff", hiddenBy: "shell" },
+] as const)(
+  "releases the composed reader and viewer while retaining its target (%j)",
   async (scenario) => {
-    const kind = scenario === "diff" ? "diff" : "file";
+    const { kind, hiddenBy } = scenario;
     const visibility = Object.getOwnPropertyDescriptor(
       document,
       "visibilityState",
@@ -154,6 +171,12 @@ it.each(["file", "diff", "hidden-window"] as const)(
     const container = document.createElement("div");
     document.body.append(container);
     const root = createRoot(container);
+    const positions = new ReadingPositions();
+    const thread = {
+      readingSources: positions,
+      readingPositions: new Map(),
+      reading: null,
+    };
     const resource = ThreadContextSchema.parse({
       threadId: crypto.randomUUID(),
       workingDirectoryId: crypto.randomUUID(),
@@ -167,11 +190,26 @@ it.each(["file", "diff", "hidden-window"] as const)(
       finish = resolve;
     });
     let mounted = 0;
-    const Editor = () => {
+    const receivedPositions: (CodeReadingPosition | undefined)[] = [];
+    const pane = { scrollTop: 230, scrollLeft: 12, selection: null };
+    let savedPosition: CodeReadingPosition | undefined;
+    const Editor: FileEditorComponent = ({ view, position, onPosition }) => {
       useEffect(() => {
         mounted++;
+        receivedPositions.push(position);
+        const captured: CodeReadingPosition =
+          view.kind === "file"
+            ? { kind: "file", identity: codeViewIdentity(view), pane }
+            : {
+                kind: "diff",
+                identity: codeViewIdentity(view),
+                left: pane,
+                right: pane,
+              };
         return () => {
           mounted--;
+          savedPosition = captured;
+          onPosition?.(captured);
         };
       }, []);
       return createElement("pre", { "data-viewer": true }, "current capture");
@@ -264,7 +302,7 @@ it.each(["file", "diff", "hidden-window"] as const)(
     };
     const render = async (active: boolean) =>
       act(() => {
-        if (scenario === "hidden-window") {
+        if (hiddenBy === "window") {
           Object.defineProperty(document, "visibilityState", {
             configurable: true,
             value: active ? "visible" : "hidden",
@@ -277,14 +315,28 @@ it.each(["file", "diff", "hidden-window"] as const)(
             { client },
             createElement(I18nProvider, {
               initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
-              children: createElement(FilePanel, {
-                resource,
-                files,
-                git,
-                editor: Editor,
-                onAttach: () => {},
-                active: scenario === "hidden-window" ? true : active,
-              }),
+              children: createElement(
+                ConversationVisibilityContext,
+                {
+                  value: {
+                    visible: hiddenBy === "shell" ? active : true,
+                    reveal: () => {},
+                  },
+                },
+                createElement(ReadingPane, {
+                  thread,
+                  view: "files",
+                  active: hiddenBy === "page" ? active : true,
+                  children: createElement(FilePanel, {
+                    resource,
+                    files,
+                    git,
+                    editor: Editor,
+                    onAttach: () => {},
+                    active: hiddenBy === "window" ? true : active,
+                  }),
+                }),
+              ),
             }),
           ),
         );
@@ -339,9 +391,17 @@ it.each(["file", "diff", "hidden-window"] as const)(
       expect(mounted).toBe(0);
       await settle();
       expect(client.getQueryCache().getAll()).toHaveLength(0);
+      expect(savedPosition).toBeDefined();
+      await render(true);
+      await vi.waitFor(async () => {
+        await settle();
+        expect(mounted).toBe(1);
+        expect(receivedPositions.at(-1)).toEqual(savedPosition);
+      });
     } finally {
       finish?.();
       await act(() => root.unmount());
+      positions.dispose();
       client.clear();
       container.remove();
       if (visibility)

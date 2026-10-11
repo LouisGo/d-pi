@@ -103,14 +103,17 @@ export function ReadingPane({
           if (event.target === event.currentTarget) anchor.current?.capture();
         }}
       >
-        {presented && (
+        {/* FilePanel keeps only location state; its inner viewer gates resources. */}
+        {view === "files" ? (
+          children
+        ) : presented ? (
           <ReadingConsumer
             retain={view === "conversation" ? thread : undefined}
             beforeDetach={() => anchor.current?.capture(false)}
           >
             {children}
           </ReadingConsumer>
-        )}
+        ) : null}
       </div>
       {view === "conversation" && presented && thread.reading && liveAnchor && (
         <>
