@@ -299,6 +299,327 @@ async function running(
   };
 }
 
+it("cools only a confirmed idle native and rechecks ownership before permission without losing its binding", async () => {
+  const f = await running();
+  const binding = f.store.threads.nativeSessionBinding(f.draft.threadId);
+  expect(f.runtime.nativeResidency()).toEqual({
+    kind: "protected",
+    reason: "idle-unconfirmed",
+  });
+  const before = f.postMessage.mock.calls.length;
+  expect(await f.runtime.coolIfIdle(() => true)).toEqual({
+    kind: "retained",
+    reason: "idle-unconfirmed",
+  });
+  expect(f.postMessage.mock.calls).toHaveLength(before);
+  f.host.emit("message", {
+    kind: "control",
+    connectionGeneration: (await f.act("inspect")).connectionGeneration,
+    state: {
+      paused: false,
+      stopping: false,
+      streaming: false,
+      compacting: false,
+      queued: 0,
+      queue: [],
+      background: 0,
+      pendingAsync: false,
+      admitted: false,
+    },
+  });
+  f.confirmIdle();
+  const original = f.postMessage.getMockImplementation();
+  let selected = false;
+  f.postMessage.mockImplementation((raw) => {
+    original?.(raw);
+    const command = HostTransportCommandSchema.parse(raw).command;
+    if (command.kind === "close-idle" && command.cooldown) {
+      selected = true;
+      queueMicrotask(() =>
+        f.host.emit("message", { kind: "cooldown-ready", ...command.cooldown }),
+      );
+    }
+  });
+  expect(await f.runtime.coolIfIdle(() => !selected)).toEqual({
+    kind: "retained",
+    reason: "permission",
+  });
+  expect(
+    f.postMessage.mock.calls.map(
+      ([raw]) => HostTransportCommandSchema.parse(raw).command,
+    ),
+  ).toContainEqual(
+    expect.objectContaining({ kind: "cooldown-permit", allowed: false }),
+  );
+  expect(f.runtime.nativeResidency()).toEqual({ kind: "warm" });
+  selected = false;
+  f.postMessage.mockImplementation((raw) => {
+    original?.(raw);
+    const command = HostTransportCommandSchema.parse(raw).command;
+    if (command.kind === "close-idle" && command.cooldown)
+      queueMicrotask(() =>
+        f.host.emit("message", { kind: "cooldown-ready", ...command.cooldown }),
+      );
+    if (command.kind === "cooldown-permit" && command.allowed)
+      queueMicrotask(() => {
+        f.host.emit("message", {
+          kind: "cooldown-committed",
+          traceId: command.traceId,
+          connectionGeneration: command.connectionGeneration,
+        });
+        f.host.emit("message", { kind: "scope-closed" });
+      });
+  });
+  expect(await f.runtime.coolIfIdle(() => !selected)).toEqual({
+    kind: "cooled",
+  });
+  expect(f.runtime.nativeResidency()).toEqual({ kind: "cold" });
+  expect(f.store.threads.nativeSessionBinding(f.draft.threadId)).toEqual(
+    binding,
+  );
+  const view = await f.act("inspect");
+  expect(view.phase).toBe("allowed");
+  expect(view.connectionGeneration).toBeUndefined();
+  await f.act("start");
+  const restarted = f.postMessage.mock.calls
+    .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
+    .findLast((c) => c.kind === "start");
+  expect(
+    restarted?.kind === "start" ? restarted.resume?.sessionFile : null,
+  ).toBe(binding?.sessionFile);
+});
+
+it("does not cool when an older unresolved receipt falls outside the 100-row presentation window", async () => {
+  const f = await running();
+  const view = await f.act("inspect");
+  f.host.emit("message", {
+    kind: "control",
+    connectionGeneration: view.connectionGeneration,
+    state: {
+      paused: false,
+      stopping: false,
+      streaming: false,
+      compacting: false,
+      queued: 0,
+      queue: [],
+      background: 0,
+      pendingAsync: false,
+      admitted: false,
+    },
+  });
+  f.confirmIdle();
+  const original = await f.prepare();
+  if (original.kind !== "receipt") throw Error("missing old receipt");
+  for (let index = 0; index < 101; index++) {
+    const id = crypto.randomUUID();
+    f.store.submissions.prepareSubmission({
+      ...original.receipt,
+      origin: "free",
+      submissionId: id,
+      requestId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+    });
+    f.store.submissions.rejectSubmission(id, "not-ready");
+  }
+  expect(f.store.submissions.list(f.draft.threadId)).toHaveLength(100);
+  expect(
+    f.store.submissions
+      .list(f.draft.threadId)
+      .every((receipt) => receipt.state === "rejected"),
+  ).toBe(true);
+  expect(f.runtime.nativeResidency()).toEqual({
+    kind: "protected",
+    reason: "evidence",
+  });
+  expect(await f.runtime.coolIfIdle(() => true)).toEqual({
+    kind: "retained",
+    reason: "evidence",
+  });
+});
+
+it("keeps a permitted but unconfirmed shutdown unavailable until physical cleanup is observed", async () => {
+  const f = await running();
+  const view = await f.act("inspect");
+  f.host.emit("message", {
+    kind: "control",
+    connectionGeneration: view.connectionGeneration,
+    state: {
+      paused: false,
+      stopping: false,
+      streaming: false,
+      compacting: false,
+      queued: 0,
+      queue: [],
+      background: 0,
+      pendingAsync: false,
+      admitted: false,
+    },
+  });
+  f.confirmIdle();
+  vi.useFakeTimers();
+  try {
+    const cooling = f.runtime.coolIfIdle(() => true);
+    const command = f.postMessage.mock.calls
+      .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
+      .findLast((c) => c.kind === "close-idle");
+    if (command?.kind !== "close-idle" || !command.cooldown)
+      throw Error("missing cooldown");
+    f.host.emit("message", { kind: "cooldown-ready", ...command.cooldown });
+    f.host.emit("message", { kind: "cooldown-committed", ...command.cooldown });
+    const queued = Promise.allSettled([f.act("inspect"), f.prepare()]);
+    await vi.advanceTimersByTimeAsync(5001);
+    expect(await cooling).toEqual({ kind: "retained", reason: "unconfirmed" });
+    expect(await queued).toEqual([
+      {
+        status: "rejected",
+        reason: expect.objectContaining({
+          message: "Native shutdown unconfirmed",
+        }),
+      },
+      {
+        status: "rejected",
+        reason: expect.objectContaining({
+          message: "Native shutdown unconfirmed",
+        }),
+      },
+    ]);
+    expect(f.store.submissions.submission(f.submissionId)).toBeNull();
+    expect(f.runtime.nativeResidency()).toEqual({
+      kind: "protected",
+      reason: "unconfirmed",
+    });
+    await expect(f.act("inspect")).rejects.toThrow("shutdown unconfirmed");
+    f.host.emit("message", { kind: "scope-closed" });
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(f.runtime.nativeResidency()).toEqual({ kind: "cold" });
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("a native exit during its idle probe is not observed as an intentional cooldown", async () => {
+  const f = await running();
+  const view = await f.act("inspect");
+  f.host.emit("message", {
+    kind: "control",
+    connectionGeneration: view.connectionGeneration,
+    state: {
+      paused: false,
+      stopping: false,
+      streaming: false,
+      compacting: false,
+      queued: 0,
+      queue: [],
+      background: 0,
+      pendingAsync: false,
+      admitted: false,
+    },
+  });
+  f.confirmIdle();
+  const pending = f.runtime.coolIfIdle(() => true);
+  f.host.emit("exit", 1);
+  expect(await pending).toEqual({ kind: "retained", reason: "unavailable" });
+  expect((await f.act("inspect")).phase).toBe("interrupted");
+});
+
+it("a command admitted during the idle probe denies cooldown and resumes on the same native", async () => {
+  const f = await running();
+  const view = await f.act("inspect");
+  f.host.emit("message", {
+    kind: "control",
+    connectionGeneration: view.connectionGeneration,
+    state: {
+      paused: false,
+      stopping: false,
+      streaming: false,
+      compacting: false,
+      queued: 0,
+      queue: [],
+      background: 0,
+      pendingAsync: false,
+      admitted: false,
+    },
+  });
+  f.confirmIdle();
+  const cooling = f.runtime.coolIfIdle(() => true);
+  const command = f.postMessage.mock.calls
+    .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
+    .findLast((c) => c.kind === "close-idle");
+  if (command?.kind !== "close-idle" || !command.cooldown)
+    throw Error("no cooldown probe");
+  const inspect = f.act("inspect");
+  f.host.emit("message", { kind: "cooldown-ready", ...command.cooldown });
+  expect(await cooling).toEqual({ kind: "retained", reason: "permission" });
+  expect((await inspect).connectionGeneration).toBe(view.connectionGeneration);
+  expect(f.runtime.nativeResidency()).toEqual({ kind: "warm" });
+});
+
+it.each(["busy", "prepared", "gap", "unknown-operation"] as const)(
+  "does not probe a native protected by %s evidence",
+  async (scenario) => {
+    const f = await running(false, scenario === "busy");
+    const view = await f.act("inspect");
+    f.host.emit("message", {
+      kind: "control",
+      connectionGeneration: view.connectionGeneration,
+      state: {
+        paused: false,
+        stopping: false,
+        streaming: scenario === "busy",
+        compacting: false,
+        queued: 0,
+        queue: [],
+        background: 0,
+        pendingAsync: false,
+        admitted: false,
+      },
+    });
+    if (scenario !== "busy") f.confirmIdle();
+    if (scenario === "prepared") await f.prepare();
+    if (scenario === "gap")
+      f.host.emit("message", {
+        kind: "evidence-gap",
+        connectionGeneration: view.connectionGeneration,
+        reason: "uncorrelated-result",
+      });
+    if (scenario === "unknown-operation") {
+      const traceId = crypto.randomUUID();
+      const operation = f.runtime.execute(
+        RuntimeCommandSchema.parse({
+          kind: "configure-subagent",
+          threadId: f.draft.threadId,
+          traceId,
+          connectionGeneration: view.connectionGeneration,
+          command: { kind: "clear", agent: "task" },
+        }),
+      );
+      await vi.waitFor(() =>
+        expect(
+          f.postMessage.mock.calls.map(
+            ([raw]) => HostTransportCommandSchema.parse(raw).command,
+          ),
+        ).toContainEqual(
+          expect.objectContaining({ kind: "configure-subagent" }),
+        ),
+      );
+      f.host.emit("message", {
+        kind: "operation-result",
+        traceId,
+        connectionGeneration: view.connectionGeneration,
+        operation: "configure-subagent",
+        status: "unknown",
+      });
+      await operation;
+    }
+    const before = f.postMessage.mock.calls.length;
+    expect((await f.runtime.coolIfIdle(() => true)).kind).toBe("retained");
+    expect(f.postMessage.mock.calls).toHaveLength(before);
+    expect(f.runtime.nativeResidency().kind).toBe("protected");
+  },
+);
+
 it("releases only confirmed exited runtimes and preserves the same persisted native identity on reopen", async () => {
   const fixture = await running();
   const binding = fixture.store.threads.nativeSessionBinding(

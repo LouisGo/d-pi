@@ -71,7 +71,7 @@ export class ToolDetails {
     }
     this.scope = scope;
   }
-  watch(readerId: string, source: SourceRef, send: Reader["send"]): void {
+  watch(readerId: string, source: SourceRef, send: Reader["send"]): boolean {
     if (
       source.kind !== "live-tool" ||
       source.threadId !== this.scope.threadId ||
@@ -79,14 +79,15 @@ export class ToolDetails {
       source.connectionGeneration !== this.scope.connectionGeneration
     ) {
       send({ kind: "tool-unavailable", readerId, reason: "identity-changed" });
-      return;
+      return false;
     }
     if (this.readers.size >= 8 && !this.readers.has(readerId)) {
       send({ kind: "tool-unavailable", readerId, reason: "limit" });
-      return;
+      return false;
     }
     this.readers.set(readerId, { source, send });
     this.publish(readerId);
+    return true;
   }
   release(readerId: string): void {
     this.readers.delete(readerId);

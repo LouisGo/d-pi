@@ -39,6 +39,7 @@ export const domain = {
   "runtime.readyToSend": "可以发送。",
   "runtime.noModel": "没有可用模型，请在设置中连接模型服务。",
   "runtime.disconnected": "连接已中断，草稿已保留。",
+  "runtime.cooled": "闲置会话资源已释放，原会话内容已保留。",
   "runtime.controlFailed": "操作未完成，请检查任务状态。不会自动重试。",
   "runtime.queuePaused":
     "已暂停后续消息，点击“继续发送”恢复。后台任务可能仍在进行。",

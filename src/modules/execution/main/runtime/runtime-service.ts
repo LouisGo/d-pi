@@ -28,6 +28,11 @@ import {
   type SubmissionReply,
 } from "../../contracts/public";
 import type {
+  NativeCooldownResult,
+  NativeResidency,
+  NativeRetentionReason,
+} from "../../contracts/residency";
+import type {
   NativeRecoveryReason,
   RuntimeCommand,
   RuntimeView,
@@ -69,6 +74,7 @@ type RuntimeStore = {
     | "acknowledgeSubmission"
     | "submission"
     | "list"
+    | "hasUnsettled"
     | "rejectSubmission"
     | "unknownSubmission"
     | "failSubmission"
@@ -103,6 +109,8 @@ export class RuntimeService {
   private lostEvidence = false;
   private lastDispatchId: string | null = null;
   private idleConfirmed = false;
+  private cooling: Promise<NativeCooldownResult> | null = null;
+  private cooldownUnconfirmed = false;
   private target: FrozenSubmission["target"] | null = null;
   private coordinator: SubmissionCoordinator;
   private readonly connection: HostConnection;
@@ -142,6 +150,7 @@ export class RuntimeService {
       (evidence) => this.onExit(evidence),
       (confirmed) => {
         if (!confirmed) return;
+        this.cooldownUnconfirmed = false;
         this.uncertainLifetime ||= [
           this.view?.queueOperation,
           this.view?.subagentOperation,
@@ -510,7 +519,16 @@ export class RuntimeService {
     }
   }
   private receive(
-    message: Exclude<HostMessage, { kind: "ready" | "native-register" }>,
+    message: Exclude<
+      HostMessage,
+      {
+        kind:
+          | "ready"
+          | "native-register"
+          | "cooldown-ready"
+          | "cooldown-committed";
+      }
+    >,
   ): void {
     match(message)
       .with({ kind: "subagents" }, ({ connectionGeneration, state }) => {
@@ -736,8 +754,11 @@ export class RuntimeService {
   }
   async execute(command: RuntimeCommand): Promise<RuntimeView> {
     if (this.released) throw Error("Runtime released");
+    if (this.cooldownUnconfirmed) throw Error("Native shutdown unconfirmed");
     this.commandsInFlight++;
     try {
+      if (this.cooling) await this.cooling;
+      if (this.cooldownUnconfirmed) throw Error("Native shutdown unconfirmed");
       return await this.executeCommand(command);
     } finally {
       this.commandsInFlight--;
@@ -1255,8 +1276,11 @@ export class RuntimeService {
   }
   async submit(command: SubmissionCommand): Promise<SubmissionReply> {
     if (this.released) throw Error("Runtime released");
+    if (this.cooldownUnconfirmed) throw Error("Native shutdown unconfirmed");
     this.commandsInFlight++;
     try {
+      if (this.cooling) await this.cooling;
+      if (this.cooldownUnconfirmed) throw Error("Native shutdown unconfirmed");
       return await this.submitCommand(command);
     } finally {
       this.commandsInFlight--;
@@ -1528,19 +1552,7 @@ export class RuntimeService {
           )
       )
         return "blocked";
-      if (
-        this.store.submissions
-          .list(this.view.threadId)
-          .some(
-            (receipt) =>
-              receipt.state === "prepared" ||
-              receipt.state === "dispatching" ||
-              receipt.state === "unknown" ||
-              (receipt.state === "acknowledged" &&
-                (receipt.outcome === "unobserved" ||
-                  receipt.outcome === "unknown")),
-          )
-      )
+      if (this.store.submissions.hasUnsettled(this.view.threadId))
         return "blocked";
     } catch {
       return "blocked";
@@ -1550,8 +1562,115 @@ export class RuntimeService {
     // sessionStarted is cleared only by confirmed physical cleanup.
     return this.sessionStarted ? "blocked" : "next-start";
   }
+  private cooldownReason(): NativeRetentionReason | null {
+    if (this.cooldownUnconfirmed) return "unconfirmed";
+    if (this.released || !this.connection.connected || !this.sessionStarted)
+      return "unavailable";
+    if (this.commandsInFlight) return "command";
+    if (this.lostEvidence || this.pendingEvidence.size) return "evidence";
+    if (
+      this.uncertainLifetime ||
+      [
+        this.view?.queueOperation,
+        this.view?.subagentOperation,
+        this.view?.modelOperation,
+      ].some((op) => op?.status === "unknown")
+    )
+      return "unknown";
+    if (this.hasActiveWork() || this.view?.modelChanging) return "active-work";
+    if (!this.idleConfirmed || !this.view?.control) return "idle-unconfirmed";
+    const threadId = this.scopeThreadId ?? this.view?.threadId;
+    if (!threadId) return "unavailable";
+    try {
+      if (this.store.submissions.hasUnsettled(threadId)) return "evidence";
+    } catch {
+      return "evidence";
+    }
+    return null;
+  }
+  nativeResidency(): NativeResidency {
+    if (this.cooling) return { kind: "cooling" };
+    if (!this.connection.connected && !this.sessionStarted)
+      return { kind: "cold" };
+    if (!this.connection.connected)
+      return { kind: "protected", reason: "unconfirmed" };
+    const reason = this.cooldownReason();
+    return reason ? { kind: "protected", reason } : { kind: "warm" };
+  }
+  async coolIfIdle(stillOwned: () => boolean): Promise<NativeCooldownResult> {
+    if (this.cooling) return { kind: "retained", reason: "command" };
+    const reason = this.cooldownReason();
+    if (reason) return { kind: "retained", reason };
+    if (!stillOwned()) return { kind: "retained", reason: "selected" };
+    const generation = this.currentConnectionGeneration;
+    if (!generation) return { kind: "retained", reason: "unavailable" };
+    const traceId = randomUUID();
+    const threadId = this.scopeThreadId ?? this.view?.threadId;
+    const processInstanceId = this.target?.processInstanceId;
+    const recordCooldown = (
+      stage: "initiated" | "completed" | "failed",
+      code?: string,
+    ) => {
+      try {
+        this.record({
+          traceId,
+          requestId: traceId,
+          connectionId: generation,
+          ...(threadId ? { threadId } : {}),
+          ...(processInstanceId
+            ? { nativeProcessInstanceId: processInstanceId }
+            : {}),
+          operation: "runtime:cooldown",
+          stage,
+          ...(code ? { code } : {}),
+        });
+      } catch {
+        /* Diagnostics cannot authorize or prevent cooldown. */
+      }
+    };
+    recordCooldown("initiated");
+    const attempt = this.connection.coolIdle(
+      traceId,
+      generation,
+      () =>
+        generation === this.currentConnectionGeneration &&
+        stillOwned() &&
+        this.cooldownReason() === null,
+    );
+    this.cooling = attempt;
+    try {
+      const result = await attempt;
+      if (result.kind === "retained" && result.reason === "unconfirmed") {
+        this.cooldownUnconfirmed = true;
+        this.update({
+          phase: "interrupted",
+          recoveryFailure: "shutdown-unconfirmed",
+          message: recoveryFailureMessage("shutdown-unconfirmed"),
+        });
+      }
+      recordCooldown(
+        result.kind === "cooled" ? "completed" : "failed",
+        result.kind === "cooled" ? "warm-to-cold" : result.reason,
+      );
+      if (
+        result.kind === "cooled" &&
+        !this.lostEvidence &&
+        !this.uncertainLifetime
+      )
+        this.update({
+          phase: this.view?.trusted ? "allowed" : "browse",
+          message: uiMessage("runtime.cooled"),
+        });
+      return result;
+    } finally {
+      if (this.cooling === attempt) this.cooling = null;
+      this.settled();
+    }
+  }
   private releaseEligible(): boolean {
     if (
+      this.cooldownUnconfirmed ||
+      this.cooling ||
       this.released ||
       this.commandsInFlight > 0 ||
       this.sessionStarted ||
@@ -1569,17 +1688,7 @@ export class RuntimeService {
     const threadId = this.scopeThreadId ?? this.view?.threadId;
     if (!threadId) return false;
     try {
-      return !this.store.submissions
-        .list(threadId)
-        .some(
-          (receipt) =>
-            receipt.state === "prepared" ||
-            receipt.state === "dispatching" ||
-            receipt.state === "unknown" ||
-            (receipt.state === "acknowledged" &&
-              (receipt.outcome === "unobserved" ||
-                receipt.outcome === "unknown")),
-        );
+      return !this.store.submissions.hasUnsettled(threadId);
     } catch {
       // Unreadable receipt evidence is not proof of a releasable lifetime.
       return false;
@@ -1599,6 +1708,7 @@ export class RuntimeService {
     return this.released;
   }
   async retireForThreadManagement(): Promise<void> {
+    if (this.cooling) await this.cooling;
     if (
       this.commandsInFlight ||
       this.hasActiveWork() ||

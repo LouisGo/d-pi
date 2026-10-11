@@ -50,6 +50,8 @@ export const domain = {
   "runtime.readyToSend": "Ready to send.",
   "runtime.noModel": "No model available. Connect a provider in Settings.",
   "runtime.disconnected": "Connection interrupted. Your draft is retained.",
+  "runtime.cooled":
+    "Idle session resources released. The original conversation is retained.",
   "runtime.controlFailed":
     "The action didn't complete. Check task status; no automatic retry.",
   "runtime.queuePaused":

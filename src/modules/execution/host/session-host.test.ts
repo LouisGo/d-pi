@@ -195,6 +195,69 @@ it("does not close from an idle query overtaken by observed background activity"
   native.observers[0]?.({ kind: "exited" });
 });
 
+it.each(["allow", "deny", "new-work", "reader"] as const)(
+  "rechecks a warm cooldown after its Main permit (%s)",
+  async (scenario) => {
+    const messages: HostMessage[] = [];
+    const exit = vi.fn();
+    let reader = false;
+    const host = createSessionHost((message) => messages.push(message), exit, {
+      hasReadingDemand: () => reader,
+    });
+    const generation = crypto.randomUUID();
+    const idle = {
+      paused: false,
+      stopping: false,
+      pendingAsync: false,
+      admitted: false,
+      streaming: false,
+      compacting: false,
+      queued: 0,
+      background: 0,
+      queue: [],
+    };
+    native.controlRequest.mockResolvedValue({ success: true, data: idle });
+    await host.handle({
+      kind: "start",
+      threadId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: generation,
+      configContextId: "fixture",
+      binary: "/fixture/bun",
+      sdkEntry: "/fixture/host.mjs",
+      identity: { directory: "/project", device: "1", inode: "2" },
+      environment: {},
+      sessionDirectory: "/sessions",
+    });
+    const traceId = crypto.randomUUID();
+    const closing = host.handle({
+      kind: "close-idle",
+      cooldown: { traceId, connectionGeneration: generation },
+    });
+    await vi.waitFor(() =>
+      expect(messages.some((m) => m.kind === "cooldown-ready")).toBe(true),
+    );
+    expect(native.close).not.toHaveBeenCalled();
+    if (scenario === "new-work")
+      native.observers[0]?.({
+        kind: "frame",
+        frame: { type: "d_pi_control_state", data: { ...idle, background: 1 } },
+      });
+    if (scenario === "reader") reader = true;
+    await host.handle({
+      kind: "cooldown-permit",
+      traceId,
+      connectionGeneration: generation,
+      allowed: scenario !== "deny",
+    });
+    await closing;
+    expect(exit).toHaveBeenCalledTimes(scenario === "allow" ? 1 : 0);
+    expect(native.close).toHaveBeenCalledTimes(scenario === "allow" ? 1 : 0);
+    if (scenario !== "allow") native.observers[0]?.({ kind: "exited" });
+  },
+);
+
 it("without a fresh state query refuses close-idle while last known control shows background activity", async () => {
   const messages: HostMessage[] = [];
   const exit = vi.fn();

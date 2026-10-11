@@ -64,6 +64,7 @@ it("pauses transcript delivery while an independent tool reader stays live, then
     connectionGeneration,
     nativeSessionKey: "native",
   });
+  expect(host.hasReadingDemand()).toBe(false);
   expect(f.port.postMessage).not.toHaveBeenCalled();
   f.send({ kind: "timeline-demand", active: true });
   host.accept({
@@ -85,6 +86,7 @@ it("pauses transcript delivery while an independent tool reader stays live, then
     },
   });
   f.send({ kind: "timeline-demand", active: false });
+  expect(host.hasReadingDemand()).toBe(true);
   f.port.postMessage.mockClear();
   host.accept({
     type: "tool_execution_end",
@@ -104,5 +106,37 @@ it("pauses transcript delivery while an independent tool reader stays live, then
       items: [expect.objectContaining({ text: "final evidence" })],
     }),
   );
+  host.dispose();
+});
+
+it("does not let an invalid tool source acquire native residency", () => {
+  const host = createConversationHost();
+  const f = readingPort();
+  const threadId = crypto.randomUUID(),
+    connectionGeneration = crypto.randomUUID();
+  host.start(connectionGeneration, threadId);
+  host.attach(f.port, {
+    threadId,
+    connectionGeneration,
+    nativeSessionKey: "native",
+  });
+  f.send({
+    kind: "watch-tool",
+    readerId: crypto.randomUUID(),
+    source: {
+      kind: "live-tool",
+      threadId: crypto.randomUUID(),
+      connectionGeneration,
+      nativeSessionKey: "native",
+      toolCallId: "foreign",
+    },
+  });
+  expect(f.port.postMessage).toHaveBeenCalledWith(
+    expect.objectContaining({
+      kind: "tool-unavailable",
+      reason: "identity-changed",
+    }),
+  );
+  expect(host.hasReadingDemand()).toBe(false);
   host.dispose();
 });

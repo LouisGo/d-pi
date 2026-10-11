@@ -21,6 +21,10 @@ import {
   createAttachmentService,
 } from "./attachment-service";
 import { DesktopCommandService } from "./desktop-command-service";
+import {
+  NativeRuntimeSupervisor,
+  nativeWarmBudget,
+} from "./native-runtime-supervisor";
 import { NativeSessionIndex } from "./native-session-index";
 import { NativeThreadHistory } from "./native-thread-history";
 import { ThreadCommandService } from "./thread-command-service";
@@ -44,11 +48,13 @@ export function createDesktopServices(context: {
   const releasing = new Set<RuntimeService>();
   let pruneScheduled = false;
   let latestThreadId: string | undefined;
+  let runtimeSupervisor: NativeRuntimeSupervisor | undefined;
   function scheduleRuntimePrune(): void {
     if (pruneScheduled) return;
     pruneScheduled = true;
     queueMicrotask(() => {
       pruneScheduled = false;
+      void runtimeSupervisor?.sweep();
       for (const [threadId, runtime] of runtimes) {
         // Keep the most recently requested object stable for its caller.
         // Every other exited/reconstructible object is released, not LRU-killed.
@@ -91,6 +97,7 @@ export function createDesktopServices(context: {
         app.getPath("userData"),
         process.env,
         (view) => {
+          scheduleRuntimePrune();
           try {
             context.onRuntimeView?.(view);
           } catch {
@@ -140,6 +147,17 @@ export function createDesktopServices(context: {
       const data = app.getPath("userData");
       mkdirSync(data, { recursive: true, mode: 0o700 });
       store = AppStorage.open(join(data, "drafts.sqlite"));
+      runtimeSupervisor = new NativeRuntimeSupervisor(
+        runtimes,
+        () => {
+          const window = context.getWindow();
+          return window
+            ? (store?.threads.activeThread()?.threadId ?? null)
+            : null;
+        },
+        nativeWarmBudget(process.env),
+      );
+      runtimeSupervisor.start();
       context.applyStoredLocale(store.preferences.read().locale);
       configuration = new NativeConfiguration(
         app.isPackaged
@@ -240,7 +258,13 @@ export function createDesktopServices(context: {
     }
   }
   return {
-    closeThreadCommands: () => threadCommands?.close(),
+    closeThreadCommands: () => {
+      runtimeSupervisor?.close();
+      return threadCommands?.close();
+    },
+    get nativeResidency() {
+      return runtimeSupervisor?.snapshot();
+    },
     get attachments() {
       return attachments;
     },

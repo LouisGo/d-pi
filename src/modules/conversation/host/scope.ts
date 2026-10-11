@@ -21,6 +21,7 @@ export interface ConversationHost {
   start(connectionGeneration: string, threadId?: string): void;
   accept(frame: NativeFrame): void;
   attach(port?: ConversationHostPort, scope?: ToolScope): void;
+  hasReadingDemand(): boolean;
   dispose(): void;
 }
 
@@ -54,6 +55,7 @@ export function createConversationHost(): ConversationHost {
   };
 
   return {
+    hasReadingDemand: () => timelineActive || readers.size > 0,
     start(connectionGeneration, threadId) {
       releaseReaders();
       details?.dispose();
@@ -97,10 +99,12 @@ export function createConversationHost(): ConversationHost {
           details?.release(command.readerId);
           readers.delete(command.readerId);
         } else if (details) {
-          readers.add(command.readerId);
-          details.watch(command.readerId, command.source, (value) =>
-            attached?.postMessage(value),
-          );
+          if (
+            details.watch(command.readerId, command.source, (value) =>
+              attached?.postMessage(value),
+            )
+          )
+            readers.add(command.readerId);
         }
       });
       attached?.on?.("close", () => {

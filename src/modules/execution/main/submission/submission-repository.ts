@@ -13,6 +13,15 @@ import {
   SubmissionReceiptSchema,
   type SubmissionRejectionReason,
 } from "../../contracts/public";
+
+// An invalid/unknown state cannot prove that an execution lifetime is settled.
+const UNSETTLED_RECEIPT = `CASE WHEN json_valid(receipt) THEN
+  json_extract(receipt,'$.state') IS NULL OR NOT (
+    json_extract(receipt,'$.state') = 'rejected' OR (
+      json_extract(receipt,'$.state') = 'acknowledged' AND
+      COALESCE(json_extract(receipt,'$.outcome') IN ('completed','failed','aborted'), 0)
+    )
+  ) ELSE 1 END`;
 export class SubmissionRepository {
   constructor(
     private readonly database: AppDatabase,
@@ -206,6 +215,19 @@ export class SubmissionRepository {
       )
       .all(threadId)
       .map((row) => this.decodeReceipt(row.receipt));
+  }
+  /** All receipts, without hydrating body text or applying a presentation limit. */
+  hasUnsettled(threadId: string): boolean {
+    return (
+      this.db
+        .prepare(`SELECT 1 FROM submission INDEXED BY submission_unsettled_thread
+      WHERE thread_id=? AND (${UNSETTLED_RECEIPT}) LIMIT 1`)
+        .get(threadId) !== undefined
+    );
+  }
+  initializeUnsettledIndex(): void {
+    this.db.exec(`CREATE INDEX IF NOT EXISTS submission_unsettled_thread
+      ON submission(thread_id) WHERE (${UNSETTLED_RECEIPT})`);
   }
   /** Backfill a derived lookup after schema migration, before publishing storage. */
   initializePresentationIndex(): void {

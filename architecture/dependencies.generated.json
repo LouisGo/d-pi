@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "ba037a0d8200ad8e9cb5e1882f5bc7d28f83e3e3951685078f0ce235b144183a",
+  "inputsHash": "2b6cc35b79b6332715cef3b75d7b58dfdeb82c8c986c454fbc257a4945120f88",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 653,
-    "scannedFiles": 653,
+    "sourceFiles": 656,
+    "scannedFiles": 656,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 293,
-      "lines": 58558,
+      "files": 295,
+      "lines": 59019,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -110,7 +110,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 3904,
+      "lines": 3908,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -311,7 +311,7 @@
       ],
       "materialized": true,
       "files": 45,
-      "lines": 11169,
+      "lines": 11208,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -343,8 +343,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 59,
-      "lines": 14928,
+      "files": 60,
+      "lines": 15414,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -6067,6 +6067,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "./native-runtime-supervisor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/native-runtime-supervisor.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/desktop-services.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "./native-session-index",
       "kind": "import",
       "resolution": "module",
@@ -6250,6 +6262,51 @@
       "to": "src/app/main/wiring/desktop-command-service.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/native-runtime-supervisor.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/wiring/native-runtime-supervisor.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/wiring/native-runtime-supervisor.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./native-runtime-supervisor",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/native-runtime-supervisor.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/native-runtime-supervisor.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/main/wiring/native-session-index.test.ts",
@@ -32314,6 +32371,18 @@
       "sourceModule": "execution",
       "sourceEnvironment": "contracts",
       "test": false,
+      "specifier": "./residency",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/residency.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/contracts/public.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
       "specifier": "./runtime",
       "kind": "export",
       "resolution": "module",
@@ -34223,6 +34292,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/main/runtime/runtime-service.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../contracts/residency",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/residency.ts",
       "targetModule": "execution",
       "targetEnvironment": "contracts"
     },

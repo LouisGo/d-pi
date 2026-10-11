@@ -193,6 +193,19 @@ WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sour
 
 可见性组合修正：固定 `efcaf40..0ca5a6e` 独立review发现P2，ReadingPane隐藏会卸载FilePanel的轻位置owner，先前直接挂FilePanel的回归没有覆盖该生产组合。新增真实ReadingPane→FilePanel的file/Diff×page/shell/window六个反例均先复现返回目标丢失；files现保留轻owner，内部Viewer继续卸载Query/Monaco。三文件38/38通过，包含组合目标/取消/晚到/重采样及轻坐标接棒、实际Monaco adapter同版本恢复/旧版本拒绝；Renderer仍只有既有composer-tag基线。该修正不保留隐藏文件正文或Editor实例。
 
+### WB03 工程增量：原生 warm 预算与许可式冷却（2026-10-11）
+
+- 对照本地T3 `ProviderSessionManager.ts` 的idle generation/异步probe后身份重核，未复制其后台pin到期强制释放规则。固定OMP18.8.9及自有 `runtime/host.mjs` 的实际state、pendingAsync/admitted/background与既有lease/清理合同仍为执行依据。Main新增独立NativeRuntimeSupervisor：后台idle warm初始2个/60秒，`D_PI_NATIVE_WARM_LIMIT`限定0–8、`D_PI_NATIVE_IDLE_MS`限定1秒–30分钟；最多2个并发冷却尝试，不把Renderer cache或最新RPC调用当选中会话。
+- RuntimeService给出warm/cold/cooling/真实protected原因，命令、执行、未决收据/证据/unknown均拒绝冷却。Host先查原生真实state，再请求同trace/generation的Main许可；Main重新查SQLite选择和实例准入，Host许可后重核观察代次与实际timeline/tool reader。实际关闭确认及进程组/lease物理清理都成立才表达cold；原session文件/ID、授权、模型意图与历史保留。新命令在许可前令冷却拒绝，若已经进入关闭则等待清理后重新准入；没有重发已写请求。诊断贯穿同一cooldown trace与真实实例身份，不记正文。
+- 反例先复现Main缺策略、Host不等待许可、无效reader误占用，以及probe期间意外退出被误算正常冷却，分别修正。8文件69/69、Runtime/SQLite完整58/58通过：容量/TTL/选中/身份换代/两slot/关闭timer、许可前新工作与reader、A/B事实保护、pending/unknown/evidence拒绝、命令竞争、异常退出、原session冷恢复。Host入口两条旧断言在固定acb2da7副本同样5/7，按WB00 written与WB03显式demand合同补正确fixture后7/7；未改生产行为迎合旧断言，隔离副本已清理。
+- Main/Host/Core类型及生产build通过；结构/快速门禁以本段最终源再生成核验。固定0ca5a6e..acb2da7独立复核已确认文件轻owner P2闭合。本段warm仍需固定范围独立复核与真实Electron/native验证，不冒称完整WB03、第13节生产trace、输入延迟或用户认可；子会话operation及WB04仍待完成，goal保持active，不推送或发布。
+
+窗口准入补充：初稿仅保护可见窗口的选中Thread；追踪ThreadModel发现窗口隐藏仍拥有自动准备职责，冷却会触发无用户动作的重启。保护现跟随存活窗口的SQLite逻辑选择，隐藏只释放阅读/Viewer，关闭窗口才解除selected保护。Main组合回归确认最新background调用不取代窗口选择，窗口关闭后转入正常warm政策。Renderer复核仍仅既有composer-tag.tsx:134 TS7053；40项架构测试通过，完整生产构建保留既有大chunk提示。
+
+物理finalization补充：实际失败反例确认许可后超时仍可能保持连接，同时等待中的命令会继续准入。现将该实例保留为shutdown-unconfirmed，等待后再次检查并拒绝新执行/提交；原收据不写入。两个冷却slot直到同物理实例确认cold才释放，不能以逻辑超时替代资源完成。Runtime60、全收据索引4、Supervisor6共70/70通过；覆盖已许可关闭超时、等待命令拒绝和清理后slot接续，仍不冒称真实Electron/native结果。
+
+驻留收据核实：`submissions.list()`原有100条展示上限不能用于证明全部结清。旧prepared后追加101个rejected的真实SQLite反例先复现nativeResidency误报warm，现由partial index的hasUnsettled存在性查询覆盖全部收据；共享的modelSelection、releaseEligible与cooldownReason都采用同一判定，不加载正文。原生Runtime完整59/59，加索引/未知或损坏状态/实际EXPLAIN QUERY PLAN四项为63/63；索引派生现有receipt、不改变事实或展示分页，读取失败仍拒绝。后续验证与review覆盖该增量。
+
 ### WB00 milestone（2026-10-11）
 
 - 先写 InteractionOperation/InteractionDraft 与执行模块合同。红灯确认同题双击两次派发、Host respond 缺失；实现后对应反例转绿。Thread-owned RuntimeModel 保留表单、冻结回答、操作结果和后续收据关联；Main 等待精确 Host 结果，授权 await 后再次校验代次，Host 单次 write 兜底。普通 interaction 状态和 answer operation 改名 written，收据 ACK 不变。

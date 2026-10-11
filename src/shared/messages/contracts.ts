@@ -10,6 +10,7 @@ export const PlainUiMessageCodeSchema = z.enum([
   "runtime.readyToSend",
   "runtime.noModel",
   "runtime.disconnected",
+  "runtime.cooled",
   "runtime.controlFailed",
   "runtime.queuePaused",
   "runtime.controlUpdated",

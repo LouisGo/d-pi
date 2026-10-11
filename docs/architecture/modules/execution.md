@@ -86,6 +86,16 @@ SDK Host 启动后由只读观察适配建立原生订阅与活动快照；同�
 
 ## Main 闲置实例回收（2026-10-10）
 
+WB03 warm/cold 增量（2026-10-11）：Main RuntimeSupervisor 独立维护原生驻留预算与 idle 时间，RuntimeService 保留实际占用/证据准入，HostConnection 和 SessionHost 完成冷却许可及物理清理。初始工程参数为后台 idle warm 最多2个、60秒；可通过有界环境配置调整，不将其声称为校准后的最佳容量。存活窗口所选择的Thread、执行/队列/待答/后台Job、未决或缺失证据、在途命令及实际阅读需求均受保护；关闭窗口后存储中的旧选择不单独保持native active。占用超过预算允许保留并报告具体原因，不按时间强杀。
+
+初稿曾把selected保护限定为可见窗口；实际ThreadModel选择生命周期在窗口隐藏时仍拥有自动准备职责，这样冷却会引发无用户动作的重启。因此保护跟随存活窗口的逻辑选择，隐藏只释放阅读/Viewer；窗口关闭后解除selected保护。此处区分选择、阅读和执行生命周期，不通过DOM卸载停止工作或改变授权。
+
+原生驻留与模型/实例准入不能用最近100条展示收据证明全部结清。SubmissionRepository.hasUnsettled通过App启动后建立的partial index查询全部未决收据的存在性，不返回或解析正文；prepared/dispatching/unknown、ACK后unobserved/unknown及未知/损坏状态保留占用。索引只派生现有权威receipt，不改写收据；缺索引或查询失败保守拒绝准入。原有展示分页独立保留。
+
+自动冷却先由Host查询固定OMP真实状态，再向Main请求同trace/generation许可；Main复核当前选择与实例占用，Host收到许可后再次核对观察代次、待办及阅读需求，才开始关闭。新命令等待该冷却尝试结束后重新走原准入，未写请求不会自动重发。只有物理进程组清理和lease释放确认后，运行镜像才能表达cold；原session文件/ID、授权、未落盘模型意图与历史均保留，下一次显式准备仍执行原冷恢复合同。拒绝/超时/不明清理保持原状态或真实unknown，不能改成ready或伪造恢复。
+
+已授予关闭许可后超时，Runtime保留shutdown-unconfirmed，并拒绝等待中和后来进入的新命令；Main的两个冷却名额继续计入该物理实例，直到同实例真实清理为cold。逻辑请求结束不释放物理名额；后续明确start仍走原身份/lease恢复检查。
+
 Main registry 只移除已确认退出且可从存储重建的 RuntimeService；不因 Renderer 的 8 个 Thread 缓存淘汰而停止原生进程，不中断后台 Agent。释放前后重验 registry 所有权、实际进程清理、在途命令、执行/交互/队列、未决收据与不可重建的选择意图；unknown 或身份不明拒绝回收。真正退出与页面卸载仍是两个生命周期。
 
 持久 evidence 失败不能在物理清理清空内存后变成“可回收”：未确认缺口保留到同活 Host 重送并实际入库，退出后的缺口仍阻止丢弃该实例。重建实例的 RuntimeView revision 使用 Main 生命周期单调发布时钟；同一 Main 内保留的 Renderer/attention 镜像不会拒绝新实例的低 revision。跨 Thread 可有跳号，revision 不表示 OMP 执行序号或持久事实。

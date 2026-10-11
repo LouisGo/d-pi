@@ -118,7 +118,18 @@ export const HostCommandSchema = z.discriminatedUnion("kind", [
     evidenceId: z.uuid(),
     connectionGeneration: z.uuid(),
   }),
-  z.strictObject({ kind: z.literal("close-idle") }),
+  z.strictObject({
+    kind: z.literal("close-idle"),
+    cooldown: z
+      .strictObject({ traceId: z.uuid(), connectionGeneration: z.uuid() })
+      .optional(),
+  }),
+  z.strictObject({
+    kind: z.literal("cooldown-permit"),
+    traceId: z.uuid(),
+    connectionGeneration: z.uuid(),
+    allowed: z.boolean(),
+  }),
 ]);
 export const NativeStateSchema = z.object({
   sessionId: z.string(),
@@ -141,6 +152,25 @@ export type NativeState = z.infer<typeof NativeStateSchema>;
 
 export type HostCommand = z.infer<typeof HostCommandSchema>;
 export const HostMessageSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("cooldown-committed"),
+    traceId: z.uuid(),
+    connectionGeneration: z.uuid(),
+  }),
+  z.strictObject({
+    kind: z.literal("cooldown-ready"),
+    traceId: z.uuid(),
+    connectionGeneration: z.uuid(),
+    reason: z
+      .enum([
+        "active-work",
+        "reading-demand",
+        "changed",
+        "permission",
+        "unavailable",
+      ])
+      .optional(),
+  }),
   z.strictObject({
     kind: z.literal("subagents"),
     connectionGeneration: z.uuid(),

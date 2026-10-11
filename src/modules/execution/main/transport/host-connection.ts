@@ -17,6 +17,8 @@ import {
   type HostMessage,
   type HostStart,
   HostTransportMessageSchema,
+  type NativeCooldownResult,
+  type NativeRetentionReason,
   type ProcessExitEvidence,
 } from "../../contracts/public";
 
@@ -32,6 +34,11 @@ type ScopeListener = {
   exit: (evidence?: ProcessExitEvidence) => void;
 };
 type OperationResult = Extract<HostMessage, { kind: "operation-result" }>;
+class CooldownRefused extends Error {
+  constructor(readonly reason: NativeRetentionReason) {
+    super(reason);
+  }
+}
 type OperationWaiter = {
   finish: (result: OperationResult) => void;
   unknown: OperationResult;
@@ -75,6 +82,13 @@ function hostProcess(): UtilityProcess {
 }
 // Process/transport ownership only. It cannot grant trust or persist business receipts.
 export class HostConnection {
+  private cooldownRequest: {
+    traceId: string;
+    connectionGeneration: string;
+    allow: () => boolean;
+    committed: () => void;
+    refuse: (reason: NativeRetentionReason) => void;
+  } | null = null;
   private readonly operationWaiters = new Map<string, OperationWaiter>();
   private waitScope = Scope.makeUnsafe("parallel");
   // One task owner per connection generation. Public methods keep ordinary
@@ -169,7 +183,16 @@ export class HostConnection {
   private closeListeners = new Set<(confirmed: boolean) => void>();
   constructor(
     private readonly receive: (
-      message: Exclude<HostMessage, { kind: "ready" | "native-register" }>,
+      message: Exclude<
+        HostMessage,
+        {
+          kind:
+            | "ready"
+            | "native-register"
+            | "cooldown-ready"
+            | "cooldown-committed";
+        }
+      >,
     ) => void,
     private readonly exited: (evidence?: ProcessExitEvidence) => void,
     private readonly closed: (confirmed: boolean) => void = () => {},
@@ -328,6 +351,41 @@ export class HostConnection {
             }
             return;
           }
+          if (message.kind === "cooldown-committed") {
+            const request = this.cooldownRequest;
+            if (
+              request?.traceId === message.traceId &&
+              request.connectionGeneration === message.connectionGeneration
+            )
+              request.committed();
+            return;
+          }
+          if (message.kind === "cooldown-ready") {
+            const request = this.cooldownRequest;
+            if (
+              !request ||
+              request.traceId !== message.traceId ||
+              request.connectionGeneration !== message.connectionGeneration
+            )
+              return;
+            if (message.reason) request.refuse(message.reason);
+            else {
+              let allowed = false;
+              try {
+                allowed = request.allow();
+              } catch {
+                /* no permission on unreadable ownership */
+              }
+              this.send({
+                kind: "cooldown-permit",
+                traceId: message.traceId,
+                connectionGeneration: message.connectionGeneration,
+                allowed,
+              });
+              if (!allowed) request.refuse("permission");
+            }
+            return;
+          }
           if (message.kind === "ready") {
             if (
               !awaitingReady ||
@@ -416,7 +474,49 @@ export class HostConnection {
     await Effect.runPromise(Scope.close(scope, Exit.void));
     return !this.connected && this.waitScope === scope;
   }
-  async closeIdle(): Promise<void> {
+  async coolIdle(
+    traceId: string,
+    connectionGeneration: string,
+    allow: () => boolean,
+  ): Promise<NativeCooldownResult> {
+    if (!this.connected || this.cooldownRequest)
+      return { kind: "retained", reason: "unavailable" };
+    let permitWritten = false;
+    try {
+      let committed = false;
+      await this.closeIdle({
+        traceId,
+        connectionGeneration,
+        allow: () => {
+          const allowed = allow();
+          permitWritten ||= allowed;
+          return allowed;
+        },
+        committed: () => {
+          committed = true;
+        },
+      });
+      return committed
+        ? { kind: "cooled" }
+        : { kind: "retained", reason: "unavailable" };
+    } catch (error) {
+      return {
+        kind: "retained",
+        reason:
+          error instanceof CooldownRefused
+            ? error.reason
+            : permitWritten
+              ? "unconfirmed"
+              : "unavailable",
+      };
+    }
+  }
+  async closeIdle(cooldown?: {
+    traceId: string;
+    connectionGeneration: string;
+    allow: () => boolean;
+    committed: () => void;
+  }): Promise<void> {
     if (!this.connected) {
       if (this.cleanup && !(await this.cleanup))
         throw Error("Process group shutdown unconfirmed");
@@ -433,8 +533,24 @@ export class HostConnection {
               : Effect.fail(Error("Process group shutdown unconfirmed")),
           );
         listeners.add(done);
+        if (cooldown)
+          this.cooldownRequest = {
+            ...cooldown,
+            refuse: (reason) =>
+              resume(Effect.fail(new CooldownRefused(reason))),
+          };
         try {
-          this.send({ kind: "close-idle" });
+          this.send({
+            kind: "close-idle",
+            ...(cooldown
+              ? {
+                  cooldown: {
+                    traceId: cooldown.traceId,
+                    connectionGeneration: cooldown.connectionGeneration,
+                  },
+                }
+              : {}),
+          });
         } catch (error) {
           resume(Effect.fail(error));
         }
@@ -443,7 +559,13 @@ export class HostConnection {
           duration: 5000,
           orElse: () => Effect.fail(Error("Idle close not confirmed")),
         }),
-        Effect.ensuring(Effect.sync(() => listeners.delete(done))),
+        Effect.ensuring(
+          Effect.sync(() => {
+            listeners.delete(done);
+            if (this.cooldownRequest?.traceId === cooldown?.traceId)
+              this.cooldownRequest = null;
+          }),
+        ),
       ),
     );
   }

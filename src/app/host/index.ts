@@ -42,6 +42,7 @@ parent.on("message", ({ data, ports }) => {
         onNativeFrame: (frame) => conversation.accept(frame),
         onAttach: (port, identity) => conversation.attach(port, identity),
         onDispose: () => conversation.dispose(),
+        hasReadingDemand: () => conversation.hasReadingDemand(),
       },
     );
     scopes.set(scopeId, host);

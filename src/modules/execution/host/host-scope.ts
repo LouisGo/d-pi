@@ -32,6 +32,30 @@ export class HostScope {
     throw Cause.squash(result.cause);
   }
 
+  async permit(
+    register: (finish: (allowed: boolean) => void) => () => void,
+  ): Promise<boolean> {
+    if (this.closed) return false;
+    let cleanup = () => {};
+    const fiber = Effect.runSync(
+      Effect.forkIn(
+        Effect.callback<boolean>((resume) => {
+          cleanup = register((allowed) => resume(Effect.succeed(allowed)));
+        }).pipe(
+          Effect.timeoutOrElse({
+            duration: 5000,
+            orElse: () => Effect.succeed(false),
+          }),
+          Effect.ensuring(Effect.sync(() => cleanup())),
+        ),
+        this.scope,
+        { startImmediately: true },
+      ),
+    );
+    const result = await Effect.runPromiseExit(Fiber.join(fiber));
+    return Exit.isSuccess(result) && result.value;
+  }
+
   deadline(
     delay: number,
     operation: (signal: AbortSignal) => void | Promise<void>,

@@ -45,6 +45,7 @@ export interface SessionHostSupervisionEvent {
   traceId: FrozenSubmission["traceId"];
 }
 export interface SessionHostOptions {
+  hasReadingDemand?: () => boolean;
   onStart?: (value: HostStart) => void;
   onNativeFrame?: (frame: NativeFrame) => void;
   onSupervisionEvent?: (event: SessionHostSupervisionEvent) => void;
@@ -83,6 +84,11 @@ export function createSessionHost(
   let subagentObservation: NativeSubagentObservation | null = null;
   let start: HostStart | null = null;
   let permit: ((allowed: boolean) => void) | null = null;
+  let cooldown: {
+    traceId: string;
+    connectionGeneration: string;
+    finish: (allowed: boolean) => void;
+  } | null = null;
   let state: NativeState | null = null;
   let busy = false;
   let unsettledPrompt = false;
@@ -854,6 +860,14 @@ export function createSessionHost(
         }
         return Promise.resolve();
       })
+      .with({ kind: "cooldown-permit" }, (value) => {
+        if (
+          cooldown?.traceId === value.traceId &&
+          cooldown.connectionGeneration === value.connectionGeneration
+        )
+          cooldown.finish(value.allowed);
+        return Promise.resolve();
+      })
       .with({ kind: "attach" }, () => {
         options.onAttach?.(
           port,
@@ -1154,8 +1168,32 @@ export function createSessionHost(
                 : "unknown",
           });
       })
-      .with({ kind: "close-idle" }, async () => {
+      .with({ kind: "close-idle" }, async (command) => {
         if (closing || disconnected) return;
+        const refuse = (
+          reason:
+            | "active-work"
+            | "reading-demand"
+            | "changed"
+            | "permission"
+            | "unavailable",
+        ) => {
+          if (command.cooldown)
+            send({ kind: "cooldown-ready", ...command.cooldown, reason });
+        };
+        if (
+          command.cooldown &&
+          (cooldown ||
+            !start?.sdkEntry ||
+            command.cooldown.connectionGeneration !==
+              start.connectionGeneration ||
+            options.hasReadingDemand?.())
+        ) {
+          refuse(
+            options.hasReadingDemand?.() ? "reading-demand" : "unavailable",
+          );
+          return;
+        }
         const version = observationVersion;
         if (start?.sdkEntry && native) {
           const instance = native;
@@ -1164,8 +1202,10 @@ export function createSessionHost(
           );
           if (closing || disconnected) return;
           if (version !== observationVersion) {
+            refuse("changed");
             // A later native observation invalidates this shutdown evidence too.
-            send({ kind: "failed", code: "active-work" });
+            if (!command.cooldown)
+              send({ kind: "failed", code: "active-work" });
             void refresh();
             return;
           }
@@ -1180,12 +1220,14 @@ export function createSessionHost(
             actual.pendingAsync ||
             actual.admitted
           ) {
+            refuse("active-work");
             send({
               kind: "control",
               connectionGeneration: start.connectionGeneration,
               state: actual,
             });
-            send({ kind: "failed", code: "active-work" });
+            if (!command.cooldown)
+              send({ kind: "failed", code: "active-work" });
             return;
           }
         }
@@ -1198,10 +1240,52 @@ export function createSessionHost(
           starting ||
           (lastControl ? activeControl(lastControl) : false)
         ) {
-          send({ kind: "failed", code: "active-work" });
+          refuse("active-work");
+          if (!command.cooldown) send({ kind: "failed", code: "active-work" });
           return;
         }
+        if (command.cooldown) {
+          const target = command.cooldown;
+          const allowed = await tasks.permit((finish) => {
+            const request = { ...target, finish };
+            cooldown = request;
+            try {
+              send({ kind: "cooldown-ready", ...target });
+            } catch {
+              cooldown = null;
+              finish(false);
+            }
+            return () => {
+              if (cooldown === request) cooldown = null;
+            };
+          });
+          if (
+            !allowed ||
+            closing ||
+            disconnected ||
+            version !== observationVersion ||
+            options.hasReadingDemand?.() ||
+            evidence.size > 0 ||
+            prompts.size > 0 ||
+            unsettledPrompt ||
+            busy ||
+            interactions.blocked ||
+            starting ||
+            (lastControl ? activeControl(lastControl) : true)
+          ) {
+            refuse(
+              !allowed
+                ? "permission"
+                : options.hasReadingDemand?.()
+                  ? "reading-demand"
+                  : "changed",
+            );
+            return;
+          }
+        }
         closing = true;
+        if (command.cooldown)
+          send({ kind: "cooldown-committed", ...command.cooldown });
         await native?.close();
         await tasks.close();
         disposeHost();
@@ -1210,6 +1294,14 @@ export function createSessionHost(
       .exhaustive()
       .catch(async (error: unknown) => {
         if (closing || disconnected) return;
+        if (command.kind === "close-idle" && command.cooldown) {
+          send({
+            kind: "cooldown-ready",
+            ...command.cooldown,
+            reason: "unavailable",
+          });
+          return;
+        }
         if (
           command.kind === "answer" ||
           command.kind === "dismiss" ||

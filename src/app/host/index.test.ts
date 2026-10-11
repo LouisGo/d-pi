@@ -198,8 +198,17 @@ it("a surviving Host serves retained output through a new port after native disc
     },
   });
   native.observe({ kind: "disconnected", reason: "exit" });
-  const port = { close: vi.fn(), start: vi.fn(), postMessage: vi.fn() };
+  let demand: (event: { data: unknown }) => void = () => {};
+  const port = {
+    close: vi.fn(),
+    start: vi.fn(),
+    postMessage: vi.fn(),
+    on: (event: string, listener: typeof demand) => {
+      if (event === "message") demand = listener;
+    },
+  };
   parent.emit("message", { data: { kind: "attach" }, ports: [port] });
+  demand({ data: { kind: "timeline-demand", active: true } });
   expect(port.postMessage).toHaveBeenCalledWith(
     expect.objectContaining({
       kind: "snapshot",
@@ -241,7 +250,7 @@ it("reports answer transport result under the original trace and connectionGener
     traceId,
     connectionGeneration: target.connectionGeneration,
     operation: "answer",
-    status: "acknowledged",
+    status: "written",
   });
 });
 
