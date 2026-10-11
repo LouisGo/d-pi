@@ -1,10 +1,17 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { SettingsModal } from "../../../src/app/renderer/components/ui/settings-modal";
 import type { ConfigurationSnapshot } from "../../../src/modules/configuration/contracts/public";
 import { ModelPickerPanel } from "../../../src/modules/configuration/renderer/model-picker";
 import { I18nProvider } from "../../../src/modules/preferences/renderer/public";
-import { Popover, Select } from "../../../src/modules/ui/renderer/public";
+import {
+  createHoverCardHandle,
+  HoverCard,
+  HoverCardPopup,
+  HoverCardTrigger,
+  Popover,
+  Select,
+} from "../../../src/modules/ui/renderer/public";
 import "../../../src/app/renderer/styles/app.css";
 
 function Sample() {
@@ -12,6 +19,7 @@ function Sample() {
   const [scope, setScope] = useState("thread");
   const [many, setMany] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
+  const preview = useMemo(() => createHoverCardHandle<string>(), []);
   return (
     <>
       <button ref={trigger} onClick={() => setOpen(true)}>
@@ -85,6 +93,27 @@ function Sample() {
           />
         </Popover>
       </SettingsModal>
+      <div id="hover-fixture">
+        <HoverCardTrigger
+          handle={preview}
+          payload="First preview"
+          render={<button id="hover-first">First</button>}
+        />
+        <HoverCardTrigger
+          handle={preview}
+          payload="Second preview"
+          render={<button id="hover-second">Second</button>}
+        />
+        <HoverCardPopup handle={preview} label="Shared preview">
+          {(payload) => <p>{payload}</p>}
+        </HoverCardPopup>
+        <HoverCard
+          trigger={<button id="hover-single">Standalone</button>}
+          label="Standalone preview"
+        >
+          <p>Standalone preview</p>
+        </HoverCard>
+      </div>
     </>
   );
 }

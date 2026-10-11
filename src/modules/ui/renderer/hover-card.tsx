@@ -1,6 +1,6 @@
 // Project-owned composition of Base UI 1.8.0 preview-card primitives.
 import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card";
-import { type ReactElement, type ReactNode, useEffect } from "react";
+import { type ReactElement, type ReactNode, useEffect, useState } from "react";
 import { useHoverCardModalBoundary } from "./hover-card-modal-boundary";
 
 export const createHoverCardHandle = PreviewCardPrimitive.createHandle;
@@ -53,6 +53,8 @@ export function HoverCardPopup<Payload = unknown>({
   children,
 }: HoverCardPopupProps<Payload>) {
   const boundary = useHoverCardModalBoundary();
+  const [positionTransitionsEnabled, setPositionTransitionsEnabled] =
+    useState(false);
   useEffect(() => {
     if (suppressed) boundary.actionsRef.current?.close();
   }, [suppressed, boundary.actionsRef]);
@@ -60,12 +62,14 @@ export function HoverCardPopup<Payload = unknown>({
     <PreviewCardPrimitive.Root
       handle={handle}
       {...boundary}
+      onOpenChangeComplete={setPositionTransitionsEnabled}
       onOpenChange={(open, details) => {
         if (open && suppressed) {
           details.cancel();
           return;
         }
         boundary.onOpenChange(open, details);
+        if (!open) setPositionTransitionsEnabled(false);
       }}
     >
       {({ payload }) => (
@@ -81,6 +85,7 @@ export function HoverCardPopup<Payload = unknown>({
               fallbackAxisSide: "none",
             }}
             className="ui-hover-card-positioner"
+            data-position-transitions={positionTransitionsEnabled || undefined}
           >
             <PreviewCardPrimitive.Popup
               role="region"
@@ -116,8 +121,17 @@ export function HoverCard({
   onOpenChange,
 }: HoverCardProps) {
   const boundary = useHoverCardModalBoundary(onOpenChange);
+  const [positionTransitionsEnabled, setPositionTransitionsEnabled] =
+    useState(false);
   return (
-    <PreviewCardPrimitive.Root {...boundary}>
+    <PreviewCardPrimitive.Root
+      {...boundary}
+      onOpenChangeComplete={setPositionTransitionsEnabled}
+      onOpenChange={(open, details) => {
+        boundary.onOpenChange(open, details);
+        if (!open) setPositionTransitionsEnabled(false);
+      }}
+    >
       <PreviewCardPrimitive.Trigger
         render={trigger}
         delay={120}
@@ -135,6 +149,7 @@ export function HoverCard({
             fallbackAxisSide: "none",
           }}
           className="ui-hover-card-positioner"
+          data-position-transitions={positionTransitionsEnabled || undefined}
         >
           <PreviewCardPrimitive.Popup
             role="region"

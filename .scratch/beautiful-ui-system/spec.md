@@ -155,3 +155,9 @@ D-31/D-32 延续 Base UI、自有公开 API、Hugeicons、light/dark 和唯一�
 当前 [几何与交互记录](evidence/component-details/native.json) 含 14 张截图，已目视核对代表性的浅色选择弹层与深色窄菜单。8 文件 27 项相关组件测试通过；Renderer TypeScript、12 文件 Biome、设计 lint 通过；单次 [Impeccable detector](evidence/component-details-detector.json) 为 0 findings。机械结果不代表用户认可。测试有既有 React act 警告，未出现测试失败。
 
 工具准备门禁仍失败：当前 pnpm 启动器尝试获取 11.24.0，项目目标为 12.8.1；48/48 声明依赖已安装，本轮使用已安装直接工具完成验证，没有安装依赖或调整工具链。未运行真实 provider、完整工作台/原生看板、IME/VoiceOver、全量检查或打包。本轮工程与源码 Dev 交付完成，用户认可 pending。
+
+## 2026-10-11 预览卡片首次定位反馈
+
+用户授权修复首次 hover 从底部飞入并 Commit。侧栏项目/Thread 详情和会话轮次预览共用 HoverCardPopup；修复同时覆盖独立 HoverCard。Base UI 1.8.0 的 Positioner 不提供 `data-starting-style`，原 CSS 禁用规则未命中，初次测量坐标到最终坐标被 transition 动画化。改为入场完成后才启用坐标 transition，关闭立即重置；保留 Popup 淡入、已打开卡片间平滑切换及 reduced-motion。
+
+扩展 `node validation/m2/ui-popups.mjs`：旧实现先失败，修复后 Electron Chromium 验证 light/dark 下首次打开、关闭重开、共享触发器切换、独立卡片和 reduced-motion 通过；逐帧断言可见卡片已处于最终位置、打开时无坐标动画、已打开的共享卡片仍平滑切换。相关 2 文件 6 项组件测试、Biome、设计 lint 和单次 Impeccable detector（0 findings）通过。Renderer 类型检查仅报 `composer-tag.tsx:134` 的 TS7053，已在未修改 HEAD `a9847ef` 的临时源码快照复现同一错误，本次不扩修该问题。源码 Dev 交付，未运行完整工作台或打包，用户复试认可待定。
