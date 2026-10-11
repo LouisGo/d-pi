@@ -663,6 +663,9 @@ it("historical tool leases survive Thread selection, retain raw output and ances
           toolName: "bash",
           isError: false,
           content: [{ type: "text", text }],
+          details: {
+            meta: { truncation: { direction: "tail", truncatedBy: "bytes" } },
+          },
         },
       },
     ]
@@ -699,6 +702,8 @@ it("historical tool leases survive Thread selection, retain raw output and ances
       argumentsText: JSON.stringify({ command: "printf actual" }),
       text,
       lifecycle: "completed",
+      truncated: true,
+      coverage: "partial",
     },
   });
   const liveRequest = {

@@ -295,3 +295,49 @@ it("refuses developer navigation while the editor is composing, then permits it 
   await input.router.navigate({ to: "/dev/components" });
   expect(input.router.state.location.pathname).toBe("/dev/components");
 });
+
+it("developer navigation cancels a return waiting for source membership, including late pages after returning", async () => {
+  const input = await fixture();
+  const work = input.model.workbench;
+  const source = {
+    kind: "native-record" as const,
+    threadId: input.first.threadId,
+    nativeSessionKey: "native",
+    recordId: "absent",
+    revision: "snapshot",
+  };
+  const id = work.open({
+    source,
+    title: "bash",
+    threadTitle: "A",
+    rowId: "absent",
+  })!;
+  let finish: (value: boolean) => void = () => {};
+  let located = 0;
+  work.registerRows(
+    source.threadId,
+    "native",
+    () => undefined,
+    () =>
+      new Promise((done) => {
+        finish = done;
+      }),
+  );
+  work.registerAnchor(source.threadId, () => {
+    located++;
+    return true;
+  });
+  await work.returnToSource(id);
+  expect(work.stateStore.getState().returning).not.toBeNull();
+  await input.router.navigate({ to: "/dev/components" });
+  expect(work.stateStore.getState().returning).toBeNull();
+  work.registerRows(source.threadId, "native", () => "late-row");
+  finish(true);
+  await Promise.resolve();
+  await input.router.navigate({
+    to: "/threads/$threadId",
+    params: { threadId: input.first.threadId },
+    search: { view: "conversation" },
+  });
+  expect(located).toBe(0);
+});

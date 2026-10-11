@@ -21,6 +21,7 @@ import type { ToolExecutionObservation } from "../contracts/tool-observation";
 import {
   projectToolPayload,
   type ToolPayloadByteCounter,
+  toolOutputCoverage,
 } from "../core/public";
 import {
   NativeImagePartSchema,
@@ -457,8 +458,16 @@ export async function readNativeHistory(
               message.content.some(
                 (part) => !TextPartSchema.safeParse(part).success,
               );
+            const nativeCoverage = toolOutputCoverage({
+              content: message.content,
+              details: message.details,
+            });
             const partial =
-              output.truncated || args.truncated || !matchedCall || nonText;
+              output.truncated ||
+              args.truncated ||
+              !matchedCall ||
+              nonText ||
+              nativeCoverage.partial;
             toolRequest.detail = {
               toolName: message.toolName,
               argumentsText: args.text,
@@ -470,7 +479,8 @@ export async function readNativeHistory(
                     ? "completed"
                     : "unknown",
               coverage: partial ? "partial" : "observed",
-              truncated: output.truncated || args.truncated,
+              truncated:
+                output.truncated || args.truncated || nativeCoverage.truncated,
             };
           }
           const argumentsPayload =

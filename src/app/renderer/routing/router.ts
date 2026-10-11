@@ -51,6 +51,7 @@ export function createAppRouting(model: AppModel) {
     if (next.pathname === "/") return state.threadSelection.kind === "empty";
     const [, rawParams, foundRoute] = router.getMatchedRoutes(next.pathname);
     if (foundRoute?.id === "/dev/components") {
+      model.workbench.cancelReturn();
       selecting = true;
       try {
         if (!(await model.prepareViewNavigation())) return false;

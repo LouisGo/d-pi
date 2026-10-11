@@ -105,3 +105,48 @@ it("rejects foreign source and marks missing lifecycle / bounded bytes truthfull
     reason: "identity-changed",
   });
 });
+
+it("keeps native truncation partial even when the observed text fits the App budget", () => {
+  const scope = {
+    threadId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    nativeSessionKey: "native",
+  };
+  const details = new ToolDetails(scope);
+  let latest: ToolDetailReply | undefined;
+  details.accept({
+    type: "tool_execution_start",
+    toolCallId: "bash",
+    toolName: "bash",
+    args: { command: "large output" },
+  } as NativeFrame);
+  details.watch(
+    crypto.randomUUID(),
+    { kind: "live-tool", ...scope, toolCallId: "bash" },
+    (reply) => {
+      latest = reply;
+    },
+  );
+  details.accept({
+    type: "tool_execution_end",
+    toolCallId: "bash",
+    toolName: "bash",
+    result: {
+      content: [{ type: "text", text: "native tail" }],
+      details: {
+        meta: {
+          truncation: {
+            direction: "tail",
+            truncatedBy: "bytes",
+            artifactId: "real-artifact",
+          },
+        },
+      },
+    },
+  } as NativeFrame);
+  expect(latest).toMatchObject({
+    kind: "tool-detail",
+    detail: { text: "native tail", truncated: true, coverage: "partial" },
+  });
+  details.dispose();
+});

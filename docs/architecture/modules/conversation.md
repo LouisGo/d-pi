@@ -112,3 +112,4 @@ ConversationProjection 只供有界卡片。Host 在摘要前观察原始生命�
 
 WB01 复核补充：历史详情 lease 按捕获的 Thread/原生绑定和 sender 校验，切 Thread 不撤销已固定的只读来源。详情按可信冻结前缀恢复实际工具调用参数，输出独立于卡片投影；恢复扫描最多16页/16MiB，超过预算明确不可用。完成记录可通过真实 nativeRecordId 转接持久读取；转接失败保留最后已观察版本并标明不可用，不能清空后冒称内容不存在。导航在草稿保存之后、派发切换之前再次核对 ticket；新 Surface 意图使旧返回失效。
 返回来源的窗口协调器拥有读取预算：只在同原生身份的成员缺失时请求下一页，最多16页；Query/Reader仍拥有正文，视图只绑定读取适配器。新导航/关闭失效 ticket，迟到页可进入只读缓存但不定位/聚焦旧来源。
+详情coverage同时继承固定OMP 18.8.9的 `details.meta.truncation`、`limits`、`artifactError`及非文本内容；小于App字节预算也不能把OMP已截断的正文标为完整。当前只读观察正文，完整artifact资源读取归WB03，不能替换原生执行结果。

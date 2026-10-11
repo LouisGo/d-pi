@@ -4,6 +4,7 @@ import type {
   ToolDetail,
   ToolDetailReply,
 } from "../../resources/contracts/public";
+import { toolOutputCoverage } from "../core/public";
 
 export type ToolScope = {
   threadId: string;
@@ -13,6 +14,7 @@ export type ToolScope = {
 type Entry = Omit<ToolDetail, "source" | "contentRevision"> & {
   version: number;
   started: boolean;
+  partial: boolean;
 };
 type Reader = {
   source: Extract<SourceRef, { kind: "live-tool" }>;
@@ -97,7 +99,7 @@ export class ToolDetails {
       reader.send({ kind: "tool-unavailable", readerId, reason: "missing" });
       return;
     }
-    const { version, started: _started, ...detail } = entry;
+    const { version, started: _started, partial: _partial, ...detail } = entry;
     reader.send({
       kind: "tool-detail",
       readerId,
@@ -146,6 +148,7 @@ export class ToolDetails {
       truncated: false,
       version: 0,
       started: false,
+      partial: false,
     };
     if (type === "tool_execution_start") {
       entry.started = true;
@@ -160,6 +163,9 @@ export class ToolDetails {
       record ??
       (type === "tool_execution_update" ? value.partialResult : value.result);
     if (payload !== undefined && payload !== null) {
+      const coverage = toolOutputCoverage(payload);
+      entry.truncated ||= coverage.truncated;
+      entry.partial ||= coverage.partial;
       const output = bounded(textOf(payload), MAX_TEXT);
       entry.text = output.text;
       entry.truncated ||= output.truncated;
@@ -171,7 +177,10 @@ export class ToolDetails {
         (record?.isError ?? value.isError) === true ? "failed" : "completed";
     if (typeof value.dPiRecordId === "string")
       entry.nativeRecordId = value.dPiRecordId;
-    entry.coverage = entry.started && !entry.truncated ? "observed" : "partial";
+    entry.coverage =
+      entry.started && !entry.truncated && !entry.partial
+        ? "observed"
+        : "partial";
     entry.version++;
     this.entries.delete(toolCallId);
     this.entries.set(toolCallId, entry);

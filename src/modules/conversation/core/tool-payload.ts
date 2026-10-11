@@ -1,6 +1,46 @@
+import { z } from "zod";
 import type { ToolPayload } from "../contracts/tool-observation";
 
 export type ToolPayloadByteCounter = (text: string) => number;
+
+export type ToolOutputCoverage = { partial: boolean; truncated: boolean };
+const OutputCoverageSchema = z.object({
+  content: z.union([z.string(), z.array(z.unknown())]).optional(),
+  details: z
+    .object({
+      meta: z
+        .object({
+          truncation: z.unknown().optional(),
+          limits: z.unknown().optional(),
+          artifactError: z.unknown().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+});
+/** Preserve fixed native output limits; an App byte cap is only a second limit. */
+export function toolOutputCoverage(payload: unknown): ToolOutputCoverage {
+  if (typeof payload === "string") return { partial: false, truncated: false };
+  const parsed = OutputCoverageSchema.safeParse(payload);
+  if (!parsed.success) return { partial: true, truncated: false };
+  const { content, details } = parsed.data;
+  const truncated = details?.meta?.truncation != null;
+  const nonText =
+    Array.isArray(content) &&
+    content.some(
+      (part) =>
+        !z.object({ type: z.literal("text"), text: z.string() }).safeParse(part)
+          .success,
+    );
+  return {
+    partial:
+      truncated ||
+      nonText ||
+      details?.meta?.limits != null ||
+      details?.meta?.artifactError != null,
+    truncated,
+  };
+}
 
 export function projectToolPayload(
   input: unknown,

@@ -21,5 +21,7 @@ export {
 } from "./reading-position";
 export {
   projectToolPayload,
+  type ToolOutputCoverage,
   type ToolPayloadByteCounter,
+  toolOutputCoverage,
 } from "./tool-payload";
