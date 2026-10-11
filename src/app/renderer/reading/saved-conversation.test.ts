@@ -9,6 +9,7 @@ import type {
   HistoryBridge,
   HistoryPage,
 } from "../../../modules/conversation/contracts/public";
+import { HistoryPageSchema } from "../../../modules/conversation/contracts/public";
 import {
   ConversationModel,
   decodeToolSemantic,
@@ -357,52 +358,54 @@ it("keeps expanded tool members, failed summary and selected DOM through live-to
   const reveal = vi.spyOn(workbench, "reveal");
   cleanups.push(async () => workbench.dispose());
   let committed = false;
-  const reader: HistoryBridge["read"] = vi.fn(async () => ({
-    kind: "page",
-    source: "saved",
-    nativeSessionKey: "native",
-    coverage: "append-order",
-    next: null,
-    incompleteTail: false,
-    omitted: 0,
-    entries: committed
-      ? [
-          { id: "owner", parentId: null, role: "assistant", text: "Owner" },
-          {
-            id: "read-one",
-            parentId: "owner",
-            activityParentId: "owner",
-            role: "toolResult",
-            state: "complete",
-            text: "stable tool result",
-            tool: {
-              toolCallId: "first",
-              name: "read",
-              lifecycle: "succeeded",
-              coverage: "complete",
-              truncated: false,
-              observed: { start: true, end: true, result: true },
+  const reader: HistoryBridge["read"] = vi.fn(async () =>
+    HistoryPageSchema.parse({
+      kind: "page",
+      source: "saved",
+      nativeSessionKey: "native",
+      coverage: "append-order",
+      next: null,
+      incompleteTail: false,
+      omitted: 0,
+      entries: committed
+        ? [
+            { id: "owner", parentId: null, role: "assistant", text: "Owner" },
+            {
+              id: "read-one",
+              parentId: "owner",
+              activityParentId: "owner",
+              role: "toolResult",
+              state: "complete",
+              text: "stable tool result",
+              tool: {
+                toolCallId: "first",
+                name: "read",
+                lifecycle: "completed",
+                coverage: "observed",
+                truncated: false,
+                observed: ["record"],
+              },
             },
-          },
-          {
-            id: "read-two",
-            parentId: "read-one",
-            activityParentId: "owner",
-            role: "toolResult",
-            state: "failed",
-            text: "permission denied",
-            tool: {
-              toolCallId: "second",
-              name: "read",
-              lifecycle: "failed",
-              coverage: "complete",
-              truncated: false,
-              observed: { start: true, end: true, result: true },
+            {
+              id: "read-two",
+              parentId: "read-one",
+              activityParentId: "owner",
+              role: "toolResult",
+              state: "failed",
+              text: "permission denied",
+              tool: {
+                toolCallId: "second",
+                name: "read",
+                lifecycle: "failed",
+                coverage: "observed",
+                truncated: false,
+                observed: ["record"],
+              },
             },
-          },
-        ]
-      : [],
-  }));
+          ]
+        : [],
+    }),
+  );
   const f = await mount(true, undefined, reader, undefined, workbench);
   const live = (confirmed: boolean): ConversationItem[] => [
     {

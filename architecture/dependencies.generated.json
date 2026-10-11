@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "e3fc2d1183dc8376c2228d7e78174c880855a6c72b296e7e5b2843509a254e03",
+  "inputsHash": "f249f6043ef204c5c81eefcda587446ce1aeafd466b2729aa87d5d837334d457",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 678,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 306,
-      "lines": 62531,
+      "lines": 62534,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -13193,6 +13193,18 @@
       "specifier": "vitest",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/saved-conversation.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/conversation/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/renderer/reading/saved-conversation.test.ts",

@@ -350,3 +350,5 @@ Activation 独立复核（固定 `5a520bf..d17e3d5`）确认三项 P2，并逐�
 固定10cf25f综合复核确认一项P2：OMP `read agent://<id>` 发布结果的resolvedPath是底层.md，实际内部URL保留于details.meta.source；旧decoder优先路径且Host丢失generic intent，使子任务误走文件Body。五项实际反例失败后，现保留有界internalSource，先按真实内部操作分类，Host intent→progress→final继续传递；内部结果用通用原始正文，不生成当前文件导航，不提前扩张WB07专用Body。
 
 补正式ConversationItemView→ToolSemanticBody异常注入组合，原生状态不变、原始正文与实际详情入口仍可用，另一Body正常。补生产SavedConversation工具组的实时→nativeRecordId确认／保存重读组合：组展开、失败摘要、同一DOM、选区与键盘焦点保持，实际来源动作仍指向A/native/g/first工具，重挂载恢复轻展开；该fixture证明来源入口传参，不冒称完整App返回导航或系统选区实机证据。初轮组fixture缺semantic因而未装配详情按钮，补真实内部语义后通过，未为此更改生产逻辑。四文件97/97、Core/Host/Renderer类型通过；日志 `/tmp/d-pi-agent-read-red.log` 与 `/tmp/d-pi-wb02-acceptance-green.log`。固定10cf25f..a5c931c原生title修正独立复核无新增问题。WB02复核闭合继续，WB03生产trace和WB04权限等仍开放。
+
+固定 `a5c931c..b135787` 独立复核闭合内部来源 P2，无新增生产缺陷。更正新增保存重读组合的旧式 tool DTO：使用 completed/failed、observed 标记数组与 observed coverage，并通过正式 HistoryPageSchema 校验夹具。该组合仅证明 live 实体仍驻留时的 native ID 确认／保存重读，不扩称 live 已回收后的纯 saved 接棒。
