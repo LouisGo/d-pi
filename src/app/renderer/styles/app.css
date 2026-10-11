@@ -161,7 +161,7 @@
   }
   .runtime-panel > p,
   .runtime-panel > div,
-  .runtime-panel > .native-interactions {
+  .runtime-panel > section {
     grid-column: 1 / -1;
   }
   .runtime-panel > .ui-action-group {
@@ -202,6 +202,7 @@
     align-items: center;
     gap: var(--layout-gap);
     min-width: 0;
+    flex-wrap: wrap;
   }
   .native-interaction-heading > strong {
     flex: 1;
@@ -217,10 +218,30 @@
   .native-interaction > p {
     color: var(--muted-foreground);
   }
+  .native-interaction[data-editor-owner="false"] {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .native-interaction[data-editor-owner="false"] > header {
+    flex: 1;
+  }
+  .native-interaction-summary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--layout-gap);
+    color: var(--muted-foreground);
+    font-size: var(--text-small);
+  }
   .answer-history {
     flex-shrink: 0;
     min-width: 0;
     padding: var(--panel-padding);
+    max-height: var(--decision-dock-max-height);
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
   }
   .answer-history-page,
   .answer-history-entry,

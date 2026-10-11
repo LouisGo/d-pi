@@ -20,7 +20,7 @@
 | M2 | [长会话连续体验修复](../.scratch/m2-first-release/spec.md) | 工程完成 | 已交付待试用 | 待认可 | Dev source c4bc00b [证据1](../.scratch/m2-first-release/long-session-repair.md) | 本地Dev三项修复已交付，两次冷恢复及真实模型/GUI/双轴评审通过；等待用户复试认可，M2其它项保持。 |
 | M2 | [Provider 与 Models 完整闭环](../.scratch/providers-models/spec.md) | 工程完成 | 已交付待试用 | 待认可 | main merge 55550021；source 99ec699b；历史 GUI 构建身份见交接 [证据1](../.scratch/providers-models/local-merge.md) · [证据2](../.scratch/providers-models/handoff.md) · [证据3](../.scratch/providers-models/validation.md) · [证据4](../.scratch/providers-models/review.md) | 已合入 main 并 push；从原项目目录 pnpm dev 试用实际账户与 Provider/Models 体验 |
 | M2 | [会话默认流程体验](../.scratch/m2-first-release/spec.md) | 工程完成 | 已交付待试用 | 待认可 | Dev source f795b82 [证据1](../.scratch/m2-first-release/seamless-sessions.md) | 默认历史与按项目整理、重复新建免授权免手动启动、CLI 原会话续问和冷重启续问、生成中阅读已完成正式 GUI 与真实模型复核；等待用户复试认可。 |
-| M2 | [会话组件体系 WB00–WB04](../.scratch/session-components/spec.md) | 实施中 | 已交付待试用 | 待认可 | — [证据1](../.scratch/session-components/evidence/production-performance.json) · [证据2](product/session-components-plan-2026-10-11.md) | 重开WB04：先修正式GUI真实消息发送与回复及发送/等待/失败/恢复状态，再交付可操作问答审批与历史；WB03性能和冷却缺口保留，不重复长时采集 |
+| M2 | [会话组件体系 WB00–WB04](../.scratch/session-components/spec.md) | 实施中 | 已交付待试用 | 待认可 | — [证据1](../.scratch/session-components/evidence/real-conversation-dev.json) · [证据2](../.scratch/session-components/evidence/production-performance.json) · [证据3](product/session-components-plan-2026-10-11.md) | WB04已交付正式Dev真实对话与问答/审批/历史/恢复体验，等待用户试用；WB02体验仍待反馈闭合，WB03性能和冷却缺口保留，不重复长时采集 |
 | M3 | [M3 后续增强](../.scratch/development-foundation/spec.md) | 未实施 | 未交付 | 待认可 | —  | 未启动，保留边界 |
 | M3 | [集成终端 B 方案](../.scratch/integrated-terminal/spec.md) | 未实施 | 未交付 | 待认可 | — [证据1](../.scratch/integrated-terminal/handoff.md) · [证据2](architecture/terminal.md) · [证据3](validation/terminal.md) | B与xterm路线已确认、文档已交付；待关联/退出产品答复及后续开发授权。 |
 | 基建 | [AI 工作流升级](../.scratch/ai-workflow-v13/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/ai-workflow-v13/handoff.md) · [证据2](../.scratch/ai-workflow-v13/validation.md) · [证据3](../.scratch/ai-workflow-v13/review.md) · [证据4](../.scratch/ai-workflow-v13/research.md) · [证据5](../.scratch/ai-workflow-v13/m2-retro-2026-10-06.md) · [证据6](../.scratch/ai-workflow-v13/m2-retro-handoff.md) · [证据7](../.scratch/ai-workflow-v13/m2-retro-validation.md) · [证据8](../.scratch/ai-workflow-v13/m2-retro-review.md) · [证据9](../.scratch/ai-workflow-v13/validation-retro-2026-10-07.md) · [证据10](../.scratch/ai-workflow-v13/evidence/pnpm-entry-probe.json) | 2026-10-09单人维护流程与pnpm隔离探测已修正；普通任务默认main串行、相关验证、一处简记与Dev交付；下一轮核对正常入口无需临时包装器 |
@@ -78,7 +78,7 @@
 - [长会话连续体验修复](../.scratch/m2-first-release/spec.md)：2026-10-08用户明确授权修复并取代手动分段及冷旧Thread一律只读边界；保留unknown不重发、原生身份与真实独占，允许本机真实模型复核；本地交付，不自动push或公开发布。
 - [Provider 与 Models 完整闭环](../.scratch/providers-models/spec.md)：本地 PR 已合入 main 并 push，不公开发布；真实认证服务与用户认可待试用；默认并行测试 worker 失败与限制并发通过分开记录
 - [会话默认流程体验](../.scratch/m2-first-release/spec.md)：2026-10-08用户追加授权 CLI 原会话继续，取代 CLI 来源统一只读；首次陌生目录信任保留，unknown不重发，外CLI占用不强占；本地交付，无远端操作。
-- [会话组件体系 WB00–WB04](../.scratch/session-components/spec.md)：用户否定当前可用体验；WB02/WB04完成判断已撤回，新thread授权继续WB04及基本对话阻塞修复；WB03完整验收未完成，WB05–WB08后续，不推送或发布
+- [会话组件体系 WB00–WB04](../.scratch/session-components/spec.md)：此前完成判断已撤回；本thread以真实正式Dev证据重新交付WB04，用户认可pending；WB02/WB03完整验收未完成，WB05–WB08后续，不推送或发布
 - [集成终端 B 方案](../.scratch/integrated-terminal/spec.md)：本次仅方案与文档；不开发终端、不新增终端依赖、不远端push/合并；本地合入main已授权；不扩大M2或D-39。
 - [Beautiful UI 基础视觉体系升级](../.scratch/beautiful-ui-system/spec.md)：源码 Dev 交付；组件细节有隔离 Electron 控件场景证据，问答沿用隔离 Renderer fixture 与 Host 测试；未证明真实扩展业务结果、provider 或原生完整索引；pnpm 启动器环境门禁未通过。
 - [Codex 式工作台基础布局](../.scratch/codex-workbench-ui/spec.md)：用户已授权本UI分支push、PR及合并；不公开发布或发起真实账户请求。
@@ -94,4 +94,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: 30bf8084b94ab59ca62b35d591e024a9ebfc125cac8ab97bf1330c83ca119236; sources: 187 -->
+<!-- source-sha256: 990c25c653b36bb698ea0cf979bf075c5d1aec29e6e47ac1009f65897fb712aa; sources: 187 -->

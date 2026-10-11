@@ -18,7 +18,6 @@ export function DecisionDock({ model }: { model: RuntimeModel }) {
       className="decision-dock"
       aria-label={t("ui.interaction.decisionDock")}
     >
-      <strong>{t("ui.interaction.decisionDock")}</strong>
       <div className="decision-dock-requests">
         {items.map((item) => (
           <NativeInteraction

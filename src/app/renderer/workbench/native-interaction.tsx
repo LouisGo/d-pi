@@ -164,10 +164,28 @@ export function NativeInteraction({
       data-editor-surface={surface}
       className="native-interaction"
       data-selectable
-      aria-label={item.title}
+      aria-label={item.title || t("ui.runtime.interactionsLabel")}
     >
       <header className="native-interaction-heading">
-        <strong>{item.title}</strong>
+        <strong>{item.title || t("ui.runtime.interactionsLabel")}</strong>
+        {item.status === "pending" && !sent && ownsEditor && (
+          <Button
+            variant="ghost"
+            onClick={() =>
+              model.chooseInteractionEditor(
+                item.id,
+                surface === "timeline" ? "dock" : "timeline",
+                editorHandle,
+              )
+            }
+          >
+            {t(
+              surface === "timeline"
+                ? "ui.interaction.moveToDock"
+                : "ui.interaction.moveToTimeline",
+            )}
+          </Button>
+        )}
         {item.status === "pending" && !sent && ownsEditor && (
           <IconButton
             variant="ghost"
@@ -226,27 +244,9 @@ export function NativeInteraction({
           })}
         </p>
       )}
-      {item.status === "pending" && !sent && ownsEditor && (
-        <Button
-          variant="ghost"
-          onClick={() =>
-            model.chooseInteractionEditor(
-              item.id,
-              surface === "timeline" ? "dock" : "timeline",
-              editorHandle,
-            )
-          }
-        >
-          {t(
-            surface === "timeline"
-              ? "ui.interaction.moveToDock"
-              : "ui.interaction.moveToTimeline",
-          )}
-        </Button>
-      )}
       {item.status === "pending" && !sent ? (
         !ownsEditor ? (
-          <div>
+          <div className="native-interaction-summary">
             <p>
               {t(
                 owner === "dock"

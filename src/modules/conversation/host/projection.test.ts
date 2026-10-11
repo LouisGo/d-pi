@@ -889,6 +889,31 @@ it("keeps native text verbatim and exposes product notices as semantic data", ()
   p.dispose();
 });
 
+it("leaves extension dialogs to their execution owner without false reading notices", () => {
+  const projection = new ConversationProjection(crypto.randomUUID(), () => {});
+  for (const method of [
+    "ask",
+    "select",
+    "confirm",
+    "input",
+    "editor",
+    "future_dialog",
+  ]) {
+    projection.accept({
+      type: "extension_ui_request",
+      id: method,
+      method,
+      title: "Native question",
+    });
+  }
+  expect(projection.snapshot().items).toEqual([]);
+  projection.accept({ type: "future_native_event" });
+  expect(projection.snapshot().items[0]?.notice?.code).toBe(
+    "conversation.unsupportedNativeEvent",
+  );
+  projection.dispose();
+});
+
 it("bounds the external event type without changing the native source", () => {
   const p = new ConversationProjection(crypto.randomUUID(), () => {});
   p.accept({ type: `future_${"x".repeat(1000)}` });

@@ -1,11 +1,18 @@
 {
   "scope": "Formal pnpm dev, existing user Codex configuration and original native file, real GPT-6-Luna provider. No mock/loopback.",
-  "sourceCommit": "cdcd4cb8844c4517de33bee284f3a639b5672202",
+  "sourceCommit": "8d6c813f8a81cd4ae689fb70c6eee48998dd5908",
   "dirty": true,
   "sourceHashes": {
-    "src/app/renderer/workbench/execution-status.tsx": "64fd15fa2aa2d421f9b4d4c95d0a1e09b89089835a25221166ac956074f8c34c",
+    "src/app/renderer/workbench/execution-status.tsx": "ed2578237ebf8c7d5674991ba876fa41706307dfc5f589b60b6a9074ec7e0b69",
     "src/app/renderer/workbench/thread-workbench.tsx": "1b9f3f47f16c54964e73c3517dd249df1d97c1064511f4c5baa9cbdab37d21b8",
-    "resources/sdk/host.mjs": "45dea08af1807cf2206826c495d4f8c21f7758e501d51b05692f56ea538477c9"
+    "resources/sdk/host.mjs": "45dea08af1807cf2206826c495d4f8c21f7758e501d51b05692f56ea538477c9",
+    "src/app/renderer/workbench/native-interaction.tsx": "9048b75dc3c9b63a77367dbf3852164806b4da082782354a317491494b832e83",
+    "src/app/renderer/workbench/decision-dock.tsx": "53307de2bfd8f2d35d18715f4e2d1069470a911ab4da3f6a08fbaf16275b19a5",
+    "src/app/renderer/workbench/runtime-panel.tsx": "0d3b0478296f70147c9e09fe754b53a7053bdffa76157029ed92b670fe153fab",
+    "src/app/renderer/styles/app.css": "dc5d63b4936d8b905f7e35658e1af54ddccc38c93136b9a21792fb1c5cacf4ea",
+    "src/app/renderer/styles/workbench.css": "a08f0389d639065da9d74f01d974c17cba89ea9bfd6f4c7c63a2710be870b34f",
+    "src/app/renderer/reading/lifecycle-event.tsx": "db2993f48dd643bb88a87b7f46cf638349a58b28d0dddce028193adcddf8e44c",
+    "src/modules/conversation/host/projection.ts": "8e6d310aa918317e9d4903fadf0330874113eeb743bf6054186048415fa0929c"
   },
   "threadId": "4497bfcb-552f-460c-adb7-095a6310a1aa",
   "nativeSessionId": "01a12b96-d3bf-7000-a4df-1ba48af0710c",
@@ -25,7 +32,14 @@
     "before fix only bottom Generating, empty reply area",
     "after fix Submitted waiting for model response beside Composer",
     "real first reply visible",
-    "second reply correctly repeated previous reply in same session"
+    "second reply correctly repeated previous reply in same session",
+    "real two-question AskTool pending for 125 seconds without default submission",
+    "radio, multi-select and exact-space Chinese custom input retained through Thread A-B-A and Timeline-Dock-Timeline",
+    "group answer submitted once; real provider resumed with selected options",
+    "persistent history reloaded after normal Dev restart, original native file and ID unchanged",
+    "real Markdown option preview retained on transfer to Dock",
+    "supported AskTool produces no unsupported-native-event notice after projection fix",
+    "second real AskTool submitted and model answered 可试用 Dev"
   ],
   "receipts": [
     {
@@ -131,6 +145,32 @@
         "sessionSettled": true,
         "source": "native-prompt-result"
       }
+    },
+    {
+      "submissionId": "e412fc7a-25cb-41dd-ba98-d739555c43d3",
+      "threadId": "4497bfcb-552f-460c-adb7-095a6310a1aa",
+      "traceId": "c8ae0bba-2c57-4d70-90aa-a6bf0f220d39",
+      "revision": 11,
+      "text": "请调用 ask 工具问一个单选问题后等待：题目 id=delivery，问题‘现在如何交付？’，选项‘可试用 Dev’和‘继续等’，推荐第一项，第一项的 preview 使用 Markdown：**正式工作台** 已能真实对话。不要调用其他工具。回答后只回复我选的选项。",
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "d655acb9-2e59-4c3c-b6c8-9734337abc23",
+        "connectionGeneration": "12602c80-0a70-4fe0-a7d5-bc921d980033",
+        "configContextId": "9b75d487133e7b2565bd0e64b974b92f6e9c2687e897d63e205087f28229eff4",
+        "nativeSessionRef": "/Users/louistation/.d-pi/dev/d-pi-290bf7a6186d/native-sessions/4497bfcb-552f-460c-adb7-095a6310a1aa/2026-10-11T15-31-07-327Z_01a12b96-d3bf-7000-a4df-1ba48af0710c.jsonl"
+      },
+      "requestId": "b38a615e-6873-495d-adf0-0faa8438d6a9",
+      "createdAt": "2026-10-11T16:08:29.213Z",
+      "updatedAt": "2026-10-11T16:11:56.960Z",
+      "state": "acknowledged",
+      "acknowledgedAt": "2026-10-11T16:08:29.241Z",
+      "outcome": "completed",
+      "promptResult": {
+        "status": "completed",
+        "agentInvoked": true,
+        "sessionSettled": true,
+        "source": "native-prompt-result"
+      }
     }
   ],
   "nativeMessages": [
@@ -221,9 +261,263 @@
       "stopReason": "stop",
       "errorMessage": null,
       "text": "交付方式：立即交付。验证项：真实对话、问答交互。补充内容：中文草稿：保留切换体验。"
+    },
+    {
+      "recordId": "65b5f2fd",
+      "timestamp": "2026-10-11T16:08:29.396Z",
+      "role": "user",
+      "stopReason": null,
+      "errorMessage": null,
+      "text": "请调用 ask 工具问一个单选问题后等待：题目 id=delivery，问题‘现在如何交付？’，选项‘可试用 Dev’和‘继续等’，推荐第一项，第一项的 preview 使用 Markdown：**正式工作台** 已能真实对话。不要调用其他工具。回答后只回复我选的选项。"
+    },
+    {
+      "recordId": "08bcbdf7",
+      "timestamp": "2026-10-11T16:08:35.334Z",
+      "role": "assistant",
+      "stopReason": "toolUse",
+      "errorMessage": null,
+      "text": ""
+    },
+    {
+      "recordId": "7d85ebfc",
+      "timestamp": "2026-10-11T16:11:53.631Z",
+      "role": "toolResult",
+      "stopReason": null,
+      "errorMessage": null,
+      "text": "User selected: 可试用 Dev"
+    },
+    {
+      "recordId": "2f1c328a",
+      "timestamp": "2026-10-11T16:11:56.950Z",
+      "role": "assistant",
+      "stopReason": "stop",
+      "errorMessage": null,
+      "text": "可试用 Dev"
     }
   ],
   "limitations": [
-    "No user acceptance claim. WB04 GUI interaction validation continues; existing native timeout/approval/unknown evidence is bounded. No repeated performance sampling."
-  ]
+    "User acceptance pending. Existing isolated native approval/default/unknown evidence and actual-owner GUI regression reused; no new real-provider approval prompt was forced by changing user security settings.",
+    "Existing WB03 long-paragraph input latency and Quit cooldown gaps remain. No repeated long performance sampling, no push or release.",
+    "Locale-module HMR during development edits produced I18nProvider missing; normal Dev restart loaded updates. No production failure inferred."
+  ],
+  "initialSourceCommit": "cdcd4cb8844c4517de33bee284f3a639b5672202",
+  "recordedAt": "2026-10-11T16:14:09.148635+00:00",
+  "answerHistory": [
+    {
+      "requestKey": {
+        "threadId": "4497bfcb-552f-460c-adb7-095a6310a1aa",
+        "nativeSessionKey": "01a12b96-d3bf-7000-a4df-1ba48af0710c",
+        "connectionGeneration": "e278ef64-343b-448b-ab52-848043401250",
+        "requestId": "15a2395b17e111b0"
+      },
+      "dialog": {
+        "id": "15a2395b17e111b0",
+        "title": "",
+        "method": "ask",
+        "questions": [
+          {
+            "id": "style",
+            "question": "请选择交付方式",
+            "options": [
+              {
+                "label": "立即交付"
+              },
+              {
+                "label": "继续打磨"
+              }
+            ],
+            "multi": false,
+            "recommended": 0
+          },
+          {
+            "id": "checks",
+            "question": "选择验证项",
+            "options": [
+              {
+                "label": "真实对话"
+              },
+              {
+                "label": "问答交互"
+              }
+            ],
+            "multi": true,
+            "recommended": 0
+          }
+        ]
+      },
+      "createdAt": "2026-10-11T15:58:44.324Z",
+      "updatedAt": "2026-10-11T16:00:49.358Z",
+      "kind": "request",
+      "presence": "unknown"
+    },
+    {
+      "requestKey": {
+        "threadId": "4497bfcb-552f-460c-adb7-095a6310a1aa",
+        "nativeSessionKey": "01a12b96-d3bf-7000-a4df-1ba48af0710c",
+        "connectionGeneration": "e278ef64-343b-448b-ab52-848043401250",
+        "requestId": "15a2395b17e111b0"
+      },
+      "dialog": {
+        "id": "15a2395b17e111b0",
+        "title": "",
+        "method": "ask",
+        "questions": [
+          {
+            "id": "style",
+            "question": "请选择交付方式",
+            "options": [
+              {
+                "label": "立即交付"
+              },
+              {
+                "label": "继续打磨"
+              }
+            ],
+            "multi": false,
+            "recommended": 0
+          },
+          {
+            "id": "checks",
+            "question": "选择验证项",
+            "options": [
+              {
+                "label": "真实对话"
+              },
+              {
+                "label": "问答交互"
+              }
+            ],
+            "multi": true,
+            "recommended": 0
+          }
+        ]
+      },
+      "createdAt": "2026-10-11T16:00:49.354Z",
+      "updatedAt": "2026-10-11T16:00:49.358Z",
+      "kind": "answer",
+      "operationId": "8b81a221-241d-4dff-b8a3-df1fa8f59e55",
+      "origin": "user",
+      "answer": {
+        "kind": "ask",
+        "answers": [
+          {
+            "id": "style",
+            "selectedOptions": [
+              "立即交付"
+            ]
+          },
+          {
+            "id": "checks",
+            "selectedOptions": [
+              "真实对话",
+              "问答交互"
+            ],
+            "customInput": "  中文草稿：保留切换体验  "
+          }
+        ]
+      },
+      "status": "written",
+      "answerObservedAt": "2026-10-11T16:00:49.356Z"
+    },
+    {
+      "requestKey": {
+        "threadId": "4497bfcb-552f-460c-adb7-095a6310a1aa",
+        "nativeSessionKey": "01a12b96-d3bf-7000-a4df-1ba48af0710c",
+        "connectionGeneration": "12602c80-0a70-4fe0-a7d5-bc921d980033",
+        "requestId": "15a23b9c428a18e2"
+      },
+      "dialog": {
+        "id": "15a23b9c428a18e2",
+        "title": "",
+        "method": "ask",
+        "questions": [
+          {
+            "id": "delivery",
+            "question": "现在如何交付？",
+            "options": [
+              {
+                "label": "可试用 Dev",
+                "preview": "**正式工作台** 已能真实对话"
+              },
+              {
+                "label": "继续等"
+              }
+            ],
+            "multi": false,
+            "recommended": 0
+          }
+        ]
+      },
+      "createdAt": "2026-10-11T16:08:35.341Z",
+      "updatedAt": "2026-10-11T16:11:53.628Z",
+      "kind": "request",
+      "presence": "unknown"
+    },
+    {
+      "requestKey": {
+        "threadId": "4497bfcb-552f-460c-adb7-095a6310a1aa",
+        "nativeSessionKey": "01a12b96-d3bf-7000-a4df-1ba48af0710c",
+        "connectionGeneration": "12602c80-0a70-4fe0-a7d5-bc921d980033",
+        "requestId": "15a23b9c428a18e2"
+      },
+      "dialog": {
+        "id": "15a23b9c428a18e2",
+        "title": "",
+        "method": "ask",
+        "questions": [
+          {
+            "id": "delivery",
+            "question": "现在如何交付？",
+            "options": [
+              {
+                "label": "可试用 Dev",
+                "preview": "**正式工作台** 已能真实对话"
+              },
+              {
+                "label": "继续等"
+              }
+            ],
+            "multi": false,
+            "recommended": 0
+          }
+        ]
+      },
+      "createdAt": "2026-10-11T16:11:53.625Z",
+      "updatedAt": "2026-10-11T16:11:53.629Z",
+      "kind": "answer",
+      "operationId": "6a7234e3-85bf-485f-b918-aab15a4c6e9f",
+      "origin": "user",
+      "answer": {
+        "kind": "ask",
+        "answers": [
+          {
+            "id": "delivery",
+            "selectedOptions": [
+              "可试用 Dev"
+            ]
+          }
+        ]
+      },
+      "status": "written",
+      "answerObservedAt": "2026-10-11T16:11:53.627Z"
+    }
+  ],
+  "screenshots": {
+    "formal-real-reply.png": "09365b97bcdf8b28086929fa5085798f3dc88ba1430fa933d7b072842773f6db",
+    "formal-before-layout.png": "22f56043ffa6d8c70e11c07c8c74cb378eb409f85bfbabf6ff13d66f98503d4b",
+    "formal-answer-history.png": "c731c1baf6bb230151061ce68e0439de39913ee4a34d1c266274a32a07197e72",
+    "formal-rich-preview.png": "c098a89d8402284fe14321243757de7697a1191fc5e27910981e545f6bcdd7f0"
+  },
+  "reusedEvidence": [
+    "rich-ask-native.json: concurrent native rich dialogs, timeout/default and cold recovery",
+    "ask-tool-native.json: official AskTool with timeout=0 and >121 seconds pending",
+    "approval-native.json: concurrent native approve/deny, separate unassociated dialogs and SQLite writes",
+    "activation-renderer.json: activation focus and notification ownership; owner-combination regression covers hidden/thread/disconnect/unknown"
+  ],
+  "screenshotNotes": {
+    "formal-before-layout.png": "Before compact layout: real pending AskTool and truthful waiting-for-answer status; not waiting for initial model response.",
+    "formal-rich-preview.png": "After compact layout: real Markdown preview and group review action.",
+    "formal-answer-history.png": "Persisted answer status reloaded after normal restart; bounded panel and Composer visible.",
+    "formal-real-reply.png": "Real provider response after second AskTool submission."
+  }
 }

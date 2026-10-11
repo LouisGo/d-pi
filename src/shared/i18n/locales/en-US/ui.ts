@@ -37,8 +37,7 @@ export const ui = {
   "activity.compactionRetry": "Native retry planned",
   "activity.retryLimit": "Native attempt limit: {count}",
   "activity.retryDelay": "Native delay: {milliseconds} ms",
-  "activity.turnEnded":
-    "Native turn ended · {count} tool results. This does not settle the submission or background work.",
+  "activity.turnEnded": "{count} tool results in this turn",
   "activity.unknownTools": "{count} tool results with unknown outcome",
   "activity.turnInterrupted": "Native reply interrupted",
   "activity.callBatch": "{count} activities in one native call batch",

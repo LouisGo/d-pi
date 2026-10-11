@@ -18,7 +18,7 @@
 | WB01 | WB00 | complete | 命令卡→实时详情→pin→切 B→明确 B 草稿引用→回 A 原成员；有界摘要、final 对账、coverage、关闭释放、旧导航不抢占；键盘入口 | Source/Surface/reader/FrozenContext 与命令卡/Inspector 已装配；主矩阵143项与最后受影响31项通过；独立review已闭合；下方Dev源码试用交接 |
 | WB02 | WB01 | implementing | 活动组、常用 read/search/edit、轮次、变化摘要真实 | 已有语义/来源/Body与活动结构组合证据；用户反馈正式GUI效果与交互不满足要求，撤回完成判断，优先补WB04真实对话所需接入 |
 | WB03 | WB00；联调 WB01/02 | implementing | demand/范围读取/字节缓存/Worker/Viewer/native warm 有界 | 资源边界与生产后台证据已取得；长段落输入延迟未达初始目标，正常Quit冷却未确认；用户选择先交付 |
-| WB04 | WB00、WB01 | implementing | 正式GUI真实发送与回复有反馈；多题/权限/超时/unknown/回答历史可操作 | 已有原生与owner组合证据；用户反馈基本消息不能正常回复且发送后无状态，撤回完成判断，新GOAL先修真实对话和等待/失败/恢复状态，再完成WB04可见交互 |
+| WB04 | WB00、WB01 | complete | 正式GUI真实发送与回复有反馈；多题/权限/超时/unknown/回答历史可操作 | 正式Dev原配置连续真实对话、AskTool整组回答、草稿转交与持久历史已验证；复用原生审批/超时/unknown及实际owner组合证据；下方2026-10-12交付与限制，用户认可pending |
 | WB05 | WB01、WB03、WB04 请求事实 | planned | 任务→子代理→Job→使用量/策略/资源 | 后续真实 owner scope 合同 |
 | WB06 | WB01、WB02、WB04 | planned | Plan 到安排执行；Diff/消息反馈；精确分叉 | 后续原生能力与反馈协调 |
 | WB07 | WB01、WB02、WB03 | planned | 搜索定位与专业 Body 复用来源/详情/资源 | 后续专业结果合同 |
@@ -267,9 +267,9 @@ AnswerHistory通过execution只读Query公开面接App持久事实：离线可�
     "engineering": "in-progress",
     "trial": "delivered",
     "acceptance": "pending",
-    "next": "重开WB04：先修正式GUI真实消息发送与回复及发送/等待/失败/恢复状态，再交付可操作问答审批与历史；WB03性能和冷却缺口保留，不重复长时采集",
-    "evidence": ["evidence/production-performance.json", "../../docs/product/session-components-plan-2026-10-11.md"],
-    "constraints": "用户否定当前可用体验；WB02/WB04完成判断已撤回，新thread授权继续WB04及基本对话阻塞修复；WB03完整验收未完成，WB05–WB08后续，不推送或发布"
+    "next": "WB04已交付正式Dev真实对话与问答/审批/历史/恢复体验，等待用户试用；WB02体验仍待反馈闭合，WB03性能和冷却缺口保留，不重复长时采集",
+    "evidence": ["evidence/real-conversation-dev.json", "evidence/production-performance.json", "../../docs/product/session-components-plan-2026-10-11.md"],
+    "constraints": "此前完成判断已撤回；本thread以真实正式Dev证据重新交付WB04，用户认可pending；WB02/WB03完整验收未完成，WB05–WB08后续，不推送或发布"
   }
 ]
 ```
@@ -410,3 +410,16 @@ Activation 独立复核（固定 `5a520bf..d17e3d5`）确认三项 P2，并逐�
 - Composer 上方新增只读 ExecutionStatus，直接消费 RuntimeModel/SubmissionModel/ConversationModel：准备、连接、派发确认、等待模型首响应、实际思考/文本/工具、原生重试、待回答、暂停/停止、失败和 unknown。思考/重试只依据当前连接真实正文/生命周期；失败与未知停止动画并给发送记录、诊断ID入口。无新增业务事实、计时结算、提交重试。正式 GUI 观察到等待条即时可见和两轮真实回复。
 - 先在实际 AppModel→ThreadWorkbench 组合复现无等待条的红灯，再修复；三个受影响文件15/15通过，包含实际正文、旧连接隔离、unknown无自动命令和失败呈现。Renderer类型、design/i18n、diff检查通过，Impeccable detector无发现。范围证据 [real-conversation-dev.json](evidence/real-conversation-dev.json) 保留测试消息、原生record、收据trace、源码SHA与限制；不是 mock 或 loopback。
 - WB04 正式两题 AskTool 表单已实际到达，多选/自填、Dock转交及A→B→A草稿/焦点观察成立，整组回答与历史正在核对；本段不提前宣布WB04整体完成。WB03已知性能/冷却缺口与WB05–WB08边界保持，用户认可pending。
+
+
+### WB04 正式 Dev 交付（2026-10-12）
+
+- 延续 `8d6c813` 的真实发送状态修复，关闭本轮基本对话和 WB04 工程目标，交付当前 `pnpm dev`；用户认可保持 pending，WB02/WB03未因此完成。原 Thread、native file/ID、模型及凭据沿用，正常重启后保存历史仍在，没有删除会话、lease或自动重发 unknown。
+- 正式 GPT-6-Luna 两轮连续对话后，真实两题 AskTool 等待约125秒，无 deadline/默认代答；单选、多选及首尾空格中文自填跨A→B→A、Timeline→Dock→Timeline保留，整组单次提交后真实模型复述。SQLite保持完整RequestKey、原题与原文；history的written与请求存在性unknown分别显示，回复内容不被拿来伪造协议确认。
+- 新的真实 AskTool 验证 Markdown选项预览、已选答案/预览转交到Dock、整组检查和提交，供应商继续回复“可试用 Dev”。阅读投影对 extension_ui_request 误报“不支持”的失败反例已修复：执行模块拥有能力与不支持提示，阅读区不重复判断。普通无工具成功回复不再附带调试式turn/submission解释；异常、工具结果数与详情保留，未扩大成提交结算。
+- 根据实际截图压紧非编辑摘要、转交按钮并入标题、空标题使用本地语义标题；正式表单与Dock统一宽度，移除嵌套卡片，历史限制高度并可滚动，Composer保持可见。只改呈现，不改草稿owner/焦点版本、计时器、默认、审批、未知和恢复操作。语言模块热更新期间触发已有 I18nProvider missing，正常退出空闲Dev再启动已恢复；这项Dev HMR限制保留，不冒称生产故障已定位。
+- 本轮六个相关测试文件累计95项通过（发送状态1、投影42、正文17、NativeInteraction21、RuntimePresentation11、正式owner组合3；有重复运行但不重复计数），覆盖不伪造思考、旧代次隔离、unknown不重发、原生帧错误提示、唯一编辑器、审批独立事实与恢复入口。Renderer/Host类型、design/i18n与快速门禁通过；整段diff按原方案和相关合同复核。未改变执行/权限/恢复事务，未新增无收益的全矩阵或包构建。
+- 复用[原生审批](evidence/approval-native.json)的并发approve/deny、独立事实/对话和落盘，[富问答原生](evidence/rich-ask-native.json)的并发/到期/默认/同文件冷恢复，[AskTool](evidence/ask-tool-native.json)的原生timeout=0，以及实际owner隐藏/切Thread/断连/unknown、ActivationBroker与Recovery既有组合。本轮没有为制造供应商审批提示改变用户安全策略；不把上述隔离原生/组件证据写成新的真实供应商审批实测。无可靠toolCallId仍按C23独立降级，不猜配、不展示原生没有的always allow或工具cancel。
+- [证据](evidence/real-conversation-dev.json)含5条真实收据、15条native消息、4条SQLite题目/答案事实与参与源码SHA；[真实回复截图](evidence/formal-real-reply.png)、[Markdown预览](evidence/formal-rich-preview.png)、[重启后历史](evidence/formal-answer-history.png)可直接核查。旧布局截图单独标为before-layout，不当新布局或等待模型首响应截图。
+
+试用：当前Dev停留在 typex-pc 原Thread，可直接继续提问；发送后Composer上方显示实际阶段。要求AI调用ask后，选择/多选/其他回答→检查全部回答→发送回答；标题行转交Timeline/Dock，切Thread返回继续草稿；回答记录展开后按需读取历史。出现失败/unknown可打开详情、发送记录与恢复入口核对，unknown不自动重发。WB03长段落输入延迟、退出冷却未确认继续保留，本轮未推送、未发布。

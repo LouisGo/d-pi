@@ -104,10 +104,25 @@ export function TurnOutcomeSummary({
   state: ConversationItem["state"];
 }) {
   const { t } = useI18n();
+  if (
+    outcome.toolResults === 0 &&
+    outcome.failedTools === 0 &&
+    outcome.unknownTools === 0 &&
+    state === "complete" &&
+    (!outcome.stopReason || outcome.stopReason === "stop")
+  )
+    return null;
   return (
     <footer data-native-turn-outcome={outcome.observationId}>
-      <small>{t("activity.turnEnded", { count: outcome.toolResults })}</small>
-      {outcome.stopReason && <code>{outcome.stopReason}</code>}
+      {outcome.toolResults > 0 && (
+        <small>{t("activity.turnEnded", { count: outcome.toolResults })}</small>
+      )}
+      {outcome.stopReason && outcome.stopReason !== "stop" && (
+        <Disclosure variant="inline">
+          <DisclosureTrigger>{t("ui.conversation.details")}</DisclosureTrigger>
+          <code>{outcome.stopReason}</code>
+        </Disclosure>
+      )}
       {outcome.failedTools > 0 && (
         <p role="status">
           {t("activity.failed", { count: outcome.failedTools })}

@@ -35,8 +35,7 @@ export const ui = {
   "activity.compactionRetry": "原生计划重试",
   "activity.retryLimit": "原生尝试上限：{count}",
   "activity.retryDelay": "原生等待：{milliseconds} ms",
-  "activity.turnEnded":
-    "原生 turn 已结束 · {count} 个工具结果；不代表 submission 或后台工作结算。",
+  "activity.turnEnded": "本轮返回 {count} 个工具结果",
   "activity.unknownTools": "{count} 个工具结果的完成状态未知",
   "activity.turnInterrupted": "原生回复已中断",
   "activity.callBatch": "同一原生调用批次的 {count} 项活动",

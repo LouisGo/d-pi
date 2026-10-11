@@ -519,9 +519,18 @@
   .thread-reading > .runtime-panel {
     flex-shrink: 0;
     width: 100%;
-    max-height: 40%;
+    max-height: var(--decision-dock-max-height);
     overflow: auto;
     overscroll-behavior: contain;
+    background: var(--surface);
+    border-block-end: 1px solid var(--border);
+    border-radius: 0;
+  }
+  .thread-reading > .runtime-panel .native-interaction {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
   }
 }
 

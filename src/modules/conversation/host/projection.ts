@@ -688,12 +688,10 @@ export class ConversationProjection {
         NativeFrameTypes.sessionSettled,
         NativeFrameTypes.thinkingLevelChanged,
         NativeFrameTypes.modelChanged,
+        // Execution owns dialog decoding, supported controls and unsupported
+        // interaction warnings. These frames are not reading events.
+        NativeFrameTypes.extensionUiRequest,
       )
-    )
-      return;
-    if (
-      isNativeFrameType(frame, NativeFrameTypes.extensionUiRequest) &&
-      ["setStatus", "setTitle", "setWidget"].includes(String(frame.method))
     )
       return;
     if (!this.unknownTypes.has(frame.type) && this.unknownTypes.size < 32) {

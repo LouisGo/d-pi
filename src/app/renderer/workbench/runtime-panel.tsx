@@ -170,26 +170,33 @@ export function RuntimePanel({
           </div>
         )}
       {inspection && <QueueControls model={model} />}
-      {state.approvals && (
-        <section aria-label={t("ui.approval.section")}>
-          {state.approvals.coverage === "gap" && (
-            <p role="alert">{t("ui.approval.gap")}</p>
-          )}
-          {state.approvals.items
-            .filter(
-              (item) =>
-                inspection ||
-                item.status === "pending" ||
-                item.status === "unknown",
-            )
-            .map((item) => (
-              <PermissionApprovalBody
-                key={`${state.approvals?.connectionGeneration}-${item.nativeSessionKey}-${item.toolCallId}`}
-                item={item}
-              />
-            ))}
-        </section>
-      )}
+      {state.approvals &&
+        (state.approvals.coverage === "gap" ||
+          state.approvals.items.some(
+            (item) =>
+              inspection ||
+              item.status === "pending" ||
+              item.status === "unknown",
+          )) && (
+          <section aria-label={t("ui.approval.section")}>
+            {state.approvals.coverage === "gap" && (
+              <p role="alert">{t("ui.approval.gap")}</p>
+            )}
+            {state.approvals.items
+              .filter(
+                (item) =>
+                  inspection ||
+                  item.status === "pending" ||
+                  item.status === "unknown",
+              )
+              .map((item) => (
+                <PermissionApprovalBody
+                  key={`${state.approvals?.connectionGeneration}-${item.nativeSessionKey}-${item.toolCallId}`}
+                  item={item}
+                />
+              ))}
+          </section>
+        )}
       {state.interactions && (
         <section
           aria-label={t("ui.runtime.interactionsLabel")}
