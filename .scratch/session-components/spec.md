@@ -362,3 +362,11 @@ Activation 独立复核（固定 `5a520bf..d17e3d5`）确认三项 P2，并逐�
 五文件147/147及准入目标文件通过；adapter／正式SDK准备8/8，Core/Host/Main/Renderer类型、design/i18n通过。SDK准备第一轮因旧测试夹具漏带新adapter失败，补齐真实文件后通过。正式prepare-sdk在既有隔离root重新准备112包477.1MiB；在用Dev及项目SDK不动。独立Electron44.4.5正式Main/Host/OMP实测两个并发bash审批：两条真实事实和两个不关联dialog；等待3秒期间无App答案／文件，分别原生拒绝和批准，批准命令写文件，拒绝命令未写；同native文件有相应成功／错误toolResult，两个回答入库，native实际cold后进程返回0。证据 [approval-native.json](evidence/approval-native.json) 带3668537 dirty检查点、参与SHA及明确范围；120秒竞争由Host虚拟时间反例验证，3秒实测不冒称长时验收。没有GUI、真实provider、系统IME或生产性能trace；完整WB02–WB04继续。
 
 审批原因超出4KiB时保留节选标记，不把展示截断误作身份／决定缺口；专门反例先失败，adapter三项最终通过。
+
+### WB04 实际 owner 的隐藏／切线程／断连组合（2026-10-11，继续实施）
+
+独立复核 C22/C23 原方案与固定 OMP 18.8.9：C23 明确允许“无可靠 toolCallId 时独立呈现”；§9.3 禁止按文案、顺序或最近工具猜配。现有真实审批事实＋独立原生 select 的降级满足该项合同，可靠 dialog/tool 关联仍不可得，但不属于本轮必须伪造的能力，也不是 WB04 阻塞项。上段“C23 的可靠关联尚未取得”描述证据限制，不应解释为独立呈现不符合 C23。
+
+新增实际 AppModel→缓存 ThreadModel→ThreadWorkbench→RuntimePanel／DecisionDock 组合，只替换范围外 Composer 和受控 DesktopBridge transport。多题选项、自填半成品、独立问题草稿和唯一 Dock 编辑器跨隐藏／重挂／A→B→A 保持，同一 owner 在 cacheLimit=1 时因真实 pending 占用受到保护，原生绝对 deadline 不被 React 改写。回答传输失去确认后保留 unknown 与冻结意图，切线程／隐藏不自动 start 或再答；显式新连接代次拒绝旧提交与编辑句柄。该夹具不声称证明 Main 原生写入，落盘事实由既有正式 native／SQLite 证据覆盖。
+
+三个相关文件24/24通过。最初 fixture 使用错误 policy 字段、后续误要求新代次继续保留已淘汰旧镜像，均按正式 schema／当前连接保留合同修正；不是生产缺陷或 TDD 红灯。既有 NativeInteraction 测试 act 提示继续记录。未把这段工程组合冒称实机验收；隔离生产构建三路流、万条历史、20,000字输入、真实系统IME与后台性能证据正在采集，完整 WB02–WB04 继续。
