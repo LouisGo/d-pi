@@ -586,6 +586,21 @@ it("owns rich drafts across presentation changes and freezes one complete respon
     ).toEqual(["B"]);
     expect(model.interactionDraft("A")?.editorSurface).toBe("dock");
     expect(await model.submitAsk("A", "timeline")).toBeNull();
+    const dockEditor = model.captureInteractionEditor("A")!;
+    model.chooseInteractionEditor("B", "dock");
+    expect(model.interactionDraft("B")?.editorSurface).toBe("dock");
+    expect(model.interactionDraft("A")?.editorSurface).toBe("timeline");
+    model.editAsk(
+      "A",
+      { kind: "select", questionId: "q1", label: "A" },
+      "dock",
+      dockEditor,
+    );
+    expect(
+      model.interactionDraft("A")?.ask?.answers.q1?.selectedOptions,
+    ).toEqual(["B"]);
+    expect(model.interactionDraft("A")?.ask?.questionId).toBe("q2");
+    model.chooseInteractionEditor("B", "timeline");
     model.chooseInteractionEditor("A", "timeline");
     model.editAsk(
       "A",

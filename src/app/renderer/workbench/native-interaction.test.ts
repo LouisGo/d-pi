@@ -40,6 +40,7 @@ async function setup(
   initial: Interaction = item,
   trusted = true,
   withDock = false,
+  additional: Interaction[] = [],
 ) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const host = document.createElement("div");
@@ -62,7 +63,7 @@ async function setup(
     interactions: {
       connectionGeneration,
       unsupported: false,
-      items: [initial],
+      items: [initial, ...additional],
     },
   };
   let deliver: (view: RuntimeView) => void = () => {};
@@ -104,7 +105,7 @@ async function setup(
         interactions: {
           connectionGeneration,
           unsupported: false,
-          items: [next],
+          items: [next, ...additional],
         },
       };
       deliver(current);
@@ -603,6 +604,52 @@ it("keeps the Timeline follow-up editable after a Dock-owned ordinary request de
     }));
     await act(() => view.model.followUpInteraction(item.id, send));
     expect(send).toHaveBeenCalledExactlyOnceWith("修正后的中文补充");
+    expect(view.answer).not.toHaveBeenCalled();
+  } finally {
+    await view.cleanup();
+  }
+});
+
+it("switches the Dock's single processing form between independent requests, retaining drafts and selected ownership across remount", async () => {
+  const a: Interaction = {
+    id: "A",
+    method: "input",
+    title: "问题 A",
+    status: "pending",
+    expiresAt: null,
+  };
+  const b: Interaction = { ...a, id: "B", title: "问题 B" };
+  const view = await setup(a, true, true, [b]);
+  const dock = () => view.host.querySelector(".decision-dock")!;
+  try {
+    await act(() => {
+      view.model.editAnswerDraft("A", { value: "草稿 A" }, "timeline");
+      view.model.editAnswerDraft("B", { value: "草稿 B" }, "timeline");
+      view.model.chooseInteractionEditor("A", "dock");
+    });
+    expect(dock().querySelectorAll("textarea")).toHaveLength(1);
+    expect(dock().querySelector("textarea")?.value).toBe("草稿 A");
+    const old = view.model.captureInteractionEditor("A")!;
+    await act(() => {
+      const request = dock().querySelector('[aria-label="问题 B"]')!;
+      [...request.querySelectorAll("button")]
+        .find((button) => button.textContent === "在此编辑")!
+        .click();
+    });
+    expect(dock().querySelectorAll("textarea")).toHaveLength(1);
+    expect(dock().querySelector("textarea")?.value).toBe("草稿 B");
+    expect(document.activeElement).toBe(dock().querySelector("textarea"));
+    expect(view.model.interactionDraft("A")?.value).toBe("草稿 A");
+    await act(() =>
+      view.model.editAnswerDraft("A", { value: "迟到编辑" }, "dock", old),
+    );
+    expect(view.model.interactionDraft("A")?.value).toBe("草稿 A");
+    await view.remount();
+    expect(dock().querySelectorAll("textarea")).toHaveLength(1);
+    expect(dock().querySelector("textarea")?.value).toBe("草稿 B");
+    await act(() => view.model.chooseInteractionEditor("A", "dock"));
+    expect(dock().querySelectorAll("textarea")).toHaveLength(1);
+    expect(dock().querySelector("textarea")?.value).toBe("草稿 A");
     expect(view.answer).not.toHaveBeenCalled();
   } finally {
     await view.cleanup();

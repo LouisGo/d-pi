@@ -289,3 +289,9 @@ AnswerHistory通过execution只读Query公开面接App持久事实：离线可�
 - 新隔离验证 `validation/m2/rich-ask-native.ts` 使用未修改的 managed SDK18.8.9、正式 Electron44.4.5 Main/Host/RuntimeService/SQLite 和官方扩展 UI；两个并行 rich 请求各自回答，原始带空白标签/空多选/自填记录真实落盘，App 留原文、OMP native parser 按其规则 trim 自填，整组 timeout 选择每题推荐项且无 App 回答意图，直接 RPC zero 立即结束，无 wire deadline 可取消，同一 native file/ID 冷恢复后再次富问答。模型请求为零，两个 native scope 清理确认后进程返回0。证据 `.scratch/session-components/evidence/rich-ask-native.json`；这是 dirty 工程检查点，未冒称固定候选、真实 provider、GUI 或系统 IME。AskTool 设置→工具执行的实测仍待补，300ms 无 deadline 观察不替代长时验收。
 - Host/交互/native transport 三文件82/82；Main/Host/队列及生命周期六文件首先133通过/4失败，固定修改前 Host 同样复现4项，根因是旧夹具仅等待一个 microtask 或 Host关闭、未等 Main group/lease 清理。补事实等待后两文件29/29通过（与133重叠）；生产清理逻辑未改变。Core/Host类型通过，fast通过。首次 native fixture漏 dispatch 与后续误把 RPC zero 当设置0均修正，没有把失败当成功证据。
 - WB03/WB04表格状态同步为 implementing；完整原方案验收仍在进行，尤其权限可靠关联、单当前Dock表单、Recovery/Activation与生产性能组合，不推送、不发布。
+
+### WB04 单当前 Dock 编辑会话（2026-10-11）
+
+- 两个请求先后选择 Dock 时，旧实现会保留两个 Dock 表单，Core 反例已实际失败。现一次 store 更新将上一 pending owner 安全交回 Timeline并更新编辑版本，新选择独占 Dock；草稿、题间位置、deadline与发送事实不变，旧 handle 拒绝改写。
+- 自动交回的旧卡不取焦点，只让本次显式选择的新 editor 聚焦。Thread-owned 选择跨 Dock 卸载/重挂保持，不自动切到刚到达的新请求；其他请求仍是可切换摘要，通知 dismiss 和原生回答继续分开。
+- 两文件33/33，包括生产Timeline/Dock双呈现、A→B→卸载/重挂→A、原文草稿、唯一Dock输入和新选择焦点；Renderer类型、design通过。没有新增实机证据或完整工作包验收。

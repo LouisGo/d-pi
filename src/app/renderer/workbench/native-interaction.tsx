@@ -91,7 +91,12 @@ export function NativeInteraction({
   const ownsEditor = owner === surface;
   const editor = useRef<HTMLElement>(null);
   useLayoutEffect(() => {
-    if (!ownsEditor || !draft?.editorVersion) return;
+    if (
+      !ownsEditor ||
+      !draft?.editorVersion ||
+      draft.editorFocusVersion !== draft.editorVersion
+    )
+      return;
     const target =
       editor.current?.querySelector<HTMLElement>("textarea:not(:disabled)") ??
       editor.current?.querySelector<HTMLElement>(
@@ -99,7 +104,7 @@ export function NativeInteraction({
       ) ??
       editor.current?.querySelector<HTMLElement>("button:not(:disabled)");
     target?.focus();
-  }, [ownsEditor, draft?.editorVersion]);
+  }, [ownsEditor, draft?.editorVersion, draft?.editorFocusVersion]);
   const selection = draft?.selection ?? null;
   const sent = !!operation && operation.status !== "not-dispatched";
   const setValue = (value: string) =>

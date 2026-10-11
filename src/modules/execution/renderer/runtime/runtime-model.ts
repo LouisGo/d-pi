@@ -464,10 +464,31 @@ export class RuntimeModel {
       (operation && operation.status !== "not-dispatched")
     )
       return;
-    this.editInteraction(id, {
+    const key = this.interactionKey(id);
+    if (!key) return;
+    const drafts = new Map(this.store.getState().interactionDrafts);
+    if (surface === "dock") {
+      // One processing form per Thread Dock. Transfer the prior pending owner
+      // back to Timeline atomically, retaining its draft and invalidating callbacks.
+      for (const other of this.getSnapshot()?.interactions?.items ?? []) {
+        if (other.id === id || other.status !== "pending") continue;
+        const otherKey = this.interactionKey(other.id);
+        const previous = otherKey ? drafts.get(otherKey) : undefined;
+        if (otherKey && previous?.editorSurface === "dock")
+          drafts.set(otherKey, {
+            ...previous,
+            editorSurface: "timeline",
+            editorVersion: (previous.editorVersion ?? 0) + 1,
+          });
+      }
+    }
+    drafts.set(key, {
+      ...draft,
       editorSurface: surface,
       editorVersion: (draft.editorVersion ?? 0) + 1,
+      editorFocusVersion: (draft.editorVersion ?? 0) + 1,
     });
+    this.store.setState({ interactionDrafts: drafts });
   }
   editAnswerDraft(
     id: string,

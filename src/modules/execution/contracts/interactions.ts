@@ -162,6 +162,7 @@ export interface InteractionEditorHandle {
 export interface InteractionDraft {
   editorSurface?: InteractionEditorSurface;
   editorVersion?: number;
+  editorFocusVersion?: number;
   ask?: AskInteractionDraft;
   value: string;
   selection:
