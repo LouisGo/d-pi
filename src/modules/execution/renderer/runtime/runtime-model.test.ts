@@ -406,6 +406,107 @@ it("keeps an unknown answer locked while stop and another answer remain availabl
   model.dispose();
 });
 
+it.each(["failed", "rejected", "observed-written"] as const)(
+  "settles a %s answer after its initially unknown native source is resolved",
+  async (outcome) => {
+    const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+    const generation = crypto.randomUUID();
+    const base: RuntimeView = {
+      threadId,
+      connectionGeneration: generation,
+      traceId: crypto.randomUUID(),
+      configuration: { code: "runtime.configDefault" },
+      revision: 1,
+      phase: "ready",
+      trusted: true,
+      busy: false,
+      model: "fixture",
+      message: { code: "runtime.readyToSend" },
+      interactions: {
+        connectionGeneration: generation,
+        unsupported: false,
+        items: [
+          {
+            id: "A",
+            method: "input",
+            title: "A",
+            status: "pending",
+            expiresAt: null,
+          },
+        ],
+      },
+    };
+    let deliver: (view: RuntimeView) => void = () => {};
+    let finish: (reply: RuntimeReply) => void = () => {};
+    let reject: (error: Error) => void = () => {};
+    let answerCalls = 0;
+    const model = new RuntimeModel({
+      subscribe: (listener) => {
+        deliver = listener;
+        return () => {};
+      },
+      request: async (command) => {
+        if (command.kind !== "answer") return { kind: "view", view: base };
+        answerCalls++;
+        return new Promise((resolve, fail) => {
+          finish = resolve;
+          reject = fail;
+        });
+      },
+    });
+    try {
+      await model.bind(threadId);
+      const pending = model.answer("A", { kind: "value", value: "frozen" });
+      const operationId = model.interactionOperation("A")!.operationId;
+      deliver({
+        ...base,
+        revision: 2,
+        interactions: {
+          ...base.interactions!,
+          nativeSessionKey: "actual-native",
+        },
+      });
+      if (outcome === "observed-written")
+        deliver({
+          ...model.getSnapshot()!,
+          revision: 3,
+          interactionOperations: [
+            { ...model.interactionOperation("A")!, status: "written" },
+          ],
+        });
+      if (outcome === "failed")
+        finish({
+          kind: "failed",
+          error: {
+            traceId: operationId,
+            code: "denied",
+            category: "resource",
+            message: { code: "runtime.controlFailed" },
+          },
+        });
+      else reject(Error("disconnected"));
+      await pending;
+      expect(model.interactionOperation("A")).toMatchObject({
+        operationId,
+        nativeSessionKey: "actual-native",
+        status:
+          outcome === "failed"
+            ? "not-dispatched"
+            : outcome === "observed-written"
+              ? "written"
+              : "unknown",
+      });
+      model.editInteraction("A", { value: "retry" });
+      const retry = model.answer("A", { kind: "value", value: "retry" });
+      expect(answerCalls).toBe(outcome === "failed" ? 2 : 1);
+      reject(Error("retry disconnected"));
+      await retry;
+    } finally {
+      model.dispose();
+    }
+  },
+);
+
 it("owns rich drafts across presentation changes and freezes one complete response while another request remains editable", async () => {
   const threadId = ThreadIdSchema.parse(crypto.randomUUID()),
     connectionGeneration = crypto.randomUUID();

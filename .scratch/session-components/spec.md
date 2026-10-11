@@ -229,6 +229,8 @@ Thread-owned RuntimeModel复用独立回答ledger与一次准入，新增无Reac
 
 验证：原rich合同7个失败反例、模型草稿缺口和真实RequestKey缺口先红后绿；合同与Host边界24、core reducer3、RuntimeModel11、Host41及既有问答组件15通过，包含独立并发锁、select-none/自填组合、源补齐保持草稿与外来native拒绝。新增歧义ID/label及回答256KiB预算反例通过，合同现5/5。Core/Main/Host类型通过；Renderer此前唯一ComposerTag data-file-icon声明遗漏已以类型增量修复，相关3测试及Renderer类型通过。99db856独立复核原目录竞态P2闭合，无新增高价值问题；Node/Electron证据仍仅Worker fixture。
 
+固定b66874e..f9e2985独立review发现P2：发送后真实来源补齐迁移了dispatching，但收尾仍匹配旧private-null索引。两个失败/断连反例先红后绿，改为按同Thread、代次、requestId与operationId结算迁移后的同一操作，已知来源变更不能结算；已取得written不被晚断连覆盖。RuntimeModel14/14与Renderer类型通过，待固定修正范围复核。WB04持久历史与GUI仍继续实施。
+
 ### WB00 milestone（2026-10-11）
 
 - 先写 InteractionOperation/InteractionDraft 与执行模块合同。红灯确认同题双击两次派发、Host respond 缺失；实现后对应反例转绿。Thread-owned RuntimeModel 保留表单、冻结回答、操作结果和后续收据关联；Main 等待精确 Host 结果，授权 await 后再次校验代次，Host 单次 write 兜底。普通 interaction 状态和 answer operation 改名 written，收据 ACK 不变。

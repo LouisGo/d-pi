@@ -670,14 +670,33 @@ export class RuntimeModel {
       /* Missing transport evidence is unknown, never permission to retry. */
     }
     const current = this.store.getState();
+    const currentKey = this.interactionKey(id);
+    const currentSource = current.view?.interactions;
+    const currentOperation = currentKey
+      ? current.interactionOperations.get(currentKey)
+      : undefined;
     if (
       !current.disposed &&
       current.thread === state.thread &&
-      this.interactionKey(id) === key &&
-      current.interactionOperations.get(key)?.operationId === traceId
+      currentKey &&
+      currentSource?.connectionGeneration === generation &&
+      (operation.nativeSessionKey === undefined ||
+        operation.nativeSessionKey === currentSource.nativeSessionKey) &&
+      (result.nativeSessionKey === undefined ||
+        result.nativeSessionKey === currentSource.nativeSessionKey) &&
+      currentOperation?.operationId === traceId &&
+      currentOperation.status === "dispatching"
     ) {
       const next = new Map(current.interactionOperations);
-      next.set(key, result);
+      // An observed source can resolve the private unknown-source index while
+      // this command is awaiting transport. The operation ID proves the alias;
+      // a different connection or previously known source never settles here.
+      next.set(currentKey, {
+        ...result,
+        ...(currentSource.nativeSessionKey
+          ? { nativeSessionKey: currentSource.nativeSessionKey }
+          : {}),
+      });
       this.store.setState({ interactionOperations: next });
     }
     return result;
