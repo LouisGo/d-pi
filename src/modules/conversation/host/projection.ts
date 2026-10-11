@@ -6,6 +6,7 @@ import {
 } from "../../../platform/omp/protocol/public";
 import { draftByteLength } from "../../../shared/draft-text";
 import { uiMessage } from "../../../shared/messages/contracts";
+import { LifecycleObservationSchema } from "../contracts/activity";
 import { nativeMessageTime } from "../contracts/message-time";
 import type {
   ConversationEvent,
@@ -21,7 +22,6 @@ import {
   projectToolPayload,
   toolSemanticArguments,
 } from "../core/public";
-
 import { SubagentProjection } from "./subagent-projection";
 
 const ReadingIdentitySchema = z.object({
@@ -46,6 +46,11 @@ const BackgroundStateSchema = z.object({
 const ThinkingSchema = z.object({
   type: z.literal("thinking"),
   thinking: z.string(),
+});
+const CallOwnerSchema = z.object({
+  type: z.literal("toolCall"),
+  id: z.string().min(1).max(512),
+  name: z.string().max(120),
 });
 function thinkingOf(content: unknown): string {
   if (!Array.isArray(content)) return "";
@@ -82,8 +87,19 @@ export class ConversationProjection {
   private active: number | null = null;
   private interrupted: number | null = null;
   private retryNotice: number | null = null;
+  private compactionNotice: number | null = null;
+  private turnSerial = 0;
+  private observedTurn: {
+    observationId: string;
+    assistantId: number | null;
+  } | null = null;
   private tools = new Map<string, number>();
   private toolOwners = new Map<number, string>();
+  private callParents = new Map<
+    string,
+    { name: string; itemId: number; recordId?: string }
+  >();
+  private callsByOwner = new Map<number, string[]>();
   private stream:
     | {
         id: number;
@@ -104,6 +120,54 @@ export class ConversationProjection {
   accept(frame: NativeFrame): void {
     // Lifecycle and tool/subagent events are ordering barriers for token batches.
     if (frame.type !== NativeFrameTypes.messageUpdate) this.flush();
+    if (frame.type === NativeFrameTypes.turnStart) {
+      this.observedTurn = {
+        observationId: `${this.connectionGeneration}:${++this.turnSerial}`,
+        assistantId: null,
+      };
+      return;
+    }
+    if (frame.type === NativeFrameTypes.turnEnd && this.observedTurn) {
+      const end = z
+        .object({
+          message: z.object({
+            role: z.literal("assistant"),
+            stopReason: z.string().max(120).optional(),
+          }),
+          toolResults: z.array(z.unknown()),
+        })
+        .safeParse(frame);
+      const turn = this.observedTurn;
+      this.observedTurn = null;
+      const item =
+        turn.assistantId === null
+          ? undefined
+          : this.items.get(turn.assistantId);
+      if (end.success && item) {
+        let failedTools = 0,
+          unknownTools = 0;
+        for (const result of end.data.toolResults) {
+          const parsed = z.object({ isError: z.boolean() }).safeParse(result);
+          if (!parsed.success) unknownTools++;
+          else if (parsed.data.isError) failedTools++;
+        }
+        this.put({
+          ...item,
+          turnOutcome: {
+            scope: "native-turn",
+            observationId: turn.observationId,
+            ...(end.data.message.stopReason
+              ? { stopReason: end.data.message.stopReason }
+              : {}),
+            toolResults: end.data.toolResults.length,
+            failedTools,
+            unknownTools,
+          },
+        });
+        this.flush();
+      }
+      return;
+    }
     if (this.subagents.accept(frame)) return;
     if (
       isNativeFrameType(
@@ -138,6 +202,34 @@ export class ConversationProjection {
       const identity = ReadingIdentitySchema.safeParse(message);
       if (identity.success && identity.data.dPiIdentityUnknown) this.gap = true;
       const ended = isNativeFrameType(frame, NativeFrameTypes.messageEnd);
+      if (role === "assistant" && this.observedTurn)
+        this.observedTurn.assistantId = id;
+      if (role === "assistant" && ended && Array.isArray(message.content)) {
+        const calls: string[] = [];
+        for (const part of message.content) {
+          const call = CallOwnerSchema.safeParse(part);
+          if (!call.success) continue;
+          if (calls.length >= 128) {
+            this.gap = true;
+            break;
+          }
+          this.callParents.set(call.data.id, {
+            name: call.data.name,
+            itemId: id,
+            ...(identity.success && identity.data.dPiRecordId
+              ? { recordId: identity.data.dPiRecordId }
+              : {}),
+          });
+          calls.push(call.data.id);
+          while (this.callParents.size > 1000) {
+            const first = this.callParents.keys().next().value;
+            if (first === undefined) break;
+            this.callParents.delete(first);
+            this.gap = true;
+          }
+        }
+        if (calls.length) this.callsByOwner.set(id, calls);
+      }
       const state =
         message.stopReason === "aborted"
           ? "aborted"
@@ -216,6 +308,7 @@ export class ConversationProjection {
                   undefined,
                   resultInput,
                   "result",
+                  message.isError,
                 ),
               };
             })()
@@ -254,6 +347,13 @@ export class ConversationProjection {
           ? { continuationOf }
           : {}),
         ...(toolObservation ? { tool: toolObservation } : {}),
+        ...(prior?.activityParent
+          ? { activityParent: prior.activityParent }
+          : message.toolCallId &&
+              this.callParents.get(message.toolCallId)?.name ===
+                toolObservation?.name
+            ? { activityParent: this.parentFor(message.toolCallId) }
+            : {}),
         label:
           role === "tool"
             ? (prior?.label ?? {
@@ -327,10 +427,15 @@ export class ConversationProjection {
           errorMessage: z.string().optional(),
           finalError: z.string().optional(),
           success: z.boolean().optional(),
+          maxAttempts: z.number().int().nonnegative().optional(),
+          delayMs: z.number().int().nonnegative().optional(),
         })
         .safeParse(frame);
       if (!retry.success) return;
-      const id = this.retryNotice ?? this.nextId++;
+      const id =
+        this.retryNotice !== null && this.items.has(this.retryNotice)
+          ? this.retryNotice
+          : this.nextId++;
       this.retryNotice = id;
       const ended = frame.type === NativeFrameTypes.autoRetryEnd;
       this.put({
@@ -339,6 +444,21 @@ export class ConversationProjection {
         text: "",
         state: ended && retry.data.success === false ? "failed" : "complete",
         label: { kind: "literal", text: "OMP" },
+        lifecycle: {
+          kind: "retry",
+          phase: ended ? "ended" : "started",
+          observedAt: Date.now(),
+          attempt: retry.data.attempt,
+          ...(retry.data.maxAttempts !== undefined
+            ? { maxAttempts: retry.data.maxAttempts }
+            : {}),
+          ...(retry.data.delayMs !== undefined
+            ? { delayMs: retry.data.delayMs }
+            : {}),
+          ...(retry.data.success !== undefined
+            ? { success: retry.data.success }
+            : {}),
+        },
         notice: uiMessage(
           ended
             ? retry.data.success === false
@@ -355,6 +475,68 @@ export class ConversationProjection {
               ).slice(0, 4096),
             }
           : {}),
+      });
+      this.flush();
+      return;
+    }
+    if (
+      frame.type === NativeFrameTypes.autoCompactionStart ||
+      frame.type === NativeFrameTypes.autoCompactionEnd
+    ) {
+      const ended = frame.type === NativeFrameTypes.autoCompactionEnd;
+      const prior =
+        this.compactionNotice === null
+          ? undefined
+          : this.items.get(this.compactionNotice);
+      const lifecycle = LifecycleObservationSchema.safeParse({
+        ...(ended && prior?.lifecycle?.kind === "compaction"
+          ? prior.lifecycle
+          : {}),
+        ...z
+          .object({
+            action: z.unknown().optional(),
+            reason: z.unknown().optional(),
+            aborted: z.unknown().optional(),
+            willRetry: z.unknown().optional(),
+            skipped: z.unknown().optional(),
+          })
+          .parse(frame),
+        kind: "compaction",
+        phase: ended ? "ended" : "started",
+        observedAt: Date.now(),
+      });
+      if (!lifecycle.success) {
+        this.gap = true;
+        return;
+      }
+      const id =
+        (ended && prior ? this.compactionNotice : null) ?? this.nextId++;
+      this.compactionNotice = ended ? null : id;
+      this.put({
+        id,
+        role: "notice",
+        state:
+          lifecycle.data.kind === "compaction" && lifecycle.data.aborted
+            ? "aborted"
+            : "complete",
+        text: "",
+        label: { kind: "literal", text: "OMP" },
+        lifecycle: lifecycle.data,
+        ...(typeof frame.errorMessage === "string"
+          ? { detail: frame.errorMessage.slice(0, 4096) }
+          : {}),
+      });
+      this.flush();
+      return;
+    }
+    if (frame.type === NativeFrameTypes.modelChanged) {
+      this.put({
+        id: this.nextId++,
+        role: "notice",
+        state: "complete",
+        text: "",
+        label: { kind: "literal", text: "OMP" },
+        lifecycle: { kind: "model-change", observedAt: Date.now() },
       });
       this.flush();
       return;
@@ -443,6 +625,9 @@ export class ConversationProjection {
             : stage === "update"
               ? "progress"
               : "result",
+          stage === "end" && typeof frame.isError === "boolean"
+            ? frame.isError
+            : undefined,
         ),
         ...(backgroundState ? { backgroundState } : {}),
         observed,
@@ -458,6 +643,11 @@ export class ConversationProjection {
         id,
         role: "tool",
         tool,
+        ...(prior?.activityParent
+          ? { activityParent: prior.activityParent }
+          : this.callParents.get(toolCallId)?.name === toolName
+            ? { activityParent: this.parentFor(toolCallId) }
+            : {}),
         label: { kind: "literal", text: tool.name },
         state:
           lifecycle === "failed" || backgroundState === "failed"
@@ -531,6 +721,19 @@ export class ConversationProjection {
     const owner = this.toolOwners.get(id);
     if (owner !== undefined) this.tools.delete(owner);
     this.toolOwners.delete(id);
+    for (const call of this.callsByOwner.get(id) ?? [])
+      if (this.callParents.get(call)?.itemId === id)
+        this.callParents.delete(call);
+    this.callsByOwner.delete(id);
+  }
+  private parentFor(toolCallId: string): ConversationItem["activityParent"] {
+    const owner = this.callParents.get(toolCallId);
+    return owner
+      ? {
+          itemId: owner.itemId,
+          ...(owner.recordId ? { recordId: owner.recordId } : {}),
+        }
+      : undefined;
   }
   private put(item: ConversationItem): void {
     if (this.budget < 1024) throw Error("Projection budget too small");
@@ -548,6 +751,16 @@ export class ConversationProjection {
         delete item.tool.arguments;
         delete item.tool.progress;
         delete item.tool.result;
+        if (item.tool.semantic)
+          item.tool.semantic = {
+            kind: "generic",
+            reason: "budget",
+            transportTool: item.tool.semantic.transportTool,
+            effectiveTool: item.tool.semantic.effectiveTool,
+            phase: item.tool.semantic.phase,
+            partial: true,
+            truncated: true,
+          };
       }
       if (item.subagent)
         item.subagent = {

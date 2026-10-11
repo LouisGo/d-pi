@@ -75,6 +75,9 @@ it("reads wrapped edit semantic evidence from the original native record", async
       effectiveTool: "edit",
       changes: [{ patch: "x".repeat(1800) }],
     });
+    expect(page.kind === "page" && page.entries[1]?.activityParentId).toBe(
+      "call",
+    );
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

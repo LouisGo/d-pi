@@ -3,6 +3,36 @@ import { ToolSemanticSchema } from "../contracts/public";
 import { decodeToolSemantic } from "./tool-semantic";
 
 describe("fixed OMP semantic evidence before generic clipping", () => {
+  it("does not turn a failed intent or unadapted AST preview into reported file changes", () => {
+    expect(
+      decodeToolSemantic(
+        "edit",
+        { path: "/a" },
+        {
+          isError: true,
+          content: [{ type: "text", text: "Cannot find match" }],
+        },
+        "result",
+      ),
+    ).toMatchObject({ kind: "generic" });
+    expect(
+      decodeToolSemantic(
+        "ast_edit",
+        {},
+        {
+          details: {
+            applied: false,
+            files: ["/a"],
+            displayContent: "PREVIEW_PENDING_NOTICE",
+          },
+        },
+        "result",
+      ),
+    ).toMatchObject({ kind: "generic", reason: "unsupported" });
+    expect(
+      decodeToolSemantic("edit", { path: "/a" }, { content: [] }, "result"),
+    ).toMatchObject({ kind: "generic" });
+  });
   it("keeps display range beyond the generic 1024 string budget", () => {
     const result = decodeToolSemantic(
       "read",

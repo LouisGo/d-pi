@@ -48,7 +48,10 @@ const DetailsSchema = z.object({
   perFileLimitReached: z.number().optional(),
   linesTruncated: z.boolean().optional(),
 });
-const ResultSchema = z.object({ details: z.unknown().optional() });
+const ResultSchema = z.object({
+  details: z.unknown().optional(),
+  isError: z.boolean().optional(),
+});
 const XdevSchema = z.object({
   tool: z.string().max(120),
   mode: z.enum(["help", "execute"]),
@@ -88,6 +91,7 @@ export function decodeToolSemantic(
   argsInput: unknown,
   result: unknown,
   phase: ToolSemantic["phase"],
+  isError?: boolean,
 ): ToolSemantic {
   const coverage =
     result === undefined
@@ -251,7 +255,16 @@ export function decodeToolSemantic(
         ...(d.fileCount !== undefined ? { fileCount: d.fileCount } : {}),
       };
     })
-    .with("edit", "write", "apply_patch", "ast_edit", () => {
+    .with("edit", "write", "apply_patch", () => {
+      // A result without native change metadata is not proof of the intent path changing.
+      if (
+        phase === "result" &&
+        d.perFileResults === undefined &&
+        !d.path &&
+        !d.resolvedPath &&
+        d.diff === undefined
+      )
+        return generic("unsupported");
       const values =
         d.perFileResults ?? (target ? [{ ...d, path: target }] : []);
       if (!Array.isArray(values)) return generic("invalid");
@@ -267,7 +280,9 @@ export function decodeToolSemantic(
         base.partial ||= Boolean(change.isError || change.snapshotsPruned);
         changes.push({
           path: change.path,
-          failed: change.isError === true,
+          failed:
+            change.isError === true ||
+            (isError ?? (envelope.success && envelope.data.isError)) === true,
           snapshotsPruned: change.snapshotsPruned === true,
           ...(patch !== undefined ? { patch } : {}),
           ...(change.firstChangedLine

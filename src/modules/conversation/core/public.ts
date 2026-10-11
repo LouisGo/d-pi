@@ -1,4 +1,10 @@
 export {
+  type ActivityGroup,
+  type ActivityMember,
+  ActivityReadModel,
+  type ActivityRow,
+} from "./activity";
+export {
   type BoundHistoryAttempt,
   boundHistoryPageQuery,
   nativeImageQuery,

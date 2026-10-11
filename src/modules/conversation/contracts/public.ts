@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { UiMessageSchema } from "../../../shared/messages/contracts";
 import type { ToolDetailPort } from "../../resources/contracts/public";
+import { LifecycleObservationSchema, TurnOutcomeSchema } from "./activity";
 import { MessageTimestampSchema } from "./message-time";
 import { ToolExecutionObservationSchema } from "./tool-observation";
 
+export type { LifecycleObservation, TurnOutcome } from "./activity";
 export * from "./history";
 export type {
   ToolExecutionObservation,
@@ -57,10 +59,19 @@ export const ConversationItemSchema = z.strictObject({
   text: z.string(),
   thinking: z.string().optional(),
   timestamp: MessageTimestampSchema.optional(),
+  turnOutcome: TurnOutcomeSchema.optional(),
+  lifecycle: LifecycleObservationSchema.optional(),
   state: z.enum(["streaming", "complete", "failed", "aborted"]),
   detail: z.string().max(4096).optional(),
   continuationOf: z.number().int().nonnegative().optional(),
   nativeRecordId: z.string().min(1).max(512).optional(),
+  /** Actual assistant toolCall owner; absence means no proven grouping relation. */
+  activityParent: z
+    .strictObject({
+      itemId: z.number().int().nonnegative(),
+      recordId: z.string().min(1).max(512).optional(),
+    })
+    .optional(),
   restored: z.boolean().optional(),
   label: ConversationLabelSchema,
   notice: UiMessageSchema.optional(),

@@ -107,6 +107,58 @@ async function mount(
     },
   };
 }
+it("groups verified call siblings, keeps failed counts visible, and remembers expansion after remount", async () => {
+  const f = await mount(true, {
+    kind: "page",
+    source: "saved",
+    coverage: "append-order",
+    next: null,
+    incompleteTail: false,
+    omitted: 0,
+    entries: [
+      { id: "owner", parentId: null, role: "assistant", text: "Owner" },
+      {
+        id: "read-one",
+        parentId: "owner",
+        activityParentId: "owner",
+        role: "toolResult",
+        state: "complete",
+        text: "first read",
+      },
+      {
+        id: "read-two",
+        parentId: "read-one",
+        activityParentId: "owner",
+        role: "toolResult",
+        state: "failed",
+        text: "permission denied",
+      },
+      {
+        id: "orphan",
+        parentId: "read-two",
+        role: "toolResult",
+        text: "unrelated",
+      },
+    ],
+  });
+  await vi.waitFor(() =>
+    expect(f.container.querySelector("[data-activity-group]")).not.toBeNull(),
+  );
+  const group = f.container.querySelector<HTMLElement>("[data-activity-group]");
+  expect(group?.textContent).toContain("1 failed");
+  expect(f.container.querySelector('[data-reading-row="read-one"]')).toBeNull();
+  expect(
+    f.container.querySelector('[data-reading-row="orphan"]'),
+  ).not.toBeNull();
+  await act(() => group?.querySelector<HTMLButtonElement>("button")?.click());
+  expect(
+    f.container.querySelector('[data-reading-row="read-two"]')?.textContent,
+  ).toContain("permission denied");
+  await f.remount();
+  expect(
+    f.container.querySelector('[data-reading-row="read-one"]'),
+  ).not.toBeNull();
+});
 it("reuses fresh saved messages on return without another disk read or loading prose", async () => {
   const f = await mount(true, {
     kind: "page",

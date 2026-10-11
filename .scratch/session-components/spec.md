@@ -83,6 +83,18 @@
 - 当前5文件71/71通过（decoder/Host/native-history/生产Body/既有真实Workbench组合）。Core/Host/Main类型通过；Renderer仅既有composer-tag.tsx:134基线失败。design/i18n/interaction、architecture通过，结构/看板已生成。组合有既有React act提示；未做本milestone实机/供应商/IME，不宣称WB02完成。
 - 下一步：固定本milestone独立review并闭合；增量ActivityReadModel与真实轮次/来源定位，WB03范围与缓存/demand随后交错实施。WB04尚未实施；goal保持active。
 
+### WB02 milestone：调用归属、增量活动和生命周期（接力，2026-10-11）
+
+- 本地参考源码已核实：同级 `../t3code` HEAD 为 `a908a7ac8780c5b4d6fb0bed8945d640f69d2d1d`，不同于原方案研究基点；读取 `MessagesTimeline.logic.ts` 的真实 run/attempt 分组及 `work-log/presentation.ts` 的失败保留汇总。采纳阅读结构与失败保留原则，不移植 T3 runId 到 OMP，也不引入其执行调度或 UI 依赖。原生合同仍以已安装 OMP18.8.9 `modes/rpc/wire/events.ts` 及工具源码为准。
+- 首轮固定 `268d91b..00fa7fa` 独立review确认两项P2：search/edit正文隐藏原生错误/后置警告、ast_edit形状误路由。已以实际失败回归修正：所有专用Body保留有界原生输出与警告；缺少修改details的结果不把intent路径当变更；ast_edit降级正式generic，保留未应用预览。类型化原生失败传入decoder。单Body异常/新版本恢复回归保留执行事实；Host预算压缩语义到显式budget兜底。
+- 新增Thread-owned `ActivityReadModel`，只保留成员身份、小状态和组摘要。Host依据assistant实际toolCallId/name登记归属，持久reader依据真实祖先链登记同一call batch；未知关系独立显示，不以时间邻近或用户消息推断。普通进度只更新成员与所属组的不可变索引，稳定rows引用；结构变更才重建成员顺序。合并优先阅读锚点/可见组，拆分保留锚点所在组，alias最多64；展开随Thread模型保留。选区/焦点占用时延后结构变动，后续进度以单项事实覆盖待处理旧状态。
+- 生产live/saved阅读窗口已接活动组，成员仍独立虚拟行；失败/中断/运行中计数不因折叠隐藏。精确返回先展开来源成员，再由ReadingWindow挂载和聚焦，组ID不替代成员ID。真实Router/Host/Preload/Inspector/Tiptap组合追加分组→折叠→固定A→切B引用→返回A成员回归；两种链路均通过，仅替代IPC和几何。
+- OMP真实turn_start/turn_end观察只附原生turn outcome，不结算App submission/后台工作；toolResults失败和unknown分别保留。retry、compaction及model_changed有类型化阅读行；事件未给原生时间时明确显示本地观察时间。冷历史没有这些原生事件则不重建不存在的生命周期。
+- 9个受影响文件109项通过，新增分组组合后该组合2/2通过；待本milestone收尾再刷新相关门禁和固定review。Core/Host/Main类型通过，Renderer仍只有未改动composer-tag.tsx:134基线。已有React act提示保留记录；不冒称实机、真实供应商、IME或完整WB02验收。
+- WB02仍待代码位置/文件版本的SourceTarget、工具证据与当前Git sample的变化汇总、生命周期组合进一步核实；WB03完整资源/范围/Worker策略和WB04完整交互尚未完成，继续当前授权，不推送、不发布。
+
+收尾补充：组内被延期的结构不会用旧输入回退后续进度（反例先红后绿）；分组与未分组真实来源组合2/2，最后三文件70/70通过，与上述109项重叠、不相加。必要类型与design/i18n/interaction门禁通过；结构报告在最终源码后刷新。固定综合review随本地milestone提交继续，不把本段当完整工作包完成。
+
 按行为逐段 TDD：独立回答/双击/重连/重挂载，详情更新与final，跨Thread草稿/Undo/来源定位/lease释放与晚到导航。只跑相关类型、行为、边界和文档门禁；必要的真实 SDK/生产链路验收有界执行，不重复 provider/系统 IME 或包矩阵。
 
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。

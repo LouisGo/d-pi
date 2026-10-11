@@ -86,6 +86,14 @@ export function ToolSemanticBody({
           raw
         )}
       </ToolBodyBoundary>
+      {semantic && semantic.kind !== "generic" && text && (
+        <Disclosure variant="inline" data-tool-native-output>
+          <DisclosureTrigger>
+            {t("tool.semantic.nativeOutput")}
+          </DisclosureTrigger>
+          <ReadingBody text={text.slice(0, 2048)} raw />
+        </Disclosure>
+      )}
       {(semantic?.partial || tool.coverage === "partial" || tool.truncated) && (
         <p role="status">{t("workbench.tool.partial")}</p>
       )}

@@ -81,7 +81,44 @@ const MUTATING_TOOL_NAMES = new Set([
 ]);
 const NON_MUTATING_TOOL_NAMES = new Set(["read"]);
 
-function classifyToolEffect(toolName: string): HistoryToolEffect {
+function classifyToolEffect(
+  toolName: string,
+  details: unknown,
+): HistoryToolEffect {
+  const wrapper = z
+    .object({
+      xdev: z.unknown().optional(),
+      proc: z.unknown().optional(),
+      cfg: z.unknown().optional(),
+      applied: z.boolean().optional(),
+    })
+    .safeParse(details);
+  if (
+    wrapper.success &&
+    (wrapper.data.xdev !== undefined ||
+      wrapper.data.proc !== undefined ||
+      wrapper.data.cfg !== undefined)
+  ) {
+    const semantic = decodeToolSemantic(
+      toolName,
+      undefined,
+      { details },
+      "result",
+    );
+    return semantic.kind === "file-change"
+      ? "mutation"
+      : semantic.kind === "resource-read" ||
+          semantic.kind === "web-research" ||
+          semantic.kind === "search"
+        ? "no-mutation"
+        : "unknown";
+  }
+  if (
+    toolName === "ast_edit" &&
+    wrapper.success &&
+    wrapper.data.applied === false
+  )
+    return "no-mutation";
   if (MUTATING_TOOL_NAMES.has(toolName)) return "mutation";
   if (NON_MUTATING_TOOL_NAMES.has(toolName)) return "no-mutation";
   return "unknown";
@@ -406,7 +443,7 @@ export async function readNativeHistory(
                 toolCallId: message.toolCallId,
                 toolName: message.toolName,
                 isError: message.isError ?? null,
-                effect: classifyToolEffect(message.toolName),
+                effect: classifyToolEffect(message.toolName, message.details),
                 coverage: "text-parts-only" as const,
                 nonTextParts: Array.isArray(message.content)
                   ? message.content.filter(
@@ -415,6 +452,7 @@ export async function readNativeHistory(
                   : 0,
               }
             : undefined;
+        let activityParentId: string | undefined;
         const toolObservation: ToolExecutionObservation | undefined = (() => {
           if (
             (message.role !== "toolResult" && message.role !== "tool") ||
@@ -425,7 +463,9 @@ export async function readNativeHistory(
           )
             return undefined;
 
-          let matchedCall: { name: string; arguments?: unknown } | undefined;
+          let matchedCall:
+            | { name: string; arguments?: unknown; recordId: string }
+            | undefined;
           let currentId = parentId;
           let steps = 0;
           const visited = new Set<string>();
@@ -436,7 +476,8 @@ export async function readNativeHistory(
             if (calls) {
               const candidate = calls.get(message.toolCallId);
               if (candidate && candidate.name === message.toolName) {
-                matchedCall = candidate;
+                matchedCall = { ...candidate, recordId: currentId };
+                activityParentId = currentId;
                 break;
               }
             }
@@ -530,6 +571,7 @@ export async function readNativeHistory(
               matchedCall?.arguments,
               resultInput,
               "result",
+              message.isError,
             ),
           };
         })();
@@ -545,6 +587,7 @@ export async function readNativeHistory(
         entries.push({
           id,
           parentId,
+          ...(activityParentId ? { activityParentId } : {}),
           role: message.role,
           text,
           ...(toolObservation

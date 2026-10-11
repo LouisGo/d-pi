@@ -5,6 +5,7 @@ import type {
   ConversationPort,
   ConversationSnapshot,
 } from "../contracts/public";
+import { type ActivityMember, ActivityReadModel } from "./activity";
 import { ItemIndex } from "./item-index";
 
 export interface ConversationState {
@@ -49,6 +50,8 @@ export type ConversationStateStore = Pick<
 >;
 
 export class ConversationModel {
+  readonly activities = new ActivityReadModel();
+  private activityKeys = new Map<number, string>();
   private readonly store: ConversationStore = createConversationStore();
   readonly stateStore: ConversationStateStore = this.store;
   private remove: (() => void) | null = null;
@@ -56,6 +59,25 @@ export class ConversationModel {
   private recoveryAttempts = 0;
   private index = new ItemIndex();
   constructor(private readonly port: ConversationPort) {}
+  configureActivities(
+    members: readonly ActivityMember[],
+    liveKeys: ReadonlyMap<number, string>,
+  ): void {
+    this.activityKeys = new Map(liveKeys);
+    this.activities.reconcile(members);
+  }
+  private updateActivity(item: ConversationItem): void {
+    const key = this.activityKeys.get(item.id);
+    if (!key) return;
+    this.activities.update({
+      key,
+      state: item.state,
+      changedFiles:
+        item.tool?.semantic?.kind === "file-change"
+          ? item.tool.semantic.changes.filter((change) => !change.failed).length
+          : 0,
+    });
+  }
   getSnapshot = (): ConversationSnapshot | null => this.store.getState().view;
   subscribe = (listener: () => void): (() => void) =>
     this.store.subscribe(
@@ -74,6 +96,8 @@ export class ConversationModel {
   }
   private publishView(view: ConversationSnapshot): void {
     const previous = this.store.getState();
+    if (previous.view?.connectionGeneration !== view.connectionGeneration)
+      this.activityKeys.clear();
     const nextIds = view.items.map((item) => item.id);
     const itemIds =
       previous.itemIds.length === nextIds.length &&
@@ -85,6 +109,7 @@ export class ConversationModel {
     let messageCount = 0;
     let truncatedCount = 0;
     for (const item of view.items) {
+      this.updateActivity(item);
       this.index = this.index.with(item);
       changedBody ||= bodyChanged(item, previous.itemsById.get(item.id));
       messageCount += isMessage(item) ? 1 : 0;
@@ -115,6 +140,11 @@ export class ConversationModel {
     this.remove?.();
     this.remove = null;
     const previous = this.store.getState();
+    if (previous.threadId !== threadId) {
+      this.activityKeys.clear();
+      this.activities.setProtected(new Set());
+      this.activities.reconcile([]);
+    }
     const epoch = previous.epoch + 1;
     let synchronized = false;
     this.store.setState({
@@ -220,6 +250,7 @@ export class ConversationModel {
       truncatedCount +=
         (event.item.truncated ? 1 : 0) - (prior?.truncated ? 1 : 0);
       this.index = this.index.with(event.item);
+      this.updateActivity(event.item);
       this.store.setState({
         view: indexedSnapshot(view, itemIds, this.index, event.seq, event.gap),
         itemIds,

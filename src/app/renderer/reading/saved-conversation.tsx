@@ -32,10 +32,13 @@ import {
   LoadingIndicator,
 } from "../../../modules/ui/renderer/public";
 import { ToolWorkbenchContext } from "../workbench/tool-inspector";
+import {
+  ActivityReadingWindow,
+  activityMember,
+} from "./activity-reading-window";
 import { ConversationItemView } from "./conversation";
 import { historyToolEvidenceMessage } from "./history";
 import { MessageMedia } from "./message-media";
-import { ReadingWindow } from "./reading-window";
 
 /** One saved timeline survives execution startup and the bounded live window. */
 export function SavedConversation({
@@ -57,6 +60,10 @@ export function SavedConversation({
 }) {
   const { t } = useI18n();
   const workbench = useContext(ToolWorkbenchContext);
+  const activityRows = useStore(
+    model.activities.stateStore,
+    (state) => state.rows,
+  );
   // Only membership/identity changes repaint the timeline; deltas belong to rows.
   const identities = useStore(
     model.stateStore,
@@ -273,8 +280,8 @@ export function SavedConversation({
     return workbench.registerRows(
       threadId,
       nativeSessionKey,
-      (ref) =>
-        rows.find((row) => {
+      (ref) => {
+        const row = rows.find((row) => {
           const item =
             row.liveId === undefined
               ? undefined
@@ -289,7 +296,10 @@ export function SavedConversation({
             (ref.connectionGeneration === generation &&
               item?.tool?.toolCallId === ref.toolCallId)
           );
-        })?.key,
+        });
+        if (row) model.activities.revealMember(row.key);
+        return row?.key;
+      },
       hasNextPage && !isFetching
         ? async () => !(await fetchNextPage()).isError
         : undefined,
@@ -300,6 +310,7 @@ export function SavedConversation({
     threadId,
     nativeSessionKey,
     rows,
+    activityRows,
     generation,
     model,
     hasNextPage,
@@ -361,7 +372,43 @@ export function SavedConversation({
           {t("config.refresh")}
         </Button>
       )}
-      <ReadingWindow
+      <ActivityReadingWindow
+        model={model}
+        liveKeys={
+          new Map(
+            rows.flatMap((row) =>
+              row.liveId === undefined ? [] : [[row.liveId, row.key] as const],
+            ),
+          )
+        }
+        members={rows.map((row) => {
+          const item =
+            row.liveId === undefined
+              ? undefined
+              : live.itemsById.get(row.liveId);
+          const parent = item?.activityParent;
+          const parentId =
+            row.entry?.activityParentId ??
+            parent?.recordId ??
+            (parent?.itemId !== undefined
+              ? JSON.stringify([generation, parent.itemId])
+              : undefined);
+          return activityMember(
+            row.key,
+            item ??
+              (row.entry
+                ? {
+                    state:
+                      row.entry.state ??
+                      (row.entry.tool?.lifecycle === "failed"
+                        ? "failed"
+                        : "complete"),
+                    tool: row.entry.tool,
+                  }
+                : undefined),
+            parentId,
+          );
+        })}
         key={source}
         source={source}
         positions={positions}

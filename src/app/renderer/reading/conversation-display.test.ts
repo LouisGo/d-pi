@@ -7,11 +7,13 @@ import { decodeToolSemantic } from "../../../modules/conversation/core/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { ConversationItemView } from "./conversation";
 import { MessageMedia } from "./message-media";
+import { ToolBodyBoundary } from "./tool-semantic-body";
 
 const cleanups: (() => Promise<void>)[] = [];
 afterEach(async () => {
   for (const cleanup of cleanups.splice(0)) await cleanup();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 async function mount(
   item: ConversationItem,
@@ -46,6 +48,86 @@ const base: ConversationItem = {
   label: { kind: "literal", text: "You" },
   text: "Keep **literal** prompt\nSecond line",
 };
+it("isolates a presenter exception, preserves raw evidence and recovers on a new revision", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  cleanups.push(async () => {
+    await act(() => root.unmount());
+    container.remove();
+  });
+  function BrokenBody() {
+    throw Error("presenter failure");
+  }
+  const render = (revision: number, broken: boolean) =>
+    act(() =>
+      root.render(
+        createElement(
+          "div",
+          null,
+          createElement(
+            "span",
+            { "data-native-state": "completed" },
+            "completed",
+          ),
+          createElement(ToolBodyBoundary, {
+            revision,
+            fallback: createElement("p", null, "available native evidence"),
+            children: broken
+              ? createElement(BrokenBody)
+              : createElement("p", null, "recovered view"),
+          }),
+        ),
+      ),
+    );
+  await render(1, true);
+  expect(container.textContent).toContain("available native evidence");
+  expect(container.querySelector("[data-native-state]")?.textContent).toBe(
+    "completed",
+  );
+  await render(2, false);
+  expect(container.textContent).toContain("recovered view");
+});
+it.each(["grep", "edit"])(
+  "retains native %s errors and post-operation warnings alongside semantic evidence",
+  async (name) => {
+    const text = "Native warning: syntax repair failed";
+    const container = await mount({
+      ...base,
+      role: "tool",
+      state: "failed",
+      text,
+      tool: {
+        name,
+        toolCallId: "failed-call",
+        lifecycle: "failed",
+        observed: ["end"],
+        coverage: "partial",
+        truncated: false,
+        semantic: decodeToolSemantic(
+          name,
+          { path: "/a" },
+          {
+            isError: true,
+            details:
+              name === "edit"
+                ? { path: "/a", diff: "+change" }
+                : { fileMatches: [] },
+          },
+          "result",
+        ),
+      },
+    });
+    const raw = container.querySelector<HTMLDetailsElement>(
+      "[data-tool-native-output]",
+    );
+    expect(raw).not.toBeNull();
+    await act(() => raw?.querySelector("summary")?.click());
+    expect(raw?.textContent).toContain(text);
+  },
+);
 it.each([
   [
     "read",

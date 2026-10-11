@@ -21,6 +21,11 @@ import {
 } from "../workbench/tool-inspector";
 import type { ToolTarget } from "../workbench/window-workbench";
 import {
+  ActivityReadingWindow,
+  activityMember,
+} from "./activity-reading-window";
+import { LifecycleEventRow, TurnOutcomeSummary } from "./lifecycle-event";
+import {
   MessageActions,
   MessageStatus,
   ThinkingDisclosure,
@@ -28,7 +33,6 @@ import {
   UserMessageBubble,
 } from "./message-parts";
 import { ReadingBody } from "./reading-body";
-import { ReadingWindow } from "./reading-window";
 import { SubagentMessage } from "./subagents";
 import { ToolObservationDetails } from "./tool-observation";
 import { ToolSemanticBody } from "./tool-semantic-body";
@@ -51,6 +55,10 @@ export function Conversation({
     (state) => state.view?.nativeSessionKey,
   );
   const itemIds = useStore(model.stateStore, (state) => state.itemIds);
+  const activityRows = useStore(
+    model.activities.stateStore,
+    (state) => state.rows,
+  );
   const threadId = useStore(model.stateStore, (state) => state.threadId);
   const generation = useStore(
     model.stateStore,
@@ -76,9 +84,10 @@ export function Conversation({
           : source.connectionGeneration === state.view?.connectionGeneration &&
               item?.tool?.toolCallId === source.toolCallId;
       });
+      if (id !== undefined) model.activities.revealMember(String(id));
       return id === undefined ? undefined : String(id);
     });
-  }, [workbench, threadId, nativeSessionKey, itemIds, model]);
+  }, [workbench, threadId, nativeSessionKey, itemIds, activityRows, model]);
   return (
     <section
       className="conversation"
@@ -100,7 +109,21 @@ export function Conversation({
           {t("subagents.reconnect")}
         </Button>
       )}
-      <ReadingWindow
+      <ActivityReadingWindow
+        model={model}
+        liveKeys={new Map(itemIds.map((id) => [id, String(id)]))}
+        members={itemIds.map((id) => {
+          const item = model.stateStore.getState().itemsById.get(id);
+          const parent = item?.activityParent;
+          return activityMember(
+            String(id),
+            item,
+            parent?.recordId ??
+              (parent?.itemId !== undefined
+                ? JSON.stringify([generation, parent.itemId])
+                : undefined),
+          );
+        })}
         key={source}
         source={source ?? ""}
         positions={positions}
@@ -221,6 +244,14 @@ export function ConversationItemView({
     positions && source
       ? { positions, key: JSON.stringify([source, rowId]) }
       : undefined;
+  if (item.lifecycle)
+    return (
+      <LifecycleEventRow
+        observation={item.lifecycle}
+        rowId={rowId}
+        detail={item.detail}
+      />
+    );
   if (item.subagent)
     return <SubagentMessage item={item} position={position} rowId={rowId} />;
   if (item.subagentNotice)
@@ -363,6 +394,9 @@ export function ConversationItemView({
       )}
       {item.truncated && (
         <p role="status">{formatMessage({ code: "conversation.truncated" })}</p>
+      )}
+      {item.turnOutcome && (
+        <TurnOutcomeSummary outcome={item.turnOutcome} state={item.state} />
       )}
       <MessageActions
         text={displayText ?? item.text}

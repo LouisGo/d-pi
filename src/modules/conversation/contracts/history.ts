@@ -44,6 +44,8 @@ export type HistoryFile = z.infer<typeof HistoryFileSchema>;
 export const HistoryEntrySchema = z.strictObject({
   id: z.string(),
   parentId: z.string().nullable(),
+  /** Verified assistant ancestor containing this exact toolCallId/name. */
+  activityParentId: z.string().min(1).max(512).optional(),
   role: z.string(),
   text: z.string(),
   thinking: z.string().optional(),

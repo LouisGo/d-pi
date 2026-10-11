@@ -6,6 +6,88 @@ import {
 import { ConversationModel } from "../core/public";
 import { ConversationProjection } from "./projection";
 
+it("projects explicit turn outcome and compaction facts without equating a turn with a submission", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({ type: "turn_start" });
+  p.accept({
+    type: "message_end",
+    message: { role: "assistant", content: "Partial", stopReason: "toolUse" },
+  });
+  p.accept({
+    type: "turn_end",
+    message: { role: "assistant", stopReason: "toolUse" },
+    toolResults: [{ isError: true }, { isError: false }, {}],
+  });
+  expect(p.snapshot().items[0]?.turnOutcome).toMatchObject({
+    scope: "native-turn",
+    stopReason: "toolUse",
+    toolResults: 3,
+    failedTools: 1,
+    unknownTools: 1,
+  });
+  expect(p.snapshot().items[0]?.state).toBe("complete");
+  p.accept({
+    type: "auto_compaction_start",
+    reason: "threshold",
+    action: "snapcompact",
+  });
+  p.accept({
+    type: "auto_compaction_end",
+    action: "snapcompact",
+    aborted: false,
+    willRetry: true,
+    skipped: true,
+  });
+  expect(p.snapshot().items[1]?.lifecycle).toMatchObject({
+    kind: "compaction",
+    phase: "ended",
+    reason: "threshold",
+    skipped: true,
+    willRetry: true,
+  });
+  expect(p.snapshot().items[1]?.timestamp).toBeUndefined();
+  p.dispose();
+});
+
+it("associates tools with their actual assistant call batch rather than a nearby message", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "message_end",
+    message: {
+      role: "assistant",
+      dPiRecordId: "owner",
+      content: [
+        {
+          type: "toolCall",
+          id: "known",
+          name: "read",
+          arguments: { path: "/a" },
+        },
+      ],
+    },
+  });
+  p.accept({
+    type: "tool_execution_start",
+    toolCallId: "known",
+    toolName: "read",
+    args: { path: "/a" },
+  });
+  p.accept({
+    type: "tool_execution_start",
+    toolCallId: "orphan",
+    toolName: "read",
+    args: { path: "/b" },
+  });
+  const items = p.snapshot().items;
+  expect(
+    items.find((item) => item.tool?.toolCallId === "known")?.activityParent,
+  ).toMatchObject({ recordId: "owner" });
+  expect(
+    items.find((item) => item.tool?.toolCallId === "orphan")?.activityParent,
+  ).toBeUndefined();
+  p.dispose();
+});
+
 it("extracts wrapped edit semantics before clipping and keeps them on native final", () => {
   const p = new ConversationProjection(crypto.randomUUID(), () => {});
   p.accept({
@@ -801,7 +883,9 @@ it("does not render settled and configuration telemetry as unsupported user inte
   p.accept({ type: "session_settled" });
   p.accept({ type: "thinking_level_changed", thinkingLevel: "off" });
   p.accept({ type: "model_changed" });
-  expect(p.snapshot().items).toEqual([]);
+  expect(p.snapshot().items).toMatchObject([
+    { lifecycle: { kind: "model-change" } },
+  ]);
   p.dispose();
 });
 it("carries only validated native record identity and restored origin through final projection", () => {

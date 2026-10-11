@@ -67,7 +67,7 @@ export const ToolSemanticSchema = z.discriminatedUnion("kind", [
   z.strictObject({
     ...base,
     kind: z.literal("generic"),
-    reason: z.enum(["unsupported", "invalid", "non-file", "help"]),
+    reason: z.enum(["unsupported", "invalid", "non-file", "help", "budget"]),
   }),
 ]);
 export type ToolSemantic = z.infer<typeof ToolSemanticSchema>;

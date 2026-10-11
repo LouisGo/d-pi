@@ -31,6 +31,8 @@ export const NativeFrameTypes = {
   modelChanged: "model_changed",
   autoRetryStart: "auto_retry_start",
   autoRetryEnd: "auto_retry_end",
+  autoCompactionStart: "auto_compaction_start",
+  autoCompactionEnd: "auto_compaction_end",
   extensionUiRequest: "extension_ui_request",
   extensionUiResponse: "extension_ui_response",
   dPiControlState: "d_pi_control_state",
