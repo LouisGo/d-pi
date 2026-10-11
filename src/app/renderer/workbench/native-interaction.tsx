@@ -1,6 +1,8 @@
+import { useLayoutEffect, useRef } from "react";
 import { useStore } from "zustand";
 import type {
   Interaction,
+  InteractionEditorSurface,
   SubmissionReceipt,
 } from "../../../modules/execution/contracts/public";
 import { interactionDraftIdentity } from "../../../modules/execution/contracts/public";
@@ -19,6 +21,7 @@ import {
   receiptStatusKey,
 } from "../components/receipt-status";
 import { IconButton } from "../components/ui/icon-button";
+import { RichAskForm } from "./rich-ask-form";
 export type FollowUpResult = {
   ok: boolean;
   message: UiMessage | null;
@@ -45,6 +48,7 @@ export function NativeInteraction({
   onContinueFollowUp,
   receiptsById,
   followUpIds,
+  surface = "timeline",
 }: {
   item: Interaction;
   model: RuntimeModel;
@@ -56,6 +60,7 @@ export function NativeInteraction({
     | undefined;
   receiptsById: ReadonlyMap<string, SubmissionReceipt>;
   followUpIds: string[];
+  surface?: InteractionEditorSurface;
 }) {
   const { t, formatMessage } = useI18n();
   const draft = useStore(model.stateStore, (state) =>
@@ -80,12 +85,27 @@ export function NativeInteraction({
         : "",
     ),
   );
+  const editorHandle = model.captureInteractionEditor(item.id) ?? undefined;
   const value = draft?.value ?? item.prefill ?? "";
+  const owner = draft?.editorSurface ?? "timeline";
+  const ownsEditor = owner === surface;
+  const editor = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    if (!ownsEditor || !draft?.editorVersion) return;
+    const target =
+      editor.current?.querySelector<HTMLElement>("textarea:not(:disabled)") ??
+      editor.current?.querySelector<HTMLElement>(
+        '[role="radio"][aria-checked="true"], input:checked',
+      ) ??
+      editor.current?.querySelector<HTMLElement>("button:not(:disabled)");
+    target?.focus();
+  }, [ownsEditor, draft?.editorVersion]);
   const selection = draft?.selection ?? null;
   const sent = !!operation && operation.status !== "not-dispatched";
-  const setValue = (value: string) => model.editInteraction(item.id, { value });
+  const setValue = (value: string) =>
+    model.editAnswerDraft(item.id, { value }, surface, editorHandle);
   const setSelection = (selection: NonNullable<typeof draft>["selection"]) =>
-    model.editInteraction(item.id, { selection });
+    model.editAnswerDraft(item.id, { selection }, surface, editorHandle);
   // A native update must not silently retarget an already selected answer.
   const selected =
     selection?.kind === "option" &&
@@ -95,7 +115,7 @@ export function NativeInteraction({
   const customAnswer = selection?.kind === "custom";
   const sending = draft?.followUpSending ?? false;
   const followUpError = draft?.followUpError;
-  const enabled = available && item.status === "pending" && !sent;
+  const enabled = available && ownsEditor && item.status === "pending" && !sent;
   const defaulted = item.status === "written" && item.defaultAnswered;
   const followUpReceipts = (draft?.followUpIds ?? followUpIds)
     .map((id) => receiptsById.get(id) ?? null)
@@ -122,17 +142,19 @@ export function NativeInteraction({
   };
   const answer = (response: Parameters<RuntimeModel["answer"]>[1]) => {
     if (!enabled || (!trusted && response.kind !== "cancel")) return;
-    void model.answer(item.id, response);
+    void model.answerFromEditor(item.id, response, surface, editorHandle);
   };
   return (
     <article
+      ref={editor}
+      data-editor-surface={surface}
       className="native-interaction"
       data-selectable
       aria-label={item.title}
     >
       <header className="native-interaction-heading">
         <strong>{item.title}</strong>
-        {item.status === "pending" && !sent && (
+        {item.status === "pending" && !sent && ownsEditor && (
           <IconButton
             variant="ghost"
             label={t("ui.interaction.cancel")}
@@ -147,7 +169,7 @@ export function NativeInteraction({
       {operation?.status === "not-dispatched" && (
         <p role="alert">{t("ui.interaction.notDispatched")}</p>
       )}
-      {draft?.answer && item.status !== "pending" && (
+      {draft?.answer && (sent || item.status !== "pending") && (
         <p data-selectable>
           {draft.answer.kind === "value"
             ? draft.answer.value
@@ -157,7 +179,15 @@ export function NativeInteraction({
                     ? "ui.interaction.confirm"
                     : "ui.interaction.reject",
                 )
-              : t("ui.interaction.cancelled")}
+              : draft.answer.kind === "ask"
+                ? draft.answer.answers
+                    .map((answer) =>
+                      [...answer.selectedOptions, answer.customInput]
+                        .filter(Boolean)
+                        .join("、"),
+                    )
+                    .join("；")
+                : t("ui.interaction.cancelled")}
         </p>
       )}
       {defaulted && (
@@ -167,104 +197,159 @@ export function NativeInteraction({
           })}
         </p>
       )}
+      {item.status === "pending" && !sent && ownsEditor && (
+        <Button
+          variant="ghost"
+          onClick={() =>
+            model.chooseInteractionEditor(
+              item.id,
+              surface === "timeline" ? "dock" : "timeline",
+              editorHandle,
+            )
+          }
+        >
+          {t(
+            surface === "timeline"
+              ? "ui.interaction.moveToDock"
+              : "ui.interaction.moveToTimeline",
+          )}
+        </Button>
+      )}
       {item.status === "pending" && !sent ? (
-        <>
-          {item.method === "select" ? (
-            <AnswerOptions
-              aria-label={item.title}
-              value={
-                customAnswer
-                  ? { kind: "custom", value }
-                  : selected
-                    ? { kind: "option", value: String(selected.index) }
-                    : null
+        !ownsEditor ? (
+          <div>
+            <p>
+              {t(
+                owner === "dock"
+                  ? "ui.interaction.editingDock"
+                  : "ui.interaction.editingTimeline",
+              )}
+            </p>
+            <Button
+              variant="subtle"
+              disabled={!available}
+              onClick={() =>
+                model.chooseInteractionEditor(item.id, surface, editorHandle)
               }
-              options={(item.options ?? []).map((option, index) => ({
-                value: String(index),
-                label: option,
-                description: item.optionDetails?.[index]?.description,
-              }))}
+            >
+              {t("ui.interaction.editHere")}
+            </Button>
+          </div>
+        ) : item.method === "ask" && draft?.ask ? (
+          <>
+            <RichAskForm
+              item={item}
+              draft={draft.ask}
               disabled={!enabled || !trusted}
-              custom={{
-                label: t("ui.interaction.customAnswer"),
-                placeholder: t("ui.interaction.customPlaceholder"),
-                maxLength: 16384,
-              }}
-              onValueChange={(next) => {
-                if (next.kind === "custom") {
-                  setSelection({ kind: "custom" });
-                  setValue(next.value);
-                  return;
-                }
-                const option = item.options?.[Number(next.value)];
-                if (option !== undefined) {
-                  setSelection({
-                    kind: "option",
-                    index: Number(next.value),
-                    value: option,
-                  });
-                  setValue("");
-                }
+              complete={model.askAnswer(item.id) !== null}
+              edit={(action) =>
+                model.editAsk(item.id, action, surface, editorHandle)
+              }
+              submit={() => {
+                if (enabled && trusted)
+                  void model.submitAsk(item.id, surface, editorHandle);
               }}
             />
-          ) : item.method !== "confirm" ? (
-            <TextArea
-              data-native-answer
-              aria-label={item.title}
-              disabled={!enabled || !trusted}
-              value={value}
-              placeholder={item.placeholder}
-              maxLength={16384}
-              onChange={(event) => setValue(event.target.value)}
-            />
-          ) : null}
-          <footer className="native-interaction-footer">
-            <ActionGroup>
-              <Button
-                variant="subtle"
-                disabled={!enabled || (item.method === "confirm" && !trusted)}
-                onClick={() =>
-                  answer(
-                    item.method === "confirm"
-                      ? { kind: "confirm", confirmed: false }
-                      : { kind: "cancel" },
-                  )
+          </>
+        ) : (
+          <>
+            {item.method === "select" ? (
+              <AnswerOptions
+                aria-label={item.title}
+                value={
+                  customAnswer
+                    ? { kind: "custom", value }
+                    : selected
+                      ? { kind: "option", value: String(selected.index) }
+                      : null
                 }
-              >
-                {t(
-                  item.method === "confirm"
-                    ? "ui.interaction.reject"
-                    : "ui.interaction.cancel",
-                )}
-              </Button>
-              <Button
-                variant="accent"
-                disabled={
-                  !enabled ||
-                  !trusted ||
-                  (item.method === "select" &&
-                    (customAnswer ? !value.trim() : selected === null))
-                }
-                onClick={() => {
-                  if (item.method === "confirm")
-                    answer({ kind: "confirm", confirmed: true });
-                  else if (item.method === "select") {
-                    if (customAnswer && value.trim())
-                      answer({ kind: "value", value });
-                    else if (selected)
-                      answer({ kind: "value", value: selected.value });
-                  } else answer({ kind: "value", value });
+                options={(item.options ?? []).map((option, index) => ({
+                  value: String(index),
+                  label: option,
+                  description: item.optionDetails?.[index]?.description,
+                }))}
+                disabled={!enabled || !trusted}
+                custom={{
+                  label: t("ui.interaction.customAnswer"),
+                  placeholder: t("ui.interaction.customPlaceholder"),
+                  maxLength: 16384,
                 }}
-              >
-                {t(
-                  item.method === "confirm"
-                    ? "ui.interaction.confirm"
-                    : "ui.interaction.submit",
-                )}
-              </Button>
-            </ActionGroup>
-          </footer>
-        </>
+                onValueChange={(next) => {
+                  if (next.kind === "custom") {
+                    setSelection({ kind: "custom" });
+                    setValue(next.value);
+                    return;
+                  }
+                  const option = item.options?.[Number(next.value)];
+                  if (option !== undefined) {
+                    setSelection({
+                      kind: "option",
+                      index: Number(next.value),
+                      value: option,
+                    });
+                    setValue("");
+                  }
+                }}
+              />
+            ) : item.method !== "confirm" ? (
+              <TextArea
+                data-native-answer
+                aria-label={item.title}
+                disabled={!enabled || !trusted}
+                value={value}
+                placeholder={item.placeholder}
+                maxLength={16384}
+                onChange={(event) => setValue(event.target.value)}
+              />
+            ) : null}
+            <footer className="native-interaction-footer">
+              <ActionGroup>
+                <Button
+                  variant="subtle"
+                  disabled={!enabled || (item.method === "confirm" && !trusted)}
+                  onClick={() =>
+                    answer(
+                      item.method === "confirm"
+                        ? { kind: "confirm", confirmed: false }
+                        : { kind: "cancel" },
+                    )
+                  }
+                >
+                  {t(
+                    item.method === "confirm"
+                      ? "ui.interaction.reject"
+                      : "ui.interaction.cancel",
+                  )}
+                </Button>
+                <Button
+                  variant="accent"
+                  disabled={
+                    !enabled ||
+                    !trusted ||
+                    (item.method === "select" &&
+                      (customAnswer ? !value.trim() : selected === null))
+                  }
+                  onClick={() => {
+                    if (item.method === "confirm")
+                      answer({ kind: "confirm", confirmed: true });
+                    else if (item.method === "select") {
+                      if (customAnswer && value.trim())
+                        answer({ kind: "value", value });
+                      else if (selected)
+                        answer({ kind: "value", value: selected.value });
+                    } else answer({ kind: "value", value });
+                  }}
+                >
+                  {t(
+                    item.method === "confirm"
+                      ? "ui.interaction.confirm"
+                      : "ui.interaction.submit",
+                  )}
+                </Button>
+              </ActionGroup>
+            </footer>
+          </>
+        )
       ) : defaulted ? (
         <>
           <TextArea

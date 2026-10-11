@@ -1,0 +1,159 @@
+{
+  "kind": "isolated-renderer-fixture",
+  "nativeOrProvider": false,
+  "systemIme": false,
+  "electron": "44.4.5",
+  "states": [
+    {
+      "theme": "light",
+      "geometry": {
+        "width": 1000,
+        "scroll": 1000,
+        "preview": {
+          "x": 79,
+          "y": 97.6796875,
+          "width": 382,
+          "height": 216.796875,
+          "top": 97.6796875,
+          "right": 461,
+          "bottom": 314.4765625,
+          "left": 79
+        },
+        "cards": [
+          {
+            "x": 62,
+            "y": -279.3046875,
+            "width": 416,
+            "height": 658.78125,
+            "top": -279.3046875,
+            "right": 478,
+            "bottom": 379.4765625,
+            "left": 62
+          },
+          {
+            "x": 62,
+            "y": 389.4765625,
+            "width": 416,
+            "height": 345.59375,
+            "top": 389.4765625,
+            "right": 478,
+            "bottom": 735.0703125,
+            "left": 62
+          },
+          {
+            "x": 16,
+            "y": 666.015625,
+            "width": 968,
+            "height": 87.9921875,
+            "top": 666.015625,
+            "right": 984,
+            "bottom": 754.0078125,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 764.0078125,
+            "width": 968,
+            "height": 87.9921875,
+            "top": 764.0078125,
+            "right": 984,
+            "bottom": 852,
+            "left": 16
+          }
+        ]
+      }
+    },
+    {
+      "theme": "dark",
+      "geometry": {
+        "width": 1000,
+        "scroll": 1000,
+        "preview": {
+          "x": 79,
+          "y": 97.6796875,
+          "width": 382,
+          "height": 216.796875,
+          "top": 97.6796875,
+          "right": 461,
+          "bottom": 314.4765625,
+          "left": 79
+        },
+        "cards": [
+          {
+            "x": 62,
+            "y": -279.3046875,
+            "width": 416,
+            "height": 658.78125,
+            "top": -279.3046875,
+            "right": 478,
+            "bottom": 379.4765625,
+            "left": 62
+          },
+          {
+            "x": 62,
+            "y": 389.4765625,
+            "width": 416,
+            "height": 345.59375,
+            "top": 389.4765625,
+            "right": 478,
+            "bottom": 735.0703125,
+            "left": 62
+          },
+          {
+            "x": 16,
+            "y": 666.015625,
+            "width": 968,
+            "height": 87.9921875,
+            "top": 666.015625,
+            "right": 984,
+            "bottom": 754.0078125,
+            "left": 16
+          },
+          {
+            "x": 16,
+            "y": 764.0078125,
+            "width": 968,
+            "height": 87.9921875,
+            "top": 764.0078125,
+            "right": 984,
+            "bottom": 852,
+            "left": 16
+          }
+        ]
+      }
+    }
+  ],
+  "pointer": {
+    "outline": "none",
+    "visible": true
+  },
+  "keyboard": {
+    "outline": "solid",
+    "visible": true
+  },
+  "writes": [
+    {
+      "id": "A",
+      "answer": {
+        "kind": "ask",
+        "answers": [
+          {
+            "id": "mode",
+            "selectedOptions": [
+              "保留现有配置"
+            ]
+          },
+          {
+            "id": "features",
+            "selectedOptions": [
+              "读取历史"
+            ],
+            "customInput": "  中文组合草稿  "
+          }
+        ]
+      }
+    }
+  ],
+  "singleEditor": true,
+  "concurrentRequestUnaffected": true
+}

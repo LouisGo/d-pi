@@ -574,6 +574,30 @@ it("owns rich drafts across presentation changes and freezes one complete respon
     model.editAsk("A", { kind: "select", questionId: "q1", label: "B" });
     model.editAsk("A", { kind: "none", questionId: "q2" });
     model.editAsk("A", { kind: "question", questionId: "q2" });
+    const originalEditor = model.captureInteractionEditor("A")!;
+    model.chooseInteractionEditor("A", "dock");
+    model.editAsk(
+      "A",
+      { kind: "select", questionId: "q1", label: "A" },
+      "timeline",
+    );
+    expect(
+      model.interactionDraft("A")?.ask?.answers.q1?.selectedOptions,
+    ).toEqual(["B"]);
+    expect(model.interactionDraft("A")?.editorSurface).toBe("dock");
+    expect(await model.submitAsk("A", "timeline")).toBeNull();
+    model.chooseInteractionEditor("A", "timeline");
+    model.editAsk(
+      "A",
+      { kind: "select", questionId: "q1", label: "A" },
+      "timeline",
+      originalEditor,
+    );
+    expect(
+      model.interactionDraft("A")?.ask?.answers.q1?.selectedOptions,
+    ).toEqual(["B"]);
+    expect(await model.submitAsk("A", "timeline", originalEditor)).toBeNull();
+    expect(model.interactionDraft("A")?.ask?.questionId).toBe("q2");
     expect(model.interactionRequestKey("A")).toBeNull();
     deliver({
       ...base,
@@ -619,6 +643,28 @@ it("owns rich drafts across presentation changes and freezes one complete respon
     await Promise.all([pending, repeated]);
     expect(model.interactionOperation("A")?.status).toBe("unknown");
     expect(model.interactionDraft("A")?.ask?.questionId).toBe("q2");
+    const oldSourceEditor = model.captureInteractionEditor("A")!;
+    deliver({
+      ...base,
+      revision: 4,
+      interactions: {
+        ...base.interactions!,
+        nativeSessionKey: "another-native-session",
+      },
+    });
+    model.editAsk(
+      "A",
+      { kind: "select", questionId: "q1", label: "A" },
+      "timeline",
+      oldSourceEditor,
+    );
+    expect(
+      model.interactionDraft("A")?.ask?.answers.q1?.selectedOptions,
+    ).toEqual([]);
+    expect(
+      await model.answerFromEditor("A", answer, "timeline", oldSourceEditor),
+    ).toBeNull();
+    expect(commands).toHaveLength(1);
   } finally {
     model.dispose();
   }

@@ -1,3 +1,7 @@
+export {
+  AnswerHistoryReadError,
+  answerHistoryPageQuery,
+} from "./answer-history-queries";
 export { RuntimeModel, type RuntimeState } from "./runtime/runtime-model";
 export {
   SubmissionModel,

@@ -153,7 +153,15 @@ export type AskFormAction =
   | { kind: "custom"; questionId: string; value: string }
   | { kind: "custom-mode"; questionId: string; value: boolean }
   | { kind: "none"; questionId: string };
+export type InteractionEditorSurface = "timeline" | "dock";
+export interface InteractionEditorHandle {
+  identity: string;
+  surface: InteractionEditorSurface;
+  version: number;
+}
 export interface InteractionDraft {
+  editorSurface?: InteractionEditorSurface;
+  editorVersion?: number;
   ask?: AskInteractionDraft;
   value: string;
   selection:

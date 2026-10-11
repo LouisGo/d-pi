@@ -22,8 +22,10 @@ import { Submissions } from "../reading/submissions";
 import type { ReadingView } from "../routing/search";
 import { ConversationVisibilityContext } from "../shell/layout/conversation-visibility";
 import type { ThreadSelectionState } from "../wiring/model";
+import { AnswerHistory } from "./answer-history";
 import { locateAttention } from "./attention-location";
 import { Composer } from "./composer";
+import { DecisionDock } from "./decision-dock";
 import { FilePanel } from "./file-panel";
 import { RuntimeInspection, RuntimePanel } from "./runtime-panel";
 import { SubagentControls } from "./subagent-controls";
@@ -320,6 +322,12 @@ const ThreadContent = memo(function ThreadContent({
         tabIndex={-1}
       >
         {!directoryAvailable && <DirectoryUnavailable />}
+        {model.answerHistory && (
+          <AnswerHistory
+            bridge={model.answerHistory}
+            threadId={thread.context.threadId}
+          />
+        )}
         {thread.runtime && (
           <RuntimePanel
             origin={thread.context.origin}
@@ -428,6 +436,7 @@ const ThreadContent = memo(function ThreadContent({
           )}
         </ReadingPane>
       </div>
+      {thread.runtime && <DecisionDock model={thread.runtime} />}
       <Composer
         thread={thread}
         model={model}

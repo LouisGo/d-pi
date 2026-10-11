@@ -11,6 +11,8 @@ import type {
   Answer,
   AskFormAction,
   InteractionDraft,
+  InteractionEditorHandle,
+  InteractionEditorSurface,
   InteractionOperation,
   RequestKey,
 } from "../../contracts/interactions";
@@ -423,7 +425,69 @@ export class RuntimeModel {
     drafts.set(key, { ...draft, ...patch });
     this.store.setState({ interactionDrafts: drafts });
   }
-  editAsk(id: string, action: AskFormAction): void {
+  captureInteractionEditor(id: string): InteractionEditorHandle | null {
+    const identity = this.interactionKey(id);
+    const draft = this.interactionDraft(id);
+    return identity && draft
+      ? {
+          identity,
+          surface: draft.editorSurface ?? "timeline",
+          version: draft.editorVersion ?? 0,
+        }
+      : null;
+  }
+  private editorCurrent(id: string, handle?: InteractionEditorHandle): boolean {
+    const current = this.captureInteractionEditor(id);
+    return (
+      !!current &&
+      (!handle ||
+        (current.identity === handle.identity &&
+          current.surface === handle.surface &&
+          current.version === handle.version))
+    );
+  }
+  chooseInteractionEditor(
+    id: string,
+    surface: InteractionEditorSurface,
+    handle?: InteractionEditorHandle,
+  ): void {
+    if (!this.editorCurrent(id, handle)) return;
+    const item = this.getSnapshot()?.interactions?.items.find(
+      (item) => item.id === id,
+    );
+    const draft = this.interactionDraft(id);
+    const operation = this.interactionOperation(id);
+    if (
+      item?.status !== "pending" ||
+      !draft ||
+      (draft.editorSurface ?? "timeline") === surface ||
+      (operation && operation.status !== "not-dispatched")
+    )
+      return;
+    this.editInteraction(id, {
+      editorSurface: surface,
+      editorVersion: (draft.editorVersion ?? 0) + 1,
+    });
+  }
+  editAnswerDraft(
+    id: string,
+    patch: Partial<Pick<InteractionDraft, "value" | "selection">>,
+    surface: InteractionEditorSurface,
+    handle?: InteractionEditorHandle,
+  ): void {
+    if (
+      !this.editorCurrent(id, handle) ||
+      (this.interactionDraft(id)?.editorSurface ?? "timeline") !== surface
+    )
+      return;
+    this.editInteraction(id, patch);
+  }
+  editAsk(
+    id: string,
+    action: AskFormAction,
+    surface: InteractionEditorSurface = "timeline",
+    handle?: InteractionEditorHandle,
+  ): void {
     const item = this.getSnapshot()?.interactions?.items.find(
       (item) => item.id === id,
     );
@@ -431,7 +495,9 @@ export class RuntimeModel {
     const operation = this.interactionOperation(id);
     if (
       item?.method !== "ask" ||
+      !this.editorCurrent(id, handle) ||
       !draft?.ask ||
+      (draft.editorSurface ?? "timeline") !== surface ||
       item.status !== "pending" ||
       (operation && operation.status !== "not-dispatched")
     )
@@ -448,6 +514,27 @@ export class RuntimeModel {
     return item?.method === "ask" && draft?.ask
       ? buildAskAnswer(item.questions, draft.ask)
       : null;
+  }
+  submitAsk(
+    id: string,
+    surface: InteractionEditorSurface,
+    handle?: InteractionEditorHandle,
+  ): Promise<InteractionOperation | null> {
+    const answer = this.askAnswer(id);
+    return answer
+      ? this.answerFromEditor(id, answer, surface, handle)
+      : Promise.resolve(null);
+  }
+  answerFromEditor(
+    id: string,
+    answer: Answer,
+    surface: InteractionEditorSurface,
+    handle?: InteractionEditorHandle,
+  ): Promise<InteractionOperation | null> {
+    return this.editorCurrent(id, handle) &&
+      (this.interactionDraft(id)?.editorSurface ?? "timeline") === surface
+      ? this.answer(id, answer)
+      : Promise.resolve(null);
   }
   async followUpInteraction(
     id: string,
@@ -530,6 +617,8 @@ export class RuntimeModel {
       }
       if (!drafts.has(key))
         drafts.set(key, {
+          editorSurface: "timeline",
+          editorVersion: 0,
           value: item.prefill ?? "",
           ...(item.method === "ask"
             ? { ask: seedAskForm(item.questions) }

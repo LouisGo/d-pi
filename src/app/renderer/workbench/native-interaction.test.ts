@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { act, createElement } from "react";
+import { act, createElement, Fragment } from "react";
 import { createRoot } from "react-dom/client";
 import { expect, it, vi } from "vitest";
 import type {
@@ -9,6 +9,7 @@ import type {
 import { RuntimeModel } from "../../../modules/execution/renderer/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { ThreadIdSchema } from "../../../shared/identity";
+import { DecisionDock } from "./decision-dock";
 import { NativeInteraction } from "./native-interaction";
 
 const item: Interaction = {
@@ -35,7 +36,11 @@ async function typeAnswer(host: HTMLElement, text: string) {
   });
 }
 
-async function setup(initial: Interaction = item, trusted = true) {
+async function setup(
+  initial: Interaction = item,
+  trusted = true,
+  withDock = false,
+) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const host = document.createElement("div");
   document.body.append(host);
@@ -106,16 +111,21 @@ async function setup(initial: Interaction = item, trusted = true) {
       root.render(
         createElement(I18nProvider, {
           initialSnapshot: { preference: "zh-CN", resolvedLocale: "zh-CN" },
-          children: createElement(NativeInteraction, {
-            item: next,
-            model,
-            available: true,
-            trusted,
-            onFollowUp: undefined,
-            onContinueFollowUp: undefined,
-            receiptsById: new Map(),
-            followUpIds: [],
-          }),
+          children: createElement(
+            Fragment,
+            null,
+            createElement(NativeInteraction, {
+              item: next,
+              model,
+              available: true,
+              trusted,
+              onFollowUp: undefined,
+              onContinueFollowUp: undefined,
+              receiptsById: new Map(),
+              followUpIds: [],
+            }),
+            withDock ? createElement(DecisionDock, { model }) : null,
+          ),
         }),
       );
     });
@@ -398,6 +408,155 @@ it("restores an unfinished answer and dispatched lock after the card remounts", 
     expect(view.host.querySelector('[role="radiogroup"]')).toBeNull();
     expect(view.host.textContent).toContain("已写入");
     expect(view.answer).toHaveBeenCalledOnce();
+  } finally {
+    await view.cleanup();
+  }
+});
+
+it("reviews a complete rich question group and sends exact ordered answers once, retaining multi/custom drafts across remount and editor transfer", async () => {
+  const rich: Interaction = {
+    id: "rich",
+    method: "ask",
+    title: "选择方案",
+    status: "pending",
+    expiresAt: null,
+    questions: [
+      {
+        id: "single",
+        recommended: 0,
+        question: "采用哪个方案？",
+        options: [
+          {
+            label: " 方案 A ",
+            description: "保留配置",
+            preview: "**预览内容**",
+          },
+          { label: "方案 B" },
+        ],
+      },
+      {
+        id: "multi",
+        question: "选择能力",
+        multi: true,
+        options: [{ label: "功能甲" }, { label: "功能乙" }],
+      },
+    ],
+  };
+  const view = await setup(rich);
+  try {
+    const option = view.host.querySelector<HTMLElement>(
+      '[role="radio"][aria-label=" 方案 A "]',
+    );
+    expect(option).not.toBeNull();
+    expect(option?.getAttribute("aria-checked")).toBe("false");
+    await act(() => view.button("预览： 方案 A ").click());
+    expect(view.host.querySelector("strong")?.textContent).toBe("选择方案");
+    expect(view.host.textContent).toContain("预览内容");
+    expect(view.answer).not.toHaveBeenCalled();
+    await act(() => option?.click());
+    await act(() => view.button("下一题").click());
+    const checkbox = view.host.querySelector<HTMLInputElement>(
+      'input[type="checkbox"][aria-label="功能甲"]',
+    );
+    expect(checkbox).not.toBeNull();
+    await act(() => checkbox?.click());
+    await act(() => view.button("其他回答").click());
+    await typeAnswer(view.host, "  中文组合输入  ");
+    const textarea = view.host.querySelector<HTMLTextAreaElement>(
+      'textarea[aria-label="其他回答"]',
+    );
+    await act(() => {
+      textarea?.dispatchEvent(
+        new CompositionEvent("compositionstart", { bubbles: true }),
+      );
+      textarea?.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Enter",
+          isComposing: true,
+          bubbles: true,
+        }),
+      );
+      textarea?.dispatchEvent(
+        new CompositionEvent("compositionend", { bubbles: true }),
+      );
+    });
+    expect(view.answer).not.toHaveBeenCalled();
+    await view.remount();
+    expect(
+      view.host.querySelector<HTMLTextAreaElement>("textarea")?.value,
+    ).toBe("  中文组合输入  ");
+    await act(() => view.model.chooseInteractionEditor("rich", "dock"));
+    expect(view.host.querySelector("textarea")).toBeNull();
+    expect(view.host.querySelector('[role="radio"]')).toBeNull();
+    await act(() => view.button("在此编辑").click());
+    expect(
+      view.host.querySelector<HTMLTextAreaElement>("textarea")?.value,
+    ).toBe("  中文组合输入  ");
+    await act(() => view.button("检查全部回答").click());
+    expect(view.host.textContent).toContain(" 方案 A ");
+    expect(view.host.textContent).toContain("功能甲");
+    await act(async () => {
+      view.button("发送回答").click();
+      view.button("发送回答").click();
+    });
+    expect(view.answer).toHaveBeenCalledExactlyOnceWith("rich", {
+      kind: "ask",
+      answers: [
+        { id: "single", selectedOptions: [" 方案 A "] },
+        {
+          id: "multi",
+          selectedOptions: ["功能甲"],
+          customInput: "  中文组合输入  ",
+        },
+      ],
+    });
+  } finally {
+    await view.cleanup();
+  }
+});
+
+it("mounts Timeline and Dock together with one editable field and transfers ordinary answers without changing the request deadline", async () => {
+  const initial: Interaction = {
+    id: "input",
+    method: "input",
+    title: "填写答案",
+    status: "pending",
+    expiresAt: 1890000000000,
+  };
+  const view = await setup(initial, true, true);
+  try {
+    await act(() =>
+      view.model.editAnswerDraft("input", { value: "已输入中文" }, "timeline"),
+    );
+    expect(view.host.querySelectorAll("textarea")).toHaveLength(1);
+    expect(
+      view.host.querySelector('[data-editor-surface="timeline"] textarea'),
+    ).not.toBeNull();
+    await act(() => view.button("移到待办区").click());
+    expect(view.host.querySelectorAll("textarea")).toHaveLength(1);
+    expect(
+      view.host.querySelector('[data-editor-surface="dock"] textarea'),
+    ).not.toBeNull();
+    expect(
+      view.host.querySelector<HTMLTextAreaElement>("textarea")?.value,
+    ).toBe("已输入中文");
+    expect(document.activeElement).toBe(view.host.querySelector("textarea"));
+    await act(() =>
+      view.model.editAnswerDraft("input", { value: "迟到旧编辑" }, "timeline"),
+    );
+    expect(
+      view.host.querySelector<HTMLTextAreaElement>("textarea")?.value,
+    ).toBe("已输入中文");
+    expect(view.model.getSnapshot()?.interactions?.items[0]?.expiresAt).toBe(
+      initial.expiresAt,
+    );
+    expect(view.answer).not.toHaveBeenCalled();
+    await act(async () => view.button("发送回答").click());
+    expect(view.answer).toHaveBeenCalledExactlyOnceWith("input", {
+      kind: "value",
+      value: "已输入中文",
+    });
+    expect(view.host.querySelectorAll("textarea")).toHaveLength(0);
   } finally {
     await view.cleanup();
   }

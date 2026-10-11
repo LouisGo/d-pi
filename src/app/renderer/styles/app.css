@@ -192,6 +192,7 @@
     border-radius: var(--radius);
     background: var(--surface);
     box-shadow: var(--shadow-control);
+    color: var(--foreground);
     font-size: var(--text-body);
     line-height: 1.6;
     overflow-wrap: anywhere;
@@ -215,6 +216,92 @@
   }
   .native-interaction > p {
     color: var(--muted-foreground);
+  }
+  .answer-history {
+    flex-shrink: 0;
+    min-width: 0;
+    padding: var(--panel-padding);
+  }
+  .answer-history-page,
+  .answer-history-entry,
+  .answer-history-entry > details > div {
+    display: grid;
+    gap: var(--layout-gap);
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .answer-history-entry {
+    padding-block: var(--layout-gap);
+    border-block-end: 1px solid var(--border);
+  }
+  .answer-history-entry time {
+    color: var(--muted-foreground);
+    font-size: var(--text-caption);
+    font-variant-numeric: tabular-nums;
+  }
+  .rich-ask-form,
+  .rich-ask-review,
+  .rich-ask-review > section,
+  .rich-ask-question {
+    display: grid;
+    gap: var(--layout-gap);
+    min-width: 0;
+  }
+  .rich-ask-question {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .rich-ask-question legend {
+    margin-block-end: var(--layout-gap);
+    font-weight: 500;
+  }
+  .rich-ask-option {
+    display: flex;
+    align-items: start;
+    gap: var(--layout-gap);
+    padding: calc(var(--spacing) * 2) var(--control-padding);
+    border-radius: var(--radius-control);
+    cursor: default;
+  }
+  .rich-ask-option > span {
+    display: grid;
+    min-width: 0;
+  }
+  .rich-ask-preview {
+    padding: var(--panel-padding);
+    background: var(--muted);
+    border-radius: var(--radius-control);
+    overflow: auto;
+    max-height: var(--editor-max-height);
+  }
+  .rich-ask-review > section + section {
+    border-block-start: 1px solid var(--border);
+    padding-block-start: var(--layout-gap);
+  }
+  .decision-dock {
+    flex-shrink: 0;
+    min-height: 0;
+    min-width: 0;
+    display: grid;
+    gap: var(--layout-gap);
+    padding: var(--panel-padding);
+    border-block-start: 1px solid var(--border);
+    background: var(--surface);
+    max-height: var(--decision-dock-max-height);
+    overflow: auto;
+    scrollbar-gutter: stable;
+  }
+  .decision-dock-requests {
+    display: grid;
+    gap: var(--layout-gap);
+    min-width: 0;
+  }
+  .decision-dock .native-interaction {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
   }
   .native-interaction-footer {
     display: flex;

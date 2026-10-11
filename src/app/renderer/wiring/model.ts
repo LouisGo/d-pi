@@ -198,6 +198,9 @@ export class AppModel {
   get history() {
     return this.bridge.history;
   }
+  get answerHistory() {
+    return this.bridge.answerHistory;
+  }
   get attachments() {
     return this.bridge.attachments;
   }

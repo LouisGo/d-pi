@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "4005672ca574aa9795b90f2bf38f37665a11d7a031aecbc79d00e0fded9bd3c8",
+  "inputsHash": "a4bcca160f4ac9553d27412732fdf133d1f4969731e43375cbdedfb28b9f64ed",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 669,
-    "scannedFiles": 669,
+    "sourceFiles": 675,
+    "scannedFiles": 675,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 299,
-      "lines": 59380,
+      "files": 303,
+      "lines": 60276,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -118,7 +118,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 3910,
+      "lines": 3968,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -351,8 +351,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 67,
-      "lines": 17898,
+      "files": 69,
+      "lines": 18142,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -19100,6 +19100,177 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/workbench/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./answer-history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/answer-history.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/execution/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/renderer/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/answer-history.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
       "from": "src/app/renderer/workbench/attachment-controls.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -21053,6 +21224,63 @@
       "resolution": "external"
     },
     {
+      "from": "src/app/renderer/workbench/decision-dock.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zustand",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/decision-dock.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/decision-dock.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/execution/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/renderer/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/decision-dock.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/decision-dock.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./native-interaction",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/native-interaction.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/workbench/editor-context.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -21651,12 +21879,33 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "./decision-dock",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/decision-dock.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/native-interaction.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "./native-interaction",
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/workbench/native-interaction.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/native-interaction.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/app/renderer/workbench/native-interaction.tsx",
@@ -21772,6 +22021,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/components/ui/icon-button.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/native-interaction.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./rich-ask-form",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/rich-ask-form.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -22060,6 +22321,54 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/workbench/refresh-state.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/rich-ask-form.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/rich-ask-form.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/rich-ask-form.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/rich-ask-form.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../reading/markdown",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/markdown.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -22866,6 +23175,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./answer-history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/answer-history.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/thread-workbench.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./attention-location",
       "kind": "import",
       "resolution": "module",
@@ -22882,6 +23203,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/workbench/composer.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/thread-workbench.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./decision-dock",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/decision-dock.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -35803,6 +36136,93 @@
       "to": "src/modules/execution/core/runtime/native-recovery-failure.ts",
       "targetModule": "execution",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/execution/renderer/answer-history-queries.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/renderer/answer-history-queries.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/renderer/answer-history-queries.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/execution/renderer/answer-history-queries.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./answer-history-queries",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/renderer/answer-history-queries.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/modules/execution/renderer/answer-history-queries.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/renderer/answer-history-queries.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/execution/renderer/answer-history-queries.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/renderer/public.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./answer-history-queries",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/execution/renderer/answer-history-queries.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/modules/execution/renderer/public.ts",

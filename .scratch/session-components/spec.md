@@ -241,6 +241,14 @@ Main在用户写前持久冻结题目与答案，写前失败不派发；写后�
 
 固定 `9b5af77..ca810f8` 独立复核发现两项P2，已用正式链路失败反例修正：Thread删除在原有事务清理归属答案历史，原生删除失败仍可读、重开后显式重试完成；默认许可在目录授权await前登记精确准备owner，Host超时结果取消该owner，晚到探测不能复活dispatching或许可。Main运行时64项及Thread管理4项共68/68、Main类型通过。完整WB04仍继续，GUI与正式rich opt-in未据此标完成。
 
+### WB04 多题 GUI、编辑转交与历史读取（2026-10-11，继续实施）
+
+RichAskForm由RuntimeModel控制当前题、选择、自填、预览与整组审核；推荐仅作提示，多选支持显式不选与自填组合，保留原生标签及中文原文。不采用T3 React的延时自动前进，沿用OMP整组回包与已有Markdown只读预览。Timeline与DecisionDock共享草稿及单次发送锁；编辑位置和版本由Thread拥有，转交不派发、不重设deadline；正式回调绑定请求来源、位置与编辑版本，旧位置/旧来源回调不能修改或提交新编辑。普通问答同样转交，显式转交优先恢复文本框焦点；未知结果保持只读，不重发。
+
+AnswerHistory通过execution只读Query公开面接App持久事实：离线可读、Thread/cursor隔离、20项/2MiB页、翻页替换当前页、无人观察立即释放缓存；展开才读取，详情展开才挂载题目和答案。展示原题、原文、来源、时间、意图来源、发送与请求存在性，明确App观测覆盖及上次采样；刷新失败保留旧采样和失败trace。执行副作用仍由RuntimeModel/Main/Host拥有。
+
+34项相关行为测试通过（RuntimeModel14、正式组件17、历史组件1、Query2），含多题整组、单选/多选、自填保留、重挂载、真实来源变更、过时editor、并发摘要与唯一输入框、中文composition Enter不提交、离线/分页/读失败缓存释放。Renderer类型、design/i18n与40项架构通过。隔离Electron44.4.5验证实际Markdown、light/dark几何无水平溢出、唯一编辑框与草稿转交、鼠标输入无outline/Tab可见焦点、精确整组单次发送且并发B未受影响：[有界证据](evidence/rich-interactions.json)。验证脚本启动缺Document实参、临时DOM ID复用与布局前取点击坐标已修正；不冒称系统IME、正式OMP/provider或生产Workbench trace。前段ca810f8..69c7dbe两项P2独立复核已闭合，无新增高价值问题。完整WB04权限关联、Recovery/Activation、正式rich opt-in与原生组合验收，以及WB03生产trace继续；goal保持active，不推送或发布。
+
 ### WB00 milestone（2026-10-11）
 
 - 先写 InteractionOperation/InteractionDraft 与执行模块合同。红灯确认同题双击两次派发、Host respond 缺失；实现后对应反例转绿。Thread-owned RuntimeModel 保留表单、冻结回答、操作结果和后续收据关联；Main 等待精确 Host 结果，授权 await 后再次校验代次，Host 单次 write 兜底。普通 interaction 状态和 answer operation 改名 written，收据 ACK 不变。

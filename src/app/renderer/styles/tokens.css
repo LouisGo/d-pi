@@ -150,6 +150,7 @@
   --overlay-width: 20rem;
   --model-picker-width: 28rem;
   --interaction-width: 26rem;
+  --decision-dock-max-height: 36vh;
   --radio-size: 1rem;
   --radio-dot-size: 0.375rem;
   --model-picker-max-height: 32rem;
