@@ -128,7 +128,7 @@ it("writes a custom question answer through the Host only for the live connectio
       kind: "operation-result",
       traceId: command.traceId,
       operation: "answer",
-      status: "acknowledged",
+      status: "written",
     }),
   );
   await host.handle({
@@ -322,7 +322,7 @@ it("answers timed-out questions with the timeout default while confirm dialogs k
       expect.objectContaining({
         kind: "operation-result",
         operation: "answer",
-        status: "acknowledged",
+        status: "written",
       }),
     );
   } finally {
@@ -410,7 +410,7 @@ it("publishes the timeout default as one sent+flagged snapshot", async () => {
     expect(fresh[0]).toMatchObject({
       kind: "interactions",
       view: {
-        items: [{ id: "single", status: "sent", defaultAnswered: true }],
+        items: [{ id: "single", status: "written", defaultAnswered: true }],
       },
     });
     // The native expiry timer was cleared on write: passing the original

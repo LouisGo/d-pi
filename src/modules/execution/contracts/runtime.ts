@@ -10,6 +10,7 @@ import { ControlCommandSchema, ControlStateSchema } from "./control";
 import {
   AnswerCommandSchema,
   DismissCommandSchema,
+  InteractionOperationSchema,
   InteractionViewSchema,
 } from "./interactions";
 import { QueueCommandSchema, RuntimeOperationSchema } from "./queue";
@@ -63,6 +64,7 @@ export const RuntimeViewSchema = z.strictObject({
   subagentOperation: RuntimeOperationSchema.optional(),
   queueOperation: RuntimeOperationSchema.optional(),
   interactions: InteractionViewSchema.optional(),
+  interactionOperations: z.array(InteractionOperationSchema).max(64).optional(),
   revision: z.number().int().nonnegative(),
   recoveryFailure: NativeRecoveryReasonSchema.optional(),
   phase: z.enum([

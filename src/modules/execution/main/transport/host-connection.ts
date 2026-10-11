@@ -99,7 +99,14 @@ export class HostConnection {
     command:
       | Extract<
           HostCommand,
-          { kind: "manage-queue" | "configure-subagent" | "select-model" }
+          {
+            kind:
+              | "manage-queue"
+              | "configure-subagent"
+              | "select-model"
+              | "answer"
+              | "dismiss";
+          }
         >
       | { kind: "state"; traceId: string; connectionGeneration: string },
   ): Promise<Extract<HostMessage, { kind: "operation-result" }>> {

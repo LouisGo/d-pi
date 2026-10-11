@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useStore } from "zustand";
 import type {
   Interaction,
   SubmissionReceipt,
@@ -46,7 +46,7 @@ export function NativeInteraction({
   followUpIds,
 }: {
   item: Interaction;
-  model: Pick<RuntimeModel, "answer" | "dismiss">;
+  model: RuntimeModel;
   available: boolean;
   trusted: boolean;
   onFollowUp: ((text: string) => Promise<FollowUpResult>) | undefined;
@@ -57,18 +57,22 @@ export function NativeInteraction({
   followUpIds: string[];
 }) {
   const { t, formatMessage } = useI18n();
-  const [value, setValue] = useState(item.prefill ?? "");
-  const [sent, setSent] = useState(false);
-  const answered = useRef(false);
-  const [selection, setSelection] = useState<
-    | {
-        kind: "option";
-        index: number;
-        value: string;
-      }
-    | { kind: "custom" }
-    | null
-  >(null);
+  const draft = useStore(model.stateStore, (state) =>
+    state.interactionDrafts.get(
+      `${state.thread}:${state.view?.interactions?.connectionGeneration}:${item.id}`,
+    ),
+  );
+  const operation = useStore(model.stateStore, (state) =>
+    state.interactionOperations.get(
+      `${state.thread}:${state.view?.interactions?.connectionGeneration}:${item.id}`,
+    ),
+  );
+  const value = draft?.value ?? item.prefill ?? "";
+  const selection = draft?.selection ?? null;
+  const sent = !!operation && operation.status !== "not-dispatched";
+  const setValue = (value: string) => model.editInteraction(item.id, { value });
+  const setSelection = (selection: NonNullable<typeof draft>["selection"]) =>
+    model.editInteraction(item.id, { selection });
   // A native update must not silently retarget an already selected answer.
   const selected =
     selection?.kind === "option" &&
@@ -76,13 +80,11 @@ export function NativeInteraction({
       ? selection
       : null;
   const customAnswer = selection?.kind === "custom";
-  const [sending, setSending] = useState(false);
-  const [followUpError, setFollowUpError] = useState<
-    UiMessage | "fallback" | null
-  >(null);
+  const sending = draft?.followUpSending ?? false;
+  const followUpError = draft?.followUpError;
   const enabled = available && item.status === "pending" && !sent;
-  const defaulted = item.status === "sent" && item.defaultAnswered;
-  const followUpReceipts = followUpIds
+  const defaulted = item.status === "written" && item.defaultAnswered;
+  const followUpReceipts = (draft?.followUpIds ?? followUpIds)
     .map((id) => receiptsById.get(id) ?? null)
     .filter((receipt) => receipt !== null);
   // The formal receipts own the results. An in-flight prepared/dispatching
@@ -103,25 +105,10 @@ export function NativeInteraction({
       followUpInFlight
     )
       return;
-    setSending(true);
-    setFollowUpError(null);
-    void onFollowUp(value).then((result) => {
-      setSending(false);
-      // Identity is appended by the parent (survives remount); failures with
-      // a formal receipt are still tracked via that identity.
-      if (!result.ok || !result.submissionId)
-        setFollowUpError(result.message ?? "fallback");
-    });
+    void model.followUpInteraction(item.id, onFollowUp);
   };
   const answer = (response: Parameters<RuntimeModel["answer"]>[1]) => {
-    if (
-      !enabled ||
-      answered.current ||
-      (!trusted && response.kind !== "cancel")
-    )
-      return;
-    answered.current = true;
-    setSent(true);
+    if (!enabled || (!trusted && response.kind !== "cancel")) return;
     void model.answer(item.id, response);
   };
   return (
@@ -144,6 +131,22 @@ export function NativeInteraction({
         )}
       </header>
       {item.message && <p>{item.message}</p>}
+      {operation?.status === "not-dispatched" && (
+        <p role="alert">{t("ui.interaction.notDispatched")}</p>
+      )}
+      {draft?.answer && item.status !== "pending" && (
+        <p data-selectable>
+          {draft.answer.kind === "value"
+            ? draft.answer.value
+            : draft.answer.kind === "confirm"
+              ? t(
+                  draft.answer.confirmed
+                    ? "ui.interaction.confirm"
+                    : "ui.interaction.reject",
+                )
+              : t("ui.interaction.cancelled")}
+        </p>
+      )}
       {defaulted && (
         <p role="status">
           {t("ui.interaction.defaultAnswered", {
@@ -320,9 +323,12 @@ export function NativeInteraction({
                   : t("ui.interaction.nativeCancelled")
                 : item.status === "unknown"
                   ? t("ui.interaction.answerUnknown")
-                  : item.status === "pending"
-                    ? t("ui.interaction.answerSubmitted")
-                    : t("ui.interaction.answerWritten")}
+                  : operation?.status === "unknown"
+                    ? t("ui.interaction.answerUnknown")
+                    : item.status === "pending" &&
+                        operation?.status === "dispatching"
+                      ? t("ui.interaction.answerSubmitted")
+                      : t("ui.interaction.answerWritten")}
           </p>
           {item.status === "unknown" && (
             <>

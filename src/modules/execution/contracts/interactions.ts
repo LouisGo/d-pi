@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
+import type { UiMessage } from "../../../shared/messages/contracts";
 export const DialogSchema = z.object({
   id: z.string().min(1).max(256),
   method: z.enum(["confirm", "select", "input", "editor"]),
@@ -15,7 +16,7 @@ export const DialogSchema = z.object({
   timeout: z.number().nonnegative().finite().optional(),
 });
 export const InteractionSchema = DialogSchema.extend({
-  status: z.enum(["pending", "sent", "cancelled", "expired", "unknown"]),
+  status: z.enum(["pending", "written", "cancelled", "expired", "unknown"]),
   expiresAt: z.number().nullable(),
   defaultAnswered: z.boolean().optional(),
   // Local-only cleanup marker. cancelled+ dismissed means the App stopped
@@ -32,6 +33,34 @@ export const AnswerSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("cancel") }),
 ]);
 export type Answer = z.infer<typeof AnswerSchema>;
+/** Result observation is independent of RuntimeView revision and native ending. */
+export const InteractionOperationSchema = z.strictObject({
+  operationId: TraceIdSchema,
+  threadId: ThreadIdSchema,
+  connectionGeneration: z.uuid(),
+  requestId: z.string().min(1).max(256),
+  kind: z.enum(["answer", "dismiss"]),
+  status: z.enum([
+    "dispatching",
+    "not-dispatched",
+    "written",
+    "unknown",
+    "dismissed",
+  ]),
+  message: z.string().max(64).optional(),
+});
+export type InteractionOperation = z.infer<typeof InteractionOperationSchema>;
+export interface InteractionDraft {
+  value: string;
+  selection:
+    | { kind: "option"; index: number; value: string }
+    | { kind: "custom" }
+    | null;
+  answer?: Answer;
+  followUpIds: string[];
+  followUpSending: boolean;
+  followUpError?: UiMessage | "fallback" | null;
+}
 export const AnswerCommandSchema = z.strictObject({
   kind: z.literal("answer"),
   threadId: ThreadIdSchema,

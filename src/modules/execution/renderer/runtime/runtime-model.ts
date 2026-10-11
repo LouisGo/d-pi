@@ -7,7 +7,11 @@ import {
   uiMessage,
 } from "../../../../shared/messages/contracts";
 import type { SubagentConfigurationCommand } from "../../../configuration/contracts/public";
-import type { Answer } from "../../contracts/interactions";
+import type {
+  Answer,
+  InteractionDraft,
+  InteractionOperation,
+} from "../../contracts/interactions";
 import type {
   RuntimeBridge,
   RuntimeCommand,
@@ -22,13 +26,22 @@ export interface RuntimeState {
   thread: ThreadId | null;
   requestGeneration: number;
   disposed: boolean;
+  interactionDrafts: ReadonlyMap<string, InteractionDraft>;
+  interactionOperations: ReadonlyMap<string, InteractionOperation>;
 }
 
 const initial: StateCreator<
   RuntimeState,
   [],
   [["zustand/subscribeWithSelector", never]]
-> = () => ({ view: null, thread: null, requestGeneration: 0, disposed: false });
+> = () => ({
+  view: null,
+  thread: null,
+  requestGeneration: 0,
+  disposed: false,
+  interactionDrafts: new Map(),
+  interactionOperations: new Map(),
+});
 
 const createRuntimeStore = () =>
   createStore<RuntimeState>()(subscribeWithSelector(initial));
@@ -72,6 +85,7 @@ export class RuntimeModel {
   private publish(view: RuntimeView): void {
     const state = this.store.getState();
     if (state.disposed) return;
+    this.observeInteractions(view);
     if (state.view && view.revision < state.view.revision) return;
     this.store.setState({ view });
   }
@@ -351,44 +365,224 @@ export class RuntimeModel {
       uiMessage("runtime.controlUnknown"),
     );
   }
-  async answer(id: string, answer: Answer): Promise<void> {
-    const state = this.store.getState();
-    if (state.disposed) return;
-    const current = state.view;
-    const thread = state.thread;
-    if (!current?.interactions || !thread) return;
-    const traceId = crypto.randomUUID();
-    await this.request(
-      {
-        kind: "answer",
-        threadId: thread,
-        traceId,
-        connectionGeneration: current.interactions.connectionGeneration,
-        id,
-        answer,
-      },
-      current,
-      uiMessage("runtime.answerUnknown"),
-    );
+  private interactionKey(id: string, view = this.getSnapshot()): string | null {
+    const generation = view?.interactions?.connectionGeneration;
+    return view && generation ? `${view.threadId}:${generation}:${id}` : null;
   }
-  async dismiss(id: string): Promise<void> {
+  interactionDraft(id: string): InteractionDraft | null {
+    const key = this.interactionKey(id);
+    return key
+      ? (this.store.getState().interactionDrafts.get(key) ?? null)
+      : null;
+  }
+  interactionOperation(id: string): InteractionOperation | null {
+    const key = this.interactionKey(id);
+    return key
+      ? (this.store.getState().interactionOperations.get(key) ?? null)
+      : null;
+  }
+  editInteraction(id: string, patch: Partial<InteractionDraft>): void {
+    const key = this.interactionKey(id);
+    const draft = this.interactionDraft(id);
+    if (!key || !draft || this.store.getState().disposed) return;
+    const drafts = new Map(this.store.getState().interactionDrafts);
+    drafts.set(key, { ...draft, ...patch });
+    this.store.setState({ interactionDrafts: drafts });
+  }
+  async followUpInteraction(
+    id: string,
+    submit: (text: string) => Promise<{
+      ok: boolean;
+      message: UiMessage | null;
+      submissionId: string | null;
+    }>,
+  ): Promise<void> {
+    const key = this.interactionKey(id);
+    const draft = this.interactionDraft(id);
+    if (!key || !draft || draft.followUpSending || !draft.value.trim()) return;
+    this.editInteraction(id, { followUpSending: true, followUpError: null });
+    try {
+      const result = await submit(draft.value);
+      if (this.interactionKey(id) !== key || this.store.getState().disposed)
+        return;
+      const current = this.interactionDraft(id);
+      if (!current) return;
+      this.editInteraction(id, {
+        followUpSending: false,
+        followUpIds: result.submissionId
+          ? [...current.followUpIds, result.submissionId].slice(-32)
+          : current.followUpIds,
+        followUpError:
+          !result.ok || !result.submissionId
+            ? (result.message ?? "fallback")
+            : null,
+      });
+    } catch {
+      if (this.interactionKey(id) === key)
+        this.editInteraction(id, {
+          followUpSending: false,
+          followUpError: "fallback",
+        });
+    }
+  }
+  private observeInteractions(view: RuntimeView): void {
     const state = this.store.getState();
-    if (state.disposed) return;
-    const current = state.view;
-    const thread = state.thread;
-    if (!current?.interactions || !thread) return;
+    if (state.thread !== view.threadId) return;
+    const generation = view.interactions?.connectionGeneration;
+    if (!generation) return;
+    // Older snapshots can carry a valid independent result, but never restore
+    // an old connection or remove a current draft.
+    if (
+      state.view &&
+      view.revision < state.view.revision &&
+      state.view.interactions?.connectionGeneration !== generation
+    )
+      return;
+    const drafts = new Map(state.interactionDrafts);
+    const operations = new Map(state.interactionOperations);
+    for (const item of view.interactions?.items ?? []) {
+      const key = `${view.threadId}:${generation}:${item.id}`;
+      if (!drafts.has(key))
+        drafts.set(key, {
+          value: item.prefill ?? "",
+          selection: null,
+          followUpIds: [],
+          followUpSending: false,
+        });
+    }
+    for (const result of view.interactionOperations ?? []) {
+      if (
+        result.threadId !== view.threadId ||
+        result.connectionGeneration !== generation
+      )
+        continue;
+      const key = `${view.threadId}:${generation}:${result.requestId}`;
+      const existing = operations.get(key);
+      if (
+        !existing ||
+        (existing.operationId === result.operationId &&
+          existing.status === "dispatching")
+      )
+        operations.set(key, result);
+    }
+    // The Host owns a maximum of 32 current requests; retain drafts only for
+    // that mirror. A reconnect cannot reuse an answer under an old ID.
+    if (!state.view || view.revision >= state.view.revision) {
+      const retained = new Set(
+        (view.interactions?.items ?? []).map(
+          (item) => `${view.threadId}:${generation}:${item.id}`,
+        ),
+      );
+      for (const key of drafts.keys())
+        if (!retained.has(key)) drafts.delete(key);
+      for (const key of operations.keys())
+        if (!retained.has(key)) operations.delete(key);
+    }
+    this.store.setState({
+      interactionDrafts: drafts,
+      interactionOperations: operations,
+    });
+  }
+  answer(id: string, answer: Answer): Promise<InteractionOperation | null> {
+    return this.respond("answer", id, answer);
+  }
+  dismiss(id: string): Promise<InteractionOperation | null> {
+    return this.respond("dismiss", id);
+  }
+  private async respond(
+    kind: "answer" | "dismiss",
+    id: string,
+    answer?: Answer,
+  ): Promise<InteractionOperation | null> {
+    const state = this.store.getState();
+    const view = state.view;
+    const item = view?.interactions?.items.find((item) => item.id === id);
+    const key = this.interactionKey(id);
+    const generation = view?.interactions?.connectionGeneration;
+    if (
+      state.disposed ||
+      !state.thread ||
+      !view ||
+      !item ||
+      !key ||
+      !generation
+    )
+      return null;
+    const previous = this.interactionOperation(id);
+    if (
+      previous?.status === "dispatching" ||
+      (kind === "answer" &&
+        (item.status !== "pending" ||
+          (previous && previous.status !== "not-dispatched")))
+    )
+      return previous;
     const traceId = crypto.randomUUID();
-    await this.request(
-      {
-        kind: "dismiss",
-        threadId: thread,
-        traceId,
-        connectionGeneration: current.interactions.connectionGeneration,
-        id,
-      },
-      current,
-      uiMessage("runtime.dismissUnknown"),
-    );
+    const operation: InteractionOperation = {
+      operationId: traceId,
+      threadId: state.thread,
+      connectionGeneration: generation,
+      requestId: id,
+      kind,
+      status: "dispatching",
+    };
+    const operations = new Map(state.interactionOperations);
+    operations.set(key, operation);
+    this.store.setState({ interactionOperations: operations });
+    if (answer) this.editInteraction(id, { answer });
+    const command: RuntimeCommand =
+      kind === "answer" && answer
+        ? {
+            kind,
+            threadId: state.thread,
+            traceId,
+            connectionGeneration: generation,
+            id,
+            answer,
+          }
+        : {
+            kind: "dismiss",
+            threadId: state.thread,
+            traceId,
+            connectionGeneration: generation,
+            id,
+          };
+    let result: InteractionOperation = { ...operation, status: "unknown" };
+    try {
+      const reply = await this.bridge.request(command);
+      if (reply.kind === "failed" && reply.error.traceId === traceId)
+        result = {
+          ...operation,
+          status: "not-dispatched",
+          message: reply.error.code,
+        };
+      else if (reply.kind === "view" && reply.view.threadId === state.thread) {
+        result =
+          reply.view.interactionOperations?.find(
+            (value) =>
+              value.operationId === traceId &&
+              value.threadId === state.thread &&
+              value.connectionGeneration === generation &&
+              value.requestId === id &&
+              value.kind === kind,
+          ) ?? result;
+        if (this.store.getState().thread === state.thread)
+          this.publish(reply.view);
+      }
+    } catch {
+      /* Missing transport evidence is unknown, never permission to retry. */
+    }
+    const current = this.store.getState();
+    if (
+      !current.disposed &&
+      current.thread === state.thread &&
+      this.interactionKey(id) === key &&
+      current.interactionOperations.get(key)?.operationId === traceId
+    ) {
+      const next = new Map(current.interactionOperations);
+      next.set(key, result);
+      this.store.setState({ interactionOperations: next });
+    }
+    return result;
   }
   /**
    * One funnel for the state-changing commands so all three share the same

@@ -114,6 +114,7 @@ export class RuntimeService {
   private currentConnectionGeneration: string | null = null;
   private instanceDirectory: DirectoryIdentity | undefined;
   private commandsInFlight = 0;
+  private readonly interactionAdmissions = new Set<string>();
   private released = false;
   private uncertainLifetime = false;
   constructor(
@@ -568,11 +569,14 @@ export class RuntimeService {
             operation === "manage-queue" ||
             operation === "configure-subagent"
           ) {
-            let observed = status;
+            let observed =
+              status === "written" || status === "not-dispatched"
+                ? ("unknown" as const)
+                : status;
             if (operation === "manage-queue") {
               try {
                 if (this.store.queueChanges.find(traceId))
-                  this.store.queueChanges.finish(traceId, status);
+                  this.store.queueChanges.finish(traceId, observed);
               } catch {
                 observed = "unknown";
               }
@@ -600,7 +604,12 @@ export class RuntimeService {
             requestId: traceId,
             connectionId: connectionGeneration,
             operation: `runtime:${operation}`,
-            stage: status,
+            stage:
+              status === "written"
+                ? "dispatching"
+                : status === "not-dispatched"
+                  ? "failed"
+                  : status,
             ...(nativeFailure
               ? { causeCode: nativeFailureCode(nativeFailure) }
               : {}),
@@ -883,7 +892,10 @@ export class RuntimeService {
       );
       if (command.connectionGeneration !== this.currentConnectionGeneration)
         return this.view;
-      let status = response.status;
+      let status =
+        response.status === "written" || response.status === "not-dispatched"
+          ? ("unknown" as const)
+          : response.status;
       if (command.kind === "manage-queue") {
         try {
           if (this.store.queueChanges.find(command.traceId))
@@ -936,7 +948,14 @@ export class RuntimeService {
         this.update({
           traceId: command.traceId,
           modelChanging: false,
-          modelOperation: { traceId: command.traceId, status: response.status },
+          modelOperation: {
+            traceId: command.traceId,
+            status:
+              response.status === "written" ||
+              response.status === "not-dispatched"
+                ? "unknown"
+                : response.status,
+          },
           ...(response.status === "acknowledged"
             ? { selectedModel: command.selection }
             : response.status === "unknown"
@@ -958,21 +977,71 @@ export class RuntimeService {
         command.connectionGeneration !== this.currentConnectionGeneration
       )
         throw Error("Stale answer target");
-      if (command.answer.kind !== "cancel") {
-        const identity = await identifyDirectory(thread.directory);
-        const grant = this.store.threads.executionGrant(
-          thread.workingDirectoryId,
-        );
+      const key = `${command.connectionGeneration}:${command.id}`;
+      const retained = new Set(
+        (this.view.interactions?.items ?? []).map(
+          (item) => `${this.currentConnectionGeneration}:${item.id}`,
+        ),
+      );
+      for (const previous of this.interactionAdmissions)
+        if (!retained.has(previous))
+          this.interactionAdmissions.delete(previous);
+      if (this.interactionAdmissions.has(key))
+        throw Error("Duplicate answer target");
+      this.interactionAdmissions.add(key);
+      try {
+        if (command.answer.kind !== "cancel") {
+          const identity = await identifyDirectory(thread.directory);
+          const grant = this.store.threads.executionGrant(
+            thread.workingDirectoryId,
+          );
+          if (
+            !grant ||
+            !this.instanceDirectory ||
+            !sameDirectoryIdentity(grant, identity) ||
+            !sameDirectoryIdentity(this.instanceDirectory, identity)
+          )
+            throw Error("Execution grant invalid");
+        }
+        // Authorization awaits cannot carry an old request into a reconnected native scope.
         if (
-          !grant ||
-          !this.instanceDirectory ||
-          !sameDirectoryIdentity(grant, identity) ||
-          !sameDirectoryIdentity(this.instanceDirectory, identity)
+          !this.connection.connected ||
+          command.connectionGeneration !== this.currentConnectionGeneration
         )
-          throw Error("Execution grant invalid");
+          throw Error("Stale answer target");
+        const result = await this.connection
+          .operation({ kind: "answer", command })
+          .catch(() => ({ status: "unknown" as const }));
+        if (command.connectionGeneration === this.currentConnectionGeneration) {
+          const status: "written" | "not-dispatched" | "unknown" =
+            result.status === "written"
+              ? "written"
+              : result.status === "not-dispatched" || result.status === "failed"
+                ? "not-dispatched"
+                : "unknown";
+          if (status === "not-dispatched")
+            this.interactionAdmissions.delete(key);
+          this.update({
+            interactionOperations: [
+              ...(this.view.interactionOperations ?? []).filter(
+                (value) => value.operationId !== command.traceId,
+              ),
+              {
+                operationId: command.traceId,
+                threadId: command.threadId,
+                connectionGeneration: command.connectionGeneration,
+                requestId: command.id,
+                kind: "answer" as const,
+                status,
+              },
+            ].slice(-64),
+          });
+        }
+        return this.view;
+      } catch (error) {
+        this.interactionAdmissions.delete(key);
+        throw error;
       }
-      this.connection.send({ kind: "answer", command });
-      return this.view;
     }
     if (command.kind === "dismiss") {
       // Local unknown cleanup: no directory grant needed (no native write),
@@ -982,7 +1051,26 @@ export class RuntimeService {
         command.connectionGeneration !== this.currentConnectionGeneration
       )
         throw Error("Stale dismiss target");
-      this.connection.send({ kind: "dismiss", command });
+      const result = await this.connection
+        .operation({ kind: "dismiss", command })
+        .catch(() => ({ status: "unknown" as const }));
+      if (command.connectionGeneration === this.currentConnectionGeneration)
+        this.update({
+          interactionOperations: [
+            ...(this.view.interactionOperations ?? []),
+            {
+              operationId: command.traceId,
+              threadId: command.threadId,
+              connectionGeneration: command.connectionGeneration,
+              requestId: command.id,
+              kind: "dismiss" as const,
+              status:
+                result.status === "acknowledged"
+                  ? ("dismissed" as const)
+                  : ("unknown" as const),
+            },
+          ].slice(-64),
+        });
       return this.view;
     }
     if (command.kind === "stop" || command.kind === "continue") {

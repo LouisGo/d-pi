@@ -2,8 +2,13 @@
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { expect, it, vi } from "vitest";
-import type { Interaction } from "../../../modules/execution/contracts/public";
+import type {
+  Interaction,
+  RuntimeView,
+} from "../../../modules/execution/contracts/public";
+import { RuntimeModel } from "../../../modules/execution/renderer/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
+import { ThreadIdSchema } from "../../../shared/identity";
 import { NativeInteraction } from "./native-interaction";
 
 const item: Interaction = {
@@ -21,7 +26,7 @@ async function typeAnswer(host: HTMLElement, text: string) {
     'textarea[aria-label="其他回答"]',
   );
   expect(input).not.toBeNull();
-  await act(() => {
+  await act(async () => {
     Object.getOwnPropertyDescriptor(
       HTMLTextAreaElement.prototype,
       "value",
@@ -35,15 +40,75 @@ async function setup(initial: Interaction = item, trusted = true) {
   const host = document.createElement("div");
   document.body.append(host);
   const root = createRoot(host);
-  const answer = vi.fn(async () => {});
+  const answer = vi.fn();
+  const connectionGeneration = crypto.randomUUID();
+  let revision = 0;
+  let current: RuntimeView = {
+    threadId: ThreadIdSchema.parse(crypto.randomUUID()),
+    traceId: crypto.randomUUID(),
+    connectionGeneration,
+    configuration: { code: "runtime.configDefault" },
+    revision,
+    phase: "ready",
+    trusted,
+    busy: false,
+    model: "fixture",
+    message: { code: "runtime.readyToSend" },
+    interactions: {
+      connectionGeneration,
+      unsupported: false,
+      items: [initial],
+    },
+  };
+  let deliver: (view: RuntimeView) => void = () => {};
+  const model = new RuntimeModel({
+    subscribe: (listener) => {
+      deliver = listener;
+      return () => {};
+    },
+    request: async (command) => {
+      if (command.kind === "answer") {
+        answer(command.id, command.answer);
+        return {
+          kind: "view",
+          view: {
+            ...current,
+            revision: ++revision,
+            interactionOperations: [
+              {
+                operationId: command.traceId,
+                threadId: command.threadId,
+                connectionGeneration,
+                requestId: command.id,
+                kind: "answer",
+                status: "written",
+              },
+            ],
+          },
+        };
+      }
+      return { kind: "view", view: current };
+    },
+  });
+  await model.bind(current.threadId);
   const render = async (next: Interaction) =>
-    act(() =>
+    act(() => {
+      current = {
+        ...current,
+        revision: ++revision,
+        interactions: {
+          connectionGeneration,
+          unsupported: false,
+          items: [next],
+        },
+      };
+      deliver(current);
       root.render(
         createElement(I18nProvider, {
           initialSnapshot: { preference: "zh-CN", resolvedLocale: "zh-CN" },
           children: createElement(NativeInteraction, {
             item: next,
-            model: { answer, dismiss: vi.fn(async () => {}) },
+            model,
             available: true,
             trusted,
             onFollowUp: undefined,
@@ -52,8 +117,8 @@ async function setup(initial: Interaction = item, trusted = true) {
             followUpIds: [],
           }),
         }),
-      ),
-    );
+      );
+    });
   await render(initial);
   const button = (text: string) =>
     [...host.querySelectorAll<HTMLButtonElement>("button")].find(
@@ -65,8 +130,14 @@ async function setup(initial: Interaction = item, trusted = true) {
     answer,
     button,
     render,
+    model,
+    remount: async () => {
+      await act(() => root.render(null));
+      await render(current.interactions!.items[0]!);
+    },
     cleanup: async () => {
       await act(() => root.unmount());
+      model.dispose();
       host.remove();
       vi.unstubAllGlobals();
     },
@@ -88,7 +159,7 @@ it("selects locally, then submits the exact native option once", async () => {
     expect(document.getElementById(description ?? "")?.textContent).toBe(
       "保留现有配置",
     );
-    await act(() => {
+    await act(async () => {
       view.button("发送回答").click();
       view.button("发送回答").click();
     });
@@ -111,7 +182,7 @@ it("does not submit a different option when native options change after selectio
     );
     await view.render({ ...item, options: ["删除", "稍后处理"] });
     expect(view.button("发送回答").disabled).toBe(true);
-    await act(() => view.button("发送回答").click());
+    await act(async () => view.button("发送回答").click());
     expect(view.answer).not.toHaveBeenCalled();
   } finally {
     await view.cleanup();
@@ -125,7 +196,7 @@ it("retains cancellation without execution trust and disables native choices", a
       view.host.querySelector('[role="radio"]')?.getAttribute("aria-disabled"),
     ).toBe("true");
     expect(view.button("发送回答").disabled).toBe(true);
-    await act(() => view.button("取消回答").click());
+    await act(async () => view.button("取消回答").click());
     expect(view.answer).toHaveBeenCalledExactlyOnceWith("question", {
       kind: "cancel",
     });
@@ -157,7 +228,7 @@ it("moves the choice with arrow keys without submitting", async () => {
     const first = view.host.querySelector<HTMLElement>(
       '[role="radio"][aria-label="继续"]',
     )!;
-    await act(() => {
+    await act(async () => {
       first.focus();
       first.dispatchEvent(
         new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
@@ -179,7 +250,7 @@ it.each(["确认", "拒绝"])(
   async (label) => {
     const view = await setup({ ...item, method: "confirm" });
     try {
-      await act(() => view.button(label).click());
+      await act(async () => view.button(label).click());
       expect(view.answer).toHaveBeenCalledExactlyOnceWith("question", {
         kind: "confirm",
         confirmed: label === "确认",
@@ -198,7 +269,7 @@ it("retains the original input prefill when submitted", async () => {
   });
   try {
     expect(view.host.querySelector("textarea")?.value).toBe("原生预填内容");
-    await act(() => view.button("发送回答").click());
+    await act(async () => view.button("发送回答").click());
     expect(view.answer).toHaveBeenCalledExactlyOnceWith("question", {
       kind: "value",
       value: "原生预填内容",
@@ -217,7 +288,7 @@ it("allows a single native option without selecting it automatically", async () 
         .querySelector<HTMLElement>('[role="radio"][aria-label="唯一选项"]')
         ?.click(),
     );
-    await act(() => view.button("发送回答").click());
+    await act(async () => view.button("发送回答").click());
     expect(view.answer).toHaveBeenCalledExactlyOnceWith("question", {
       kind: "value",
       value: "唯一选项",
@@ -242,7 +313,7 @@ it("submits custom text unchanged and only once after clearing the selected opti
     ).toBeNull();
     expect(view.answer).not.toHaveBeenCalled();
     expect(view.button("发送回答").disabled).toBe(false);
-    await act(() => {
+    await act(async () => {
       view.button("发送回答").click();
       view.button("发送回答").click();
     });
@@ -265,7 +336,7 @@ it("clears custom text when returning to a predefined option", async () => {
         ?.click(),
     );
     expect(view.host.querySelector("textarea")?.value).toBe("");
-    await act(() => view.button("发送回答").click());
+    await act(async () => view.button("发送回答").click());
     expect(view.answer).toHaveBeenCalledExactlyOnceWith("question", {
       kind: "value",
       value: "稍后处理",
@@ -280,7 +351,7 @@ it("keeps whitespace-only custom answers disabled", async () => {
   try {
     await typeAnswer(view.host, " \n  ");
     expect(view.button("发送回答").disabled).toBe(true);
-    await act(() => view.button("发送回答").click());
+    await act(async () => view.button("发送回答").click());
     expect(view.answer).not.toHaveBeenCalled();
   } finally {
     await view.cleanup();
@@ -306,11 +377,27 @@ it("retains a half-written custom answer for follow-up after timeout defaulting"
   const view = await setup();
   try {
     await typeAnswer(view.host, "保留我尚未提交的回答");
-    await view.render({ ...item, status: "sent", defaultAnswered: true });
+    await view.render({ ...item, status: "written", defaultAnswered: true });
     expect(view.host.querySelector("textarea")?.value).toBe(
       "保留我尚未提交的回答",
     );
     expect(view.answer).not.toHaveBeenCalled();
+  } finally {
+    await view.cleanup();
+  }
+});
+
+it("restores an unfinished answer and dispatched lock after the card remounts", async () => {
+  const view = await setup();
+  try {
+    await typeAnswer(view.host, "保留草稿");
+    await view.remount();
+    expect(view.host.querySelector("textarea")?.value).toBe("保留草稿");
+    await act(async () => view.button("发送回答").click());
+    await view.remount();
+    expect(view.host.querySelector('[role="radiogroup"]')).toBeNull();
+    expect(view.host.textContent).toContain("已写入");
+    expect(view.answer).toHaveBeenCalledOnce();
   } finally {
     await view.cleanup();
   }

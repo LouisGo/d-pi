@@ -1,4 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type {
+  Interaction,
+  RuntimeView,
+} from "../../../../modules/execution/contracts/public";
+import { RuntimeModel } from "../../../../modules/execution/renderer/public";
 import {
   ActionGroup,
   Badge,
@@ -10,6 +15,7 @@ import {
   Kbd,
   OptionAction,
 } from "../../../../modules/ui/renderer/public";
+import { ThreadIdSchema } from "../../../../shared/identity";
 import { ContextFileToken } from "../../components/ui/context-file-token";
 import { CopyButton } from "../../components/ui/copy-button";
 import { PathLabel } from "../../components/ui/path-label";
@@ -195,6 +201,65 @@ export function HoverCardDemo() {
 export function NativeInteractionDemo() {
   const labels = usePresentationLabels();
   const [answer, setAnswer] = useState("");
+  const [model] = useState(() => {
+    const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+    const connectionGeneration = crypto.randomUUID();
+    const item: Interaction = {
+      id: "gallery-local",
+      method: "select",
+      title: labels.nativeTitle,
+      message: labels.nativeMessage,
+      options: [labels.option, labels.alternative],
+      optionDetails: [{ description: labels.optionDescription }],
+      status: "pending",
+      expiresAt: null,
+    };
+    const view: RuntimeView = {
+      threadId,
+      connectionGeneration,
+      traceId: crypto.randomUUID(),
+      configuration: { code: "runtime.configDefault" },
+      revision: 1,
+      phase: "ready",
+      trusted: true,
+      busy: false,
+      model: "demo",
+      message: { code: "runtime.readyToSend" },
+      interactions: { connectionGeneration, unsupported: false, items: [item] },
+    };
+    const runtime = new RuntimeModel({
+      subscribe: () => () => {},
+      request: async (command) => {
+        if (command.kind === "answer") {
+          setAnswer(
+            command.answer.kind === "value"
+              ? command.answer.value
+              : labels.cancel,
+          );
+          return {
+            kind: "view",
+            view: {
+              ...view,
+              interactionOperations: [
+                {
+                  operationId: command.traceId,
+                  threadId,
+                  connectionGeneration,
+                  requestId: item.id,
+                  kind: "answer",
+                  status: "written",
+                },
+              ],
+            },
+          };
+        }
+        return { kind: "view", view };
+      },
+    });
+    void runtime.bind(threadId);
+    return runtime;
+  });
+  useEffect(() => () => model.dispose(), [model]);
   return (
     <>
       <NativeInteraction
@@ -208,16 +273,7 @@ export function NativeInteractionDemo() {
           status: "pending",
           expiresAt: null,
         }}
-        model={{
-          answer: async (_id, response) => {
-            setAnswer(
-              response.kind === "value" ? response.value : labels.cancel,
-            );
-          },
-          dismiss: async () => {
-            setAnswer(labels.cancel);
-          },
-        }}
+        model={model}
         available
         trusted
         onFollowUp={undefined}

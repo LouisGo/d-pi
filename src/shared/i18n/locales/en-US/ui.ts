@@ -889,11 +889,13 @@ export const ui = {
   "ui.interaction.expired": "Timed out",
   "ui.interaction.dismissed":
     "This prompt is closed. Work may still be running.",
-  "ui.interaction.nativeCancelled": "Answer cancelled",
+  "ui.interaction.notDispatched": "Answer was not dispatched. Check and retry.",
+  "ui.interaction.nativeCancelled": "Native request ended",
   "ui.interaction.answerUnknown":
     "Answer outcome unknown. It won't be resent automatically.",
-  "ui.interaction.answerSubmitted": "Answer submitted, awaiting confirmation.",
-  "ui.interaction.answerWritten": "Answer sent, awaiting the result.",
+  "ui.interaction.answerSubmitted": "Dispatching answer…",
+  "ui.interaction.answerWritten":
+    "Answer written to the local pipe; native acceptance is unconfirmed.",
   "ui.interaction.dismissUnknown": "Dismiss prompt",
   "ui.interaction.dismissWarning":
     "Dismissing won't stop work. A default answer may already have taken effect. Check history before resending.",

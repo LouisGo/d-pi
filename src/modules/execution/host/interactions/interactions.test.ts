@@ -324,7 +324,7 @@ it("writes the timeout default atomically without an intermediate sent snapshot"
   // No changed() inside the mutation; caller publishes once.
   expect(changed).toBe(0);
   expect(interaction.snapshot()).toMatchObject([
-    { id: "atomic", status: "sent", defaultAnswered: true },
+    { id: "atomic", status: "written", defaultAnswered: true },
   ]);
   expect(frames.map((f) => JSON.parse(f))).toEqual([
     { type: "extension_ui_response", id: "atomic", value: "draft" },
@@ -395,8 +395,32 @@ it("clears the native expiry timer on answer so no second publish fires", () => 
       expect(changed).toBe(afterAnswer);
       expect(
         interaction.snapshot().find((item) => item.id === "timed"),
-      ).toMatchObject({ status: "sent" });
+      ).toMatchObject({ status: "written" });
       resolve();
     }, 80);
   });
+});
+
+it("distinguishes not-dispatched from unknown write and never rewrites the same request", () => {
+  const interactions = new PendingInteractions();
+  interactions.update({
+    type: "extension_ui_request",
+    method: "input",
+    id: "A",
+    title: "A",
+  });
+  const write = () => {
+    throw Error("pipe failure after admission");
+  };
+  expect(interactions.respond("absent", { kind: "cancel" }, write)).toBe(
+    "not-dispatched",
+  );
+  expect(
+    interactions.respond("A", { kind: "value", value: "answer" }, write),
+  ).toBe("unknown");
+  expect(
+    interactions.respond("A", { kind: "value", value: "second" }, write),
+  ).toBe("not-dispatched");
+  expect(interactions.snapshot()[0]?.status).toBe("unknown");
+  interactions.dispose();
 });

@@ -271,3 +271,137 @@ it("preserves a grant but does not launch when the Thread leaves the active sele
     model.dispose();
   }
 });
+
+it("keeps independent answers, admission locks and failed A beside written B", async () => {
+  const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+  const connectionGeneration = crypto.randomUUID();
+  let deliver: (view: RuntimeView) => void = () => {};
+  const replies = new Map<string, (reply: RuntimeReply) => void>();
+  const calls: string[] = [];
+  const model = new RuntimeModel({
+    subscribe: (listener) => {
+      deliver = listener;
+      return () => {};
+    },
+    request: async (command) => {
+      if (command.kind !== "answer") return { kind: "view", view: base };
+      calls.push(command.id);
+      return new Promise((resolve) => replies.set(command.id, resolve));
+    },
+  });
+  const base: RuntimeView = {
+    threadId,
+    connectionGeneration,
+    traceId: crypto.randomUUID(),
+    configuration: { code: "runtime.configDefault" },
+    revision: 1,
+    phase: "ready",
+    trusted: true,
+    busy: false,
+    model: "fixture",
+    message: { code: "runtime.readyToSend" },
+    interactions: {
+      connectionGeneration,
+      unsupported: false,
+      items: ["A", "B"].map((id) => ({
+        id,
+        title: id,
+        method: "input",
+        status: "pending",
+        expiresAt: null,
+      })),
+    },
+  };
+  await model.bind(threadId);
+  deliver(base);
+  const a = model.answer("A", { kind: "value", value: "first" });
+  const duplicate = model.answer("A", { kind: "value", value: "duplicate" });
+  const b = model.answer("B", { kind: "value", value: "second" });
+  expect(calls).toEqual(["A", "B"]);
+  const operationA = model.interactionOperation("A")!;
+  const operationB = model.interactionOperation("B")!;
+  replies.get("B")!({
+    kind: "view",
+    view: {
+      ...base,
+      revision: 3,
+      interactionOperations: [{ ...operationB, status: "written" }],
+    },
+  });
+  await b;
+  replies.get("A")!({
+    kind: "failed",
+    error: {
+      traceId: operationA.operationId,
+      code: "denied",
+      category: "resource",
+      message: { code: "runtime.controlFailed" },
+    },
+  });
+  await Promise.all([a, duplicate]);
+  expect(model.interactionOperation("A")?.status).toBe("not-dispatched");
+  expect(model.interactionOperation("B")?.status).toBe("written");
+  expect(model.getSnapshot()?.revision).toBe(3);
+  expect(model.interactionDraft("A")?.answer).toEqual({
+    kind: "value",
+    value: "first",
+  });
+  deliver({
+    ...base,
+    revision: 4,
+    connectionGeneration: crypto.randomUUID(),
+    interactions: {
+      ...base.interactions!,
+      connectionGeneration: crypto.randomUUID(),
+    },
+  });
+  expect(model.interactionOperation("A")).toBeNull();
+  model.dispose();
+});
+
+it("keeps an unknown answer locked while stop and another answer remain available", async () => {
+  const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+  const generation = crypto.randomUUID();
+  const calls: string[] = [];
+  const view: RuntimeView = {
+    threadId,
+    connectionGeneration: generation,
+    traceId: crypto.randomUUID(),
+    configuration: { code: "runtime.configDefault" },
+    revision: 1,
+    phase: "ready",
+    trusted: true,
+    busy: true,
+    model: "fixture",
+    message: { code: "runtime.readyToSend" },
+    interactions: {
+      connectionGeneration: generation,
+      unsupported: false,
+      items: ["A", "B"].map((id) => ({
+        id,
+        method: "input",
+        title: id,
+        status: "pending",
+        expiresAt: null,
+      })),
+    },
+  };
+  const model = new RuntimeModel({
+    subscribe: () => () => {},
+    request: async (command) => {
+      calls.push(command.kind === "answer" ? command.id : command.kind);
+      if (command.kind === "answer") throw Error("transport lost");
+      return { kind: "view", view };
+    },
+  });
+  await model.bind(threadId);
+  model.editInteraction("A", { value: "draft", selection: { kind: "custom" } });
+  await model.answer("A", { kind: "value", value: "draft" });
+  await model.control("stop");
+  await model.answer("B", { kind: "value", value: "other" });
+  await model.answer("A", { kind: "value", value: "duplicate" });
+  expect(calls).toEqual(["inspect", "A", "stop", "B"]);
+  expect(model.interactionOperation("A")?.status).toBe("unknown");
+  expect(model.interactionDraft("A")?.value).toBe("draft");
+  model.dispose();
+});

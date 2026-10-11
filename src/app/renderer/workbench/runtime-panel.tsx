@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
@@ -49,21 +48,6 @@ export function RuntimePanel({
   const state = useStore(model.stateStore, (value) => value.view);
   const submissionStore = submission?.stateStore ?? emptySubmissionStore;
   const receiptsById = useStore(submissionStore, (value) => value.receiptsById);
-  // Follow-up identities live here, keyed by dialog id, so a connectionGeneration
-  // change (remount) neither loses the success indicator nor allows a silent
-  // duplicate steer. Multiple entries per dialog are allowed: ack is call
-  // confirmation, not task completion.
-  const [followUps, setFollowUps] = useState<Record<string, string[]>>({});
-  const handleFollowUp = (dialogId: string) => async (text: string) => {
-    if (!onFollowUp) return { ok: false, message: null, submissionId: null };
-    const result = await onFollowUp(text);
-    if (result.submissionId)
-      setFollowUps((prev) => ({
-        ...prev,
-        [dialogId]: [...(prev[dialogId] ?? []), result.submissionId as string],
-      }));
-    return result;
-  };
   // Reuse an orphaned prepared follow-up instead of accumulating new ids:
   // a failed dispatch transport leaves its prepared receipt occupying a queue
   // slot with no other exit. continuePrepared dispatches the same identity.
@@ -82,7 +66,7 @@ export function RuntimePanel({
       (item) =>
         item.status === "pending" ||
         item.status === "unknown" ||
-        (item.status === "sent" && item.defaultAnswered),
+        (item.status === "written" && item.defaultAnswered),
     );
   if (!inspection && !actionable) return null;
   if (
@@ -171,7 +155,7 @@ export function RuntimePanel({
               (item) =>
                 item.status === "pending" ||
                 item.status === "unknown" ||
-                (item.status === "sent" && item.defaultAnswered),
+                (item.status === "written" && item.defaultAnswered),
             )
             .map((item) => (
               <NativeInteraction
@@ -179,10 +163,10 @@ export function RuntimePanel({
                 item={item}
                 trusted={state.trusted}
                 model={model}
-                onFollowUp={onFollowUp ? handleFollowUp(item.id) : undefined}
+                onFollowUp={onFollowUp ? onFollowUp : undefined}
                 onContinueFollowUp={handleContinueFollowUp}
                 receiptsById={receiptsById}
-                followUpIds={followUps[item.id] ?? []}
+                followUpIds={[]}
                 available={
                   state.phase !== "interrupted" && state.phase !== "failed"
                 }
@@ -192,7 +176,7 @@ export function RuntimePanel({
             (item) =>
               item.status !== "pending" &&
               item.status !== "unknown" &&
-              !(item.status === "sent" && item.defaultAnswered),
+              !(item.status === "written" && item.defaultAnswered),
           ) && (
             <Disclosure hidden={!inspection}>
               <DisclosureTrigger>
@@ -204,7 +188,7 @@ export function RuntimePanel({
                     (item) =>
                       item.status !== "pending" &&
                       item.status !== "unknown" &&
-                      !(item.status === "sent" && item.defaultAnswered),
+                      !(item.status === "written" && item.defaultAnswered),
                   )
                   .map((item) => (
                     <NativeInteraction

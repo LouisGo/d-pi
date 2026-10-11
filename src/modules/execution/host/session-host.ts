@@ -127,15 +127,13 @@ export function createSessionHost(
       native?.write(frame),
     );
     publishInteractions();
-    // "acknowledged" here means written to the native pipe without a throw,
-    // not native-confirmed (extension_ui_response has no ACK). Kept for
-    // backward compatibility; do not expand this meaning to receipts.
+    // written is only the synchronous local Writable observation; no native ACK.
     send({
       kind: "operation-result",
       traceId,
       connectionGeneration: start.connectionGeneration,
       operation: "answer",
-      status: written ? "acknowledged" : "unknown",
+      status: written ? "written" : "unknown",
     });
     await refresh();
   }
@@ -1024,7 +1022,7 @@ export function createSessionHost(
           command.connectionGeneration !== start.connectionGeneration
         )
           return;
-        const written = interactions.answer(
+        const status = interactions.respond(
           command.id,
           command.answer,
           (frame) => native?.write(frame),
@@ -1036,7 +1034,7 @@ export function createSessionHost(
           traceId: command.traceId,
           connectionGeneration: command.connectionGeneration,
           operation: "answer",
-          status: written ? "acknowledged" : "unknown",
+          status,
         });
         await refresh();
       })

@@ -35,6 +35,14 @@ Main 的提交协调拥有 App 收据和草稿交接；Host 的执行协调负�
 
 ## 交接
 
+### 独立交互操作（2026-10-11）
+
+`RuntimeView.interactionOperations` 是 Main 有界的结果观察（最多64项），每项保留 operationId/trace、Thread、connectionGeneration、requestId、kind。Renderer 的 RuntimeModel 按目标保存草稿和结果，在合并独立操作后再校验 View revision；别的回答/stop/inspect 不能淘汰结果。同题发送在 await 前锁定，Main 准入及 Host PendingInteractions 兜底；授权检查后再次核对代次。Main 经 HostConnection.operation 等待对应结果，缺失/超时/断链为 unknown，不自动重发。
+
+普通回答 `written` 仅证明 Host 的本地 Writable.write 未同步抛错；没有 flush、对端读取、原生接受或成功保证。未进入 write 为 not-dispatched，write 不确定为 unknown；原生 cancel 仅证明请求结束，原因未知。SubmissionReceipt 的 acknowledged 不改变。RuntimeModel 拥有题目草稿、选择、冻结回答及后续收据关联，React 卸载不释放它们；保持当前连接最多32题与每题最多32条 follow-up 引用，随 Host 镜像淘汰或 Thread/window dispose 释放。完整持久回答历史留 WB04，当前窗口关闭后不承诺恢复答案。
+
+实施与后续唯一入口见[组件体系跟踪](../../../.scratch/session-components/spec.md)。
+
 | 提供方 | 输入 | 本模块输出 / 消费方 |
 | --- | --- | --- |
 | [Thread](threads.md)、[配置](configuration.md) | 稳定身份、目录、配置和目标实例上下文 | 准入失败原因或提交操作 / UI |

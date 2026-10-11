@@ -183,7 +183,13 @@ export const HostMessageSchema = z.discriminatedUnion("kind", [
       "manage-queue",
       "inspect",
     ]),
-    status: z.enum(["acknowledged", "failed", "unknown"]),
+    status: z.enum([
+      "acknowledged",
+      "written",
+      "not-dispatched",
+      "failed",
+      "unknown",
+    ]),
     nativeFailure: NativeFailureSummarySchema.optional(),
     code: z
       .string()

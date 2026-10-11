@@ -970,6 +970,21 @@ it("control and answers reject stale generations and revoked grants while allowi
       answer: { kind: "confirm", confirmed: true },
     }),
   ).rejects.toThrow("Execution grant");
+  const previousPost = f.postMessage.getMockImplementation();
+  f.postMessage.mockImplementation((raw, ports) => {
+    previousPost?.(raw, ports);
+    const command = HostTransportCommandSchema.parse(raw).command;
+    if (command.kind === "answer")
+      queueMicrotask(() =>
+        f.host.emit("message", {
+          kind: "operation-result",
+          operation: "answer",
+          status: "written",
+          traceId: command.command.traceId,
+          connectionGeneration: command.command.connectionGeneration,
+        }),
+      );
+  });
   await f.runtime.execute({
     ...base,
     kind: "answer",
@@ -2093,3 +2108,80 @@ it.each(["prepared", "unknown"] as const)(
     ).rejects.toThrow("idle Thread");
   },
 );
+
+it("awaits independent answer writes with Main admission while stop stays available", async () => {
+  const f = await running();
+  const ready = await f.act("inspect");
+  const generation = ready.connectionGeneration!;
+  f.host.emit("message", {
+    kind: "interactions",
+    view: {
+      connectionGeneration: generation,
+      unsupported: false,
+      items: ["A", "B"].map((id) => ({
+        id,
+        method: "input",
+        title: id,
+        status: "pending",
+        expiresAt: null,
+      })),
+    },
+  });
+  const command = (id: string) =>
+    RuntimeCommandSchema.parse({
+      kind: "answer",
+      threadId: f.draft.threadId,
+      traceId: crypto.randomUUID(),
+      connectionGeneration: generation,
+      id,
+      answer: { kind: "value", value: id },
+    });
+  const a = command("A");
+  const b = command("B");
+  const pendingA = f.runtime.execute(a);
+  const duplicate = f.runtime.execute(command("A"));
+  await expect(duplicate).rejects.toThrow("Duplicate answer");
+  const pendingB = f.runtime.execute(b);
+  await vi.waitFor(() =>
+    expect(
+      f.postMessage.mock.calls.filter(
+        ([raw]) =>
+          HostTransportCommandSchema.parse(raw).command.kind === "answer",
+      ),
+    ).toHaveLength(2),
+  );
+  await f.runtime.execute(
+    RuntimeCommandSchema.parse({
+      kind: "stop",
+      threadId: f.draft.threadId,
+      traceId: crypto.randomUUID(),
+      connectionGeneration: generation,
+    }),
+  );
+  f.host.emit("message", {
+    kind: "operation-result",
+    operation: "answer",
+    status: "written",
+    connectionGeneration: generation,
+    traceId: b.traceId,
+  });
+  await expect(pendingB).resolves.toMatchObject({
+    interactionOperations: [
+      expect.objectContaining({ requestId: "B", status: "written" }),
+    ],
+  });
+  f.host.emit("message", {
+    kind: "operation-result",
+    operation: "answer",
+    status: "unknown",
+    connectionGeneration: generation,
+    traceId: a.traceId,
+  });
+  const view = await pendingA;
+  expect(view.interactionOperations).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ requestId: "A", status: "unknown" }),
+      expect.objectContaining({ requestId: "B", status: "written" }),
+    ]),
+  );
+});

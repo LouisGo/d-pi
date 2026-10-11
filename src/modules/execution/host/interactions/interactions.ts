@@ -116,28 +116,39 @@ export class PendingInteractions {
       return false;
     }
     this.clearTimer(id);
-    this.dialogs.set(id, { ...dialog, status: "sent", defaultAnswered: true });
+    this.dialogs.set(id, {
+      ...dialog,
+      status: "written",
+      defaultAnswered: true,
+    });
     this.ids.delete(id);
     return true;
   }
   answer(id: string, answer: Answer, write: (frame: string) => void): boolean {
+    return this.respond(id, answer, write) === "written";
+  }
+  respond(
+    id: string,
+    answer: Answer,
+    write: (frame: string) => void,
+  ): "not-dispatched" | "written" | "unknown" {
     this.expire();
     const dialog = this.dialogs.get(id);
     if (!dialog || dialog.status !== "pending" || !this.ids.has(id))
-      return false;
-    if (!this.validateAnswer(dialog, answer)) return false;
+      return "not-dispatched";
+    if (!this.validateAnswer(dialog, answer)) return "not-dispatched";
     this.dialogs.set(id, { ...dialog, status: "unknown" });
     try {
       write(this.frameForAnswer(id, answer));
     } catch {
       this.clearTimer(id);
       this.ids.delete(id);
-      return false;
+      return "unknown";
     }
     this.clearTimer(id);
-    this.dialogs.set(id, { ...dialog, status: "sent" });
+    this.dialogs.set(id, { ...dialog, status: "written" });
     this.ids.delete(id);
-    return true;
+    return "written";
   }
   update(frame: NativeFrame): void {
     if (
