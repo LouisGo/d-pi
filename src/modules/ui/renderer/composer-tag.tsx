@@ -27,8 +27,9 @@ export interface ComposerTagContent {
     | undefined;
   description?: string | null | undefined;
 }
-export type ComposerTagProps = ComposerTagContent &
-  Omit<ButtonProps, "children" | "variant" | "size" | "appearance" | "title">;
+export type ComposerTagProps = ComposerTagContent & {
+  "data-file-icon"?: string | undefined;
+} & Omit<ButtonProps, "children" | "variant" | "size" | "appearance" | "title">;
 // T3 middleTruncateAttachmentName default: 36 total, preserving 14 tail graphemes.
 const labelLimit = 36;
 const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
