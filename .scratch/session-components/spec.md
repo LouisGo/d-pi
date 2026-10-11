@@ -208,6 +208,10 @@ WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sour
 
 固定acb2da7..e115f19c独立review发现P2：两个最老reading-demand实例每轮占满两个probe slot，后面的idle实例会被饿死；同类已知保护亦被误计入可回收容量。以6实例/2持久读者真实失败反例修正：容量按尚未拒绝的idle计算，已符合回收条件者按最近尝试顺序公平轮换，TTL后仍复查原读者，物理未确认slot规则不变。待固定修正范围复核，WB03子会话读取与生产trace、WB04继续当前goal。
 
+固定e115f19c..355003a独立复核确认该P2闭合，未发现新增高价值问题；核对实际native报告和两份bundle SHA，与有限声明一致，sourceDirty=true不冒称clean候选。继续WB03子会话读取：固定OMP `rpc-subagents.ts`读到EOF，已有size检查后仍可增长；本地T3 usageTranscriptReader使用冻结byte位置和guard，沿用有界范围/身份复核原则，不迁入其usage reducer。先抽取既有Worker监督至platform/node/reads并由HistoryReadRunner继续消费，旧任务/回复与来源合同保留；新增deadline失败反例与物理exit名额回归后，历史/图像/artifact/Runtime五文件87/87及Main类型通过。子会话Worker正式接线待后续本段，不以技术抽取冒称已完成。
+
+监督抽取验证：40项架构测试与快速门禁通过；生产build通过并保留既有chunk提示。构建后的Worker在Node24.21.0/Electron44.4.5各完成9次真实exit且active=0，含10MiB artifact、尾页/前页/追加、工具参数、图像与CLI目录。首次构建后立即运行曾报history-worker.js不存在，随后文件实际存在，复核运行通过；该瞬态根因未知，未修改验证断言或复制产物绕过。该脚本验证真实Worker解码与退出，监督deadline/取消仍由受控exit测试证明；不当作完整生产工作台或子会话Worker证据。
+
 驻留收据核实：`submissions.list()`原有100条展示上限不能用于证明全部结清。旧prepared后追加101个rejected的真实SQLite反例先复现nativeResidency误报warm，现由partial index的hasUnsettled存在性查询覆盖全部收据；共享的modelSelection、releaseEligible与cooldownReason都采用同一判定，不加载正文。原生Runtime完整59/59，加索引/未知或损坏状态/实际EXPLAIN QUERY PLAN四项为63/63；索引派生现有receipt、不改变事实或展示分页，读取失败仍拒绝。后续验证与review覆盖该增量。
 
 ### WB00 milestone（2026-10-11）

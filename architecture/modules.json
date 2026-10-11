@@ -124,6 +124,7 @@
         "main/diagnostics/public.ts",
         "node/filesystem/public.ts",
         "node/processes/public.ts",
+        "node/reads/public.ts",
         "omp/consumption-gate.ts",
         "omp/protocol/public.ts",
         "omp/resources/public.ts",
@@ -332,7 +333,8 @@
         "main": [
           "threads",
           "resources",
-          "shared"
+          "shared",
+          "platform"
         ]
       },
       "materialized": true

@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "1a2dd466bf27239d0191a047f3e30a709ad004229d820772dda01b75bb8c4c63",
+  "inputsHash": "bcbd2b0db1d7074ef3436d9c62b1def52cf0b7dcb1e9f552064b75b3ab4c67ca",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 656,
-    "scannedFiles": 656,
+    "sourceFiles": 658,
+    "scannedFiles": 658,
     "unscanned": []
   },
   "modules": [
@@ -63,8 +63,8 @@
         "omp"
       ],
       "materialized": true,
-      "files": 33,
-      "lines": 3744,
+      "files": 35,
+      "lines": 3909,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -80,6 +80,10 @@
         },
         {
           "path": "src/platform/node/processes/public.ts",
+          "exists": true
+        },
+        {
+          "path": "src/platform/node/reads/public.ts",
           "exists": true
         },
         {
@@ -311,7 +315,7 @@
       ],
       "materialized": true,
       "files": 45,
-      "lines": 11208,
+      "lines": 11134,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -969,6 +973,12 @@
       "module": "conversation",
       "environment": "main",
       "dependency": "shared",
+      "testOnly": false
+    },
+    {
+      "module": "conversation",
+      "environment": "main",
+      "dependency": "platform",
       "testOnly": false
     },
     {
@@ -2174,6 +2184,13 @@
       "dependency": "resources",
       "targetEnvironment": "contracts",
       "testOnly": true
+    },
+    {
+      "module": "conversation",
+      "environment": "main",
+      "dependency": "platform",
+      "targetEnvironment": "node",
+      "testOnly": false
     },
     {
       "module": "conversation",
@@ -23714,6 +23731,39 @@
       "resolution": "external"
     },
     {
+      "from": "src/platform/node/reads/public.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "./worker-read-owner",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/platform/node/reads/worker-read-owner.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
+    },
+    {
+      "from": "src/platform/node/reads/worker-read-owner.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "node:worker_threads",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/platform/node/reads/worker-read-owner.ts",
+      "sourceModule": "platform",
+      "sourceEnvironment": "node",
+      "test": false,
+      "specifier": "../../../shared/read-operation",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/read-operation.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
       "from": "src/platform/omp/consumption-gate.test.ts",
       "sourceModule": "platform",
       "sourceEnvironment": "omp",
@@ -31387,15 +31437,6 @@
       "sourceModule": "conversation",
       "sourceEnvironment": "main",
       "test": false,
-      "specifier": "node:worker_threads",
-      "kind": "import",
-      "resolution": "external"
-    },
-    {
-      "from": "src/modules/conversation/main/history-read-runner.ts",
-      "sourceModule": "conversation",
-      "sourceEnvironment": "main",
-      "test": false,
       "specifier": "ts-pattern",
       "kind": "import",
       "resolution": "external"
@@ -31408,6 +31449,18 @@
       "specifier": "zod",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/history-read-runner.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../platform/node/reads/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/node/reads/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "node"
     },
     {
       "from": "src/modules/conversation/main/history-read-runner.ts",

@@ -127,3 +127,5 @@ WB01 复核补充：历史详情 lease 按捕获的 Thread/原生绑定和 sende
 保存会话默认读取已提交尾部的有限范围，previous 游标向前读取同一冻结快照；gap只表示覆盖缺口，不触发自动全历史扫描。单会话正文默认8MiB/16页，窗口历史LRU增加32MiB计量门限；计量为字符串/scalar payload，不等于RSS。必要选区、焦点和锚点保护真实组成员，单长记录与受保护连续范围允许超过普通预算。轻disclosure状态随Thread保留，普通展开不再永久保留离屏DOM。
 
 历史页复用Main读取operation的身份、限额和取消；Main核对sender、Thread和原生绑定，trusted filesystem task交给独立构建的Worker，仍用conversation/main原生只读校验。默认最多2个Worker且不排无界队列，取消与关闭等待实际exit才释放名额；Query取消传播到Main，晚回包不接管旧来源。Worker内执行路径/header/冻结前缀与读取后文件复核，Main返回前再次复核Thread绑定。此段取代此前“未引入Worker”的当时实现描述；原生JSONL事实来源与OMP所有权不变。工具详情、原生图像及项目历史目录/页已纳入同一operation和Worker链路；详情关闭、Query取消和窗口释放传播取消并等待底层finalization。完整artifact、子会话读取、Viewer与native warm预算尚未完成。
+
+2026-10-11 读取复用增量：HistoryReadRunner保留历史task/reply校验与业务来源，既有Worker监督实现移入`platform/node/reads`的WorkerReadOwner，供Main历史与后续Host子会话读取共用技术合同。平台只管物理名额、停止、exit和解码调用，不持有Thread/OMP事实；默认2个名额，snapshot公开maxActive。可选deadline发出terminate后继续占名额，实际exit才返回timeout；Main既有operation计时与取消准入保持不变。
