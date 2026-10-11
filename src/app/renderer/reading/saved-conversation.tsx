@@ -98,10 +98,16 @@ export function SavedConversation({
       protect(selection.anchorNode);
       protect(selection.focusNode);
     }
+    const activity = model.activities.stateStore.getState();
+    for (const row of activity.rows) {
+      if (row.kind === "group" && keys.has(row.key))
+        for (const member of activity.groups.get(row.id)?.members ?? [])
+          keys.add(member);
+    }
     const records = new Set<string>();
     for (const [id, key] of rowKeys.records) if (keys.has(key)) records.add(id);
     return records;
-  }, [active, positions, source, rowKeys]);
+  }, [active, positions, source, rowKeys, model]);
   const live = model.stateStore.getState();
   const saved = useInfiniteQuery({
     ...savedConversationQuery(bridge, threadId, {

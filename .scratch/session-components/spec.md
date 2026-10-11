@@ -115,6 +115,8 @@
 
 固定 `c4a90b8..dad51e6` 独立Spec/Standards review未发现可行动高价值问题，未代跑测试且不覆盖本轮历史/离屏WIP。
 
+固定 `dad51e6..61790ab` review发现组标题焦点/锚点未映射成员record的P2，已用生产缓存回收反例复现（旧成员页被淘汰）。保护集合先展开真实group member keys，再映射record；焦点与组标题锚点两条回归及saved阅读27/27通过。后续独立覆盖继续核实；其余范围/cache/轻状态未发现明确高价值问题。
+
 按行为逐段 TDD：独立回答/双击/重连/重挂载，详情更新与final，跨Thread草稿/Undo/来源定位/lease释放与晚到导航。只跑相关类型、行为、边界和文档门禁；必要的真实 SDK/生产链路验收有界执行，不重复 provider/系统 IME 或包矩阵。
 
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。

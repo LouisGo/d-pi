@@ -8,7 +8,10 @@ import type {
   HistoryBridge,
   HistoryPage,
 } from "../../../modules/conversation/contracts/public";
-import { ConversationModel } from "../../../modules/conversation/core/public";
+import {
+  ConversationModel,
+  ReadingPositions,
+} from "../../../modules/conversation/core/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { SavedConversation } from "./saved-conversation";
 
@@ -25,6 +28,7 @@ async function mount(
   active = true,
   page?: HistoryPage,
   reader?: HistoryBridge["read"],
+  positions?: ReadingPositions,
 ) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   let emit: ((event: ConversationEvent) => void) | undefined;
@@ -87,6 +91,7 @@ async function mount(
               bridge,
               threadId: "A",
               active,
+              positions,
             }),
           }),
         ),
@@ -94,6 +99,7 @@ async function mount(
     );
   await render();
   return {
+    client,
     container,
     bridge,
     emit: (event: ConversationEvent) => emit?.(event),
@@ -107,6 +113,97 @@ async function mount(
     },
   };
 }
+it.each(["focus", "anchor"])(
+  "protects saved group members when the group header owns %s during cache eviction",
+  async (occupancy) => {
+    const cursor = {
+      threadId: "A",
+      source: "saved",
+      offset: 100,
+      endOffset: 100,
+      prefixHash: "a".repeat(64),
+    };
+    const first: HistoryPage = {
+      kind: "page",
+      source: "saved",
+      next: null,
+      continuation: cursor,
+      coverage: "append-order",
+      incompleteTail: false,
+      omitted: 0,
+      entries: [
+        { id: "owner", parentId: null, role: "assistant", text: "owner" },
+        {
+          id: "member-one",
+          parentId: "owner",
+          activityParentId: "owner",
+          role: "toolResult",
+          text: "one",
+        },
+        {
+          id: "member-two",
+          parentId: "member-one",
+          activityParentId: "owner",
+          role: "toolResult",
+          text: "two",
+        },
+      ],
+    };
+    const positions = new ReadingPositions();
+    const f = await mount(true, first, undefined, positions);
+    await vi.waitFor(() =>
+      expect(
+        f.container.querySelector("[data-activity-group] button"),
+      ).not.toBeNull(),
+    );
+    const header = f.container.querySelector<HTMLElement>(
+      "[data-activity-group]",
+    );
+    const button = header?.querySelector<HTMLButtonElement>("button");
+    if (!button || !header) throw Error("missing group header");
+    if (occupancy === "focus") await act(() => button.focus());
+    else
+      positions.remember(JSON.stringify(["conversation", "A"]), {
+        rowId: header.dataset.readingRow ?? null,
+        offsetWithinRow: 0,
+        pixel: 0,
+        atEnd: false,
+      });
+    await act(() =>
+      f.client.setQueryData(["saved-native-conversation", "A"], {
+        pages: [
+          first,
+          {
+            ...first,
+            source: "new",
+            entries: [
+              {
+                id: "new-large",
+                parentId: null,
+                role: "assistant",
+                text: "x".repeat(5 * 1024 * 1024),
+              },
+            ],
+          },
+        ],
+        pageParams: [null, cursor],
+      }),
+    );
+    await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+    const cached = f.client.getQueryData<{ pages: HistoryPage[] }>([
+      "saved-native-conversation",
+      "A",
+    ]);
+    expect(
+      cached?.pages.flatMap((page) =>
+        page.kind === "page" ? page.entries.map((entry) => entry.id) : [],
+      ),
+    ).toEqual(["owner", "member-one", "member-two"]);
+    expect(header.isConnected).toBe(true);
+    if (occupancy === "focus") expect(document.activeElement).toBe(button);
+    expect(f.container.querySelector("[data-activity-group]")).toBe(header);
+  },
+);
 it("groups verified call siblings, keeps failed counts visible, and remembers expansion after remount", async () => {
   const f = await mount(true, {
     kind: "page",
