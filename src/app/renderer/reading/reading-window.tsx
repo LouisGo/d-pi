@@ -8,9 +8,9 @@ import {
   useRef,
 } from "react";
 import { flushSync } from "react-dom";
-import type {
+import {
   ReadingPositions,
-  ReadingRow,
+  type ReadingRow,
 } from "../../../modules/conversation/core/public";
 
 export interface WindowRow {
@@ -81,6 +81,7 @@ export function ReadingWindow({
       target: null as string | null,
       pointer: null as string | null,
       gap: 0,
+      disclosures: positions ?? new ReadingPositions(),
     }),
     [positions, source],
   );
@@ -102,6 +103,14 @@ export function ReadingWindow({
   }, [rows, state, state.gap]);
   state.tree = geometryIndex.tree;
   state.sizes = geometryIndex.sizes;
+  const rememberDisclosures = (id: string, node: HTMLElement) =>
+    state.disclosures.rememberDisclosures(
+      source,
+      id,
+      [...node.querySelectorAll<HTMLDetailsElement>("details")].map(
+        (details) => details.open,
+      ),
+    );
   // Fenwick coordinates: streamed height updates and offscreen lookup are O(log n).
   const offset = (index: number) => {
     let top = 0;
@@ -223,6 +232,7 @@ export function ReadingWindow({
     resize?.observe(pane);
     update();
     return () => {
+      for (const [id, node] of state.nodes) rememberDisclosures(id, node);
       if (frame !== null) cancelAnimationFrame(frame);
       resize?.disconnect();
       pane.removeEventListener("scroll", schedule);
@@ -249,11 +259,25 @@ export function ReadingWindow({
       }
     }
     windows.set(pane, controller);
+    const previousNodes = state.nodes;
     state.nodes = new Map(
       [...element.querySelectorAll<HTMLElement>("[data-reading-row]")].map(
         (node) => [node.dataset.readingRow ?? "", node],
       ),
     );
+    for (const [id, node] of previousNodes)
+      if (state.nodes.get(id) !== node) rememberDisclosures(id, node);
+    for (const [id, node] of state.nodes) {
+      if (previousNodes.get(id) === node) continue;
+      const saved = state.disclosures.disclosures(source, id);
+      if (saved)
+        [...node.querySelectorAll<HTMLDetailsElement>("details")].forEach(
+          (details, index) => {
+            const open = saved[index];
+            if (open !== undefined) details.open = open;
+          },
+        );
+    }
     const measure = () => {
       if (!hasReadingLayout(pane)) return;
       let changed = false;
@@ -317,9 +341,7 @@ export function ReadingWindow({
     if (
       ranges.some((range) => range.intersectsNode(node)) ||
       (document.activeElement && node.contains(document.activeElement)) ||
-      node.querySelector(
-        "details[open]:not([data-reading-default-open]), [aria-expanded=true], [data-state=streaming], [data-reading-view-open]",
-      )
+      node.querySelector("[data-state=streaming], [data-reading-view-open]")
     ) {
       const index = state.indices.get(id);
       if (index !== undefined) mounted.add(index);

@@ -811,6 +811,7 @@ export const ui = {
   "ui.history.role.assistant": "助手",
   "ui.history.role.tool": "工具",
   "ui.history.next": "下一页",
+  "ui.history.earlier": "加载更早的消息",
   "ui.history.empty": "暂无可显示的文字消息。",
   "ui.runtime.loading": "读取状态中…",
   "ui.runtime.phase.browse": "仅浏览",

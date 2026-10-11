@@ -212,6 +212,7 @@ export async function readNativeHistory(
     receive: (image: HistoryImageReply) => void;
   },
   toolRequest?: ToolRead,
+  range?: "tail",
 ): Promise<HistoryPage> {
   try {
     signal?.throwIfAborted();
@@ -314,8 +315,38 @@ export async function readNativeHistory(
           )
           .digest("hex");
       }
-      const offset = cursor?.offset ?? 0;
-      let buffer = Buffer.alloc(Math.min(PAGE_BYTES, endOffset - offset));
+      if (cursor?.backward && (cursor.append || imageRequest || toolRequest))
+        return { kind: "unavailable", reason: "invalid" };
+      const rangeEnd = cursor?.backward ? cursor.offset : endOffset;
+      let offset = cursor?.offset ?? 0;
+      const windowed = cursor?.backward || (!cursor && range === "tail");
+      if (windowed) {
+        let size = Math.min(PAGE_BYTES, rangeEnd);
+        // Find a real JSONL boundary by bounded byte reads; never parse the
+        // unrelated prefix. A long final record may need the record allowance.
+        for (;;) {
+          const start = rangeEnd - size;
+          const probe = Buffer.alloc(size);
+          signal?.throwIfAborted();
+          const sampled = await file.read(probe, 0, size, start);
+          const sampledBytes = probe.subarray(0, sampled.bytesRead);
+          const newline = sampledBytes.indexOf(10);
+          if (start === 0) {
+            offset = 0;
+            break;
+          }
+          if (newline >= 0 && newline < sampledBytes.lastIndexOf(10)) {
+            offset = start + newline + 1;
+            break;
+          }
+          if (size >= MAX_RECORD_BYTES)
+            return { kind: "unavailable", reason: "unsupported" };
+          size = Math.min(size * 2, MAX_RECORD_BYTES, rangeEnd);
+        }
+      }
+      let buffer = Buffer.alloc(
+        Math.min(windowed ? MAX_RECORD_BYTES : PAGE_BYTES, rangeEnd - offset),
+      );
       signal?.throwIfAborted();
       let read = await file.read(buffer, 0, buffer.length, offset);
       let bytes = buffer.subarray(0, read.bytesRead);
@@ -324,18 +355,18 @@ export async function readNativeHistory(
       // Grow only when the first record exceeds a page, with an explicit cap.
       while (
         lastNewline < 0 &&
-        offset + bytes.length < endOffset &&
+        offset + bytes.length < rangeEnd &&
         buffer.length < (toolRequest ? PAGE_BYTES : MAX_RECORD_BYTES)
       ) {
         buffer = Buffer.alloc(
-          Math.min(buffer.length * 2, MAX_RECORD_BYTES, endOffset - offset),
+          Math.min(buffer.length * 2, MAX_RECORD_BYTES, rangeEnd - offset),
         );
         signal?.throwIfAborted();
         read = await file.read(buffer, 0, buffer.length, offset);
         bytes = buffer.subarray(0, read.bytesRead);
         lastNewline = bytes.lastIndexOf(10);
       }
-      if (lastNewline < 0 && offset + bytes.length < endOffset)
+      if (lastNewline < 0 && offset + bytes.length < rangeEnd)
         return { kind: "unavailable", reason: "unsupported" };
       const complete = bytes.subarray(0, lastNewline + 1);
       const utf8 = new TextDecoder("utf-8", { fatal: true });
@@ -656,6 +687,17 @@ export async function readNativeHistory(
         entries,
         source,
         nativeSessionKey: binding.sessionId,
+        previous:
+          offset > 0
+            ? {
+                threadId: binding.threadId,
+                source,
+                offset,
+                endOffset,
+                prefixHash,
+                backward: true,
+              }
+            : null,
         continuation: {
           threadId: binding.threadId,
           source,

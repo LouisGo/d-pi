@@ -8,6 +8,8 @@ export {
 export {
   type BoundHistoryAttempt,
   boundHistoryPageQuery,
+  type HistoryCachePolicy,
+  historyCacheBytes,
   nativeImageQuery,
   projectHistoryCatalogQuery,
   projectHistoryPageQuery,

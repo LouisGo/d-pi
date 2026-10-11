@@ -104,11 +104,15 @@ export function createProjectReadBridge(
           ),
         );
       },
-      async read(threadId, cursor) {
+      async read(threadId, cursor, range) {
         return HistoryPageSchema.parse(
           await ipcRenderer.invoke(
             "history:read",
-            HistoryRequestSchema.parse({ threadId, cursor }),
+            HistoryRequestSchema.parse({
+              threadId,
+              cursor,
+              ...(range ? { range } : {}),
+            }),
           ),
         );
       },

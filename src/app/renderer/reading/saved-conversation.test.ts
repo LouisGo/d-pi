@@ -287,7 +287,7 @@ it("opens bound native messages directly without project selection, execute or a
     await act(() => new Promise((r) => setTimeout(r, 5)));
     expect(f.container.textContent).toContain("first saved message");
   });
-  expect(f.bridge.read).toHaveBeenCalledWith("A", null);
+  expect(f.bridge.read).toHaveBeenCalledWith("A", null, "tail");
   expect(f.bridge.projectList).not.toHaveBeenCalled();
   expect(f.container.textContent).not.toContain("Load history");
 });
@@ -355,6 +355,26 @@ it("does not start a history read from a hidden inactive pane", async () => {
   const f = await mount(false);
   await act(() => new Promise((r) => setTimeout(r, 10)));
   expect(f.bridge.read).not.toHaveBeenCalled();
+});
+
+it("does not sweep unread pages merely because the live projection reports a gap", async () => {
+  const f = await mount();
+  await vi.waitFor(() => expect(f.bridge.read).toHaveBeenCalledOnce());
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "g",
+      seq: 1,
+      gap: true,
+      items: [],
+    }),
+  );
+  await act(() => new Promise((resolve) => setTimeout(resolve, 200)));
+  // The generation refresh is bounded; it must not consume the remaining page.
+  expect(f.container.textContent).not.toContain("second saved message");
+  expect(
+    vi.mocked(f.bridge.read).mock.calls.filter((call) => call[1] !== null),
+  ).toHaveLength(0);
 });
 
 it("retains older saved records beyond the live projection window and appends only newly observed messages", async () => {
@@ -915,7 +935,7 @@ it("checks an unbound cache on inactive-to-active return even without a live gen
     expect(f.container.textContent).toContain("now bound history");
   });
   expect(read).toHaveBeenCalledTimes(2);
-  expect(read).toHaveBeenLastCalledWith("A", null);
+  expect(read).toHaveBeenLastCalledWith("A", null, "tail");
 });
 
 it("renders cold saved-only tool with shared disclosure, real name, call ID, args, result and full text", async () => {

@@ -906,6 +906,7 @@ export const ui = {
   "ui.history.role.assistant": "Assistant",
   "ui.history.role.tool": "Tool",
   "ui.history.next": "Next page",
+  "ui.history.earlier": "Load earlier messages",
   "ui.history.empty": "No complete text messages to show.",
   "ui.runtime.loading": "Loading status…",
   "ui.runtime.phase.browse": "Browse only",

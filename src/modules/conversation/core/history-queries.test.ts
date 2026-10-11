@@ -7,10 +7,143 @@ import type {
 } from "../contracts/public";
 import { HistoryImageRequestSchema } from "../contracts/public";
 import {
+  historyCacheBytes,
   nativeImageQuery,
   refreshSavedConversation,
   savedConversationQuery,
 } from "./history-queries";
+
+it("retains a necessary selected range, exposes its evicted tail cursor, and releases it after selection ends", async () => {
+  const client = new QueryClient();
+  const threadId = crypto.randomUUID();
+  let count = 0;
+  const pinned = new Set(["r-1"]);
+  const bridge: HistoryBridge = {
+    projectList: async () => ({
+      kind: "catalog",
+      sessions: [],
+      partial: false,
+    }),
+    projectRead: async () => ({ kind: "unavailable", reason: "missing" }),
+    read: async () => {
+      count++;
+      const cursor = {
+        threadId,
+        source: `source-${count}`,
+        offset: count * 100,
+        endOffset: count * 100,
+        prefixHash: "a".repeat(64),
+      };
+      return {
+        kind: "page",
+        source: cursor.source,
+        entries: [
+          {
+            id: `r-${count}`,
+            parentId: null,
+            role: "assistant",
+            text: "x".repeat(3000),
+          },
+        ],
+        next: null,
+        previous: { ...cursor, offset: cursor.offset - 100, backward: true },
+        continuation: cursor,
+        coverage: "append-order",
+        omitted: 0,
+        incompleteTail: false,
+      };
+    },
+  };
+  const options = savedConversationQuery(bridge, threadId, {
+    maxPages: 1,
+    maxBytes: 10000,
+    protectedRecordIds: () => pinned,
+  });
+  try {
+    await client.fetchInfiniteQuery(options);
+    await refreshSavedConversation(client, bridge, threadId);
+    const selected = client.getQueryData<{ pages: HistoryPage[] }>(
+      options.queryKey,
+    );
+    expect(selected?.pages).toMatchObject([
+      { entries: [{ id: "r-1" }], next: { offset: 100, append: true } },
+    ]);
+    expect(historyCacheBytes(selected)).toBeLessThan(10000);
+    pinned.clear();
+    await refreshSavedConversation(client, bridge, threadId);
+    expect(client.getQueryData(options.queryKey)).toMatchObject({
+      pages: [{ entries: [{ id: "r-3" }], previous: { backward: true } }],
+    });
+  } finally {
+    client.clear();
+  }
+});
+
+it("bounds repeated appended history bodies while retaining cursors for rereading evicted ranges", async () => {
+  const client = new QueryClient();
+  const threadId = crypto.randomUUID();
+  let record = 0;
+  const bridge: HistoryBridge = {
+    projectList: async () => ({
+      kind: "catalog",
+      sessions: [],
+      partial: false,
+    }),
+    projectRead: async () => ({ kind: "unavailable", reason: "missing" }),
+    read: async () => {
+      const offset = ++record * 4096;
+      const cursor = {
+        threadId,
+        source: `source-${record}`,
+        offset,
+        endOffset: offset,
+        prefixHash: "a".repeat(64),
+      };
+      return {
+        kind: "page",
+        source: cursor.source,
+        entries: [
+          {
+            id: `r-${record}`,
+            parentId: null,
+            role: "assistant",
+            text: "x".repeat(4096),
+          },
+        ],
+        next: null,
+        previous: { ...cursor, offset: offset - 4096, backward: true },
+        continuation: cursor,
+        coverage: "append-order",
+        omitted: 0,
+        incompleteTail: false,
+      };
+    },
+  };
+  const options = savedConversationQuery(bridge, threadId, {
+    maxBytes: 65536,
+    maxPages: 8,
+  });
+  try {
+    await client.fetchInfiniteQuery(options);
+    for (let index = 0; index < 1000; index++)
+      await refreshSavedConversation(client, bridge, threadId);
+    const data = client.getQueryData<{ pages: HistoryPage[] }>(
+      options.queryKey,
+    );
+    expect(data?.pages.length).toBeLessThanOrEqual(8);
+    const entries =
+      data?.pages.flatMap((page) =>
+        page.kind === "page" ? page.entries : [],
+      ) ?? [];
+    expect(
+      entries.reduce((sum, entry) => sum + entry.text.length * 2, 0),
+    ).toBeLessThanOrEqual(65536);
+    expect(entries.at(-1)?.id).toBe("r-1001");
+    expect(data?.pages[0]).toMatchObject({ previous: { backward: true } });
+  } finally {
+    client.clear();
+  }
+});
 
 it("binds lazy image reads to the exact message source and drops a cancelled late reply", async () => {
   const client = new QueryClient();

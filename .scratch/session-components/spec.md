@@ -106,6 +106,15 @@
 - OMP18.8.9 `pi-agent-core/src/agent-loop.ts` 的partial callback只声明opaque result，arg-stream emit也是opaque preview；`event-controller.ts`使用updateStreamPreview替换，不提供统一append保证。本段只对明确message text/thinking delta使用追加；累计来源的派生成本与工具replacement bytes仍需生产trace记录。
 - 14个相关文件128/128通过，包括100批delta的25,600字符传输及不反复stringify累计正文、JSON预算、缺失base/旧代次、后台事实/固定reader/返回快照和真实Workbench两条组合。该组合仍有既有React act提示。历史范围/cache/Worker、离屏轻展开、Viewer/native warm预算、生产Electron trace及WB04尚未完成，goal保持active。
 
+### WB03 milestone：有限历史范围与轻阅读状态（2026-10-11）
+
+- 原生JSONL增加有界tail和previous冻结游标：普通范围1MiB，单长记录仍沿用32MiB许可；保持Main路径、原生身份、前缀版本与读取后复核。读取目标范围不解析无关旧记录；不把tail称为完整历史。SavedConversation从尾部进入，早期内容明确向前读取；gap保留覆盖提示，不再触发自动全历史补页。当前定位沿既有最多16页尝试，完整索引/Worker仍待后续。
+- 单会话正文缓存按UTF-16 payload字符串及scalar/key计量，默认8MiB/16页；保留连续范围和可重读游标。单个完整长记录与必要锚点/选区/焦点占用可以超过普通 allowance；这是读取策略的计量，不是RSS测量。窗口历史LRU增加32MiB字节门限，已挂载/in-flight读取不强制退休。去掉跨回收页无限保留的record-ID集合，实时/持久别名随驻留身份回收，阅读锚点继续由Thread持有。
+- 离屏details/aria-expanded不再永久钉住DOM；Thread-owned轻状态最多1024行、每行64个disclosure布尔值。回到范围恢复展开，选区、键盘焦点、打开阅读弹层和streaming仍保留必要挂载。
+- 1000次4KiB追加回归先复现1001页累积，再验证配置预算、最新内容、回收范围游标、选择保护及释放。原生tail/长完整记录+未提交尾巴、生产gap不扫页、阅读恢复及LRU共六文件70/70；追加保护回归后history-query为12/12。Core/Main/Preload类型、设计/i18n/交互检查通过；Renderer仍只有既有composer-tag.tsx:134 TS7053。读取operation/Worker、完整artifact、Viewer/native warm预算和生产Electron trace仍未完成，不将milestone视作WB03整包验收。
+
+固定 `c4a90b8..dad51e6` 独立Spec/Standards review未发现可行动高价值问题，未代跑测试且不覆盖本轮历史/离屏WIP。
+
 按行为逐段 TDD：独立回答/双击/重连/重挂载，详情更新与final，跨Thread草稿/Undo/来源定位/lease释放与晚到导航。只跑相关类型、行为、边界和文档门禁；必要的真实 SDK/生产链路验收有界执行，不重复 provider/系统 IME 或包矩阵。
 
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。

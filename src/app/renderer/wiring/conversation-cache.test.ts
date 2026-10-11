@@ -2,6 +2,24 @@ import { QueryClient, QueryObserver } from "@tanstack/react-query";
 import { expect, it } from "vitest";
 import { installConversationCacheBudget } from "./conversation-cache";
 
+it("applies the resident byte allowance even when the query count is below its limit", () => {
+  const client = new QueryClient();
+  const release = installConversationCacheBudget(client, 8, 12000);
+  try {
+    client.setQueryData(["saved-native-conversation", "A"], "a".repeat(4000));
+    client.setQueryData(["saved-native-conversation", "B"], "b".repeat(4000));
+    expect(
+      client.getQueryData(["saved-native-conversation", "A"]),
+    ).toBeUndefined();
+    expect(client.getQueryData(["saved-native-conversation", "B"])).toBe(
+      "b".repeat(4000),
+    );
+  } finally {
+    release();
+    client.clear();
+  }
+});
+
 it("evicts the least recently visited inactive transcript, preserving mounted readers and other domains", () => {
   const client = new QueryClient();
   const release = installConversationCacheBudget(client, 2);

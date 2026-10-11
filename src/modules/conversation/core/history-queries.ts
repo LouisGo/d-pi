@@ -14,6 +14,98 @@ export interface BoundHistoryAttempt {
   readonly id: string;
   readonly cursor: HistoryCursor | null;
 }
+
+export interface HistoryCachePolicy {
+  readonly maxBytes?: number;
+  readonly maxPages?: number;
+  /** Necessary mounted reading/selection/focus occupancy, not expanded DOM. */
+  readonly protectedRecordIds?: () => ReadonlySet<string>;
+}
+const entryBytes = new WeakMap<object, number>();
+/** UTF-16 payload strings plus scalar/key bytes; not a claim about process RSS. */
+export function historyCacheBytes(value: unknown): number {
+  if (typeof value === "string") return value.length * 2;
+  if (typeof value === "number") return 8;
+  if (typeof value === "boolean") return 1;
+  if (value === null || value === undefined) return 0;
+  if (Array.isArray(value))
+    return value.reduce((sum, item) => sum + historyCacheBytes(item), 0);
+  if (typeof value === "object") {
+    const cached = entryBytes.get(value);
+    if (cached !== undefined) return cached;
+    const bytes = Object.entries(value).reduce(
+      (sum, [key, item]) => sum + key.length * 2 + historyCacheBytes(item),
+      0,
+    );
+    entryBytes.set(value, bytes);
+    return bytes;
+  }
+  return 0;
+}
+function isHistoryData(
+  value: unknown,
+): value is InfiniteData<HistoryPage, HistoryCursor | null> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "pages" in value &&
+    Array.isArray(value.pages) &&
+    "pageParams" in value &&
+    Array.isArray(value.pageParams)
+  );
+}
+function retainHistoryRange(
+  old: unknown,
+  value: unknown,
+  policy: HistoryCachePolicy,
+) {
+  if (!isHistoryData(value) || value.pages.length < 2) return value;
+  const maxBytes = Math.max(1, policy.maxBytes ?? 8 * 1024 * 1024);
+  const maxPages = Math.max(1, policy.maxPages ?? 16);
+  const protectedIds = policy.protectedRecordIds?.() ?? new Set<string>();
+  const pinned = value.pages.map(
+    (page) =>
+      page.kind === "page" &&
+      page.entries.some((entry) => protectedIds.has(entry.id)),
+  );
+  const sizes = value.pages.map(historyCacheBytes);
+  let bytes = sizes.reduce((sum, size) => sum + size, 0);
+  let start = 0;
+  let end = value.pages.length;
+  const prepended =
+    isHistoryData(old) &&
+    value.pages[0] !== old.pages[0] &&
+    value.pages.at(-1) === old.pages.at(-1);
+  while (end - start > 1 && (bytes > maxBytes || end - start > maxPages)) {
+    const candidate = prepended ? end - 1 : start;
+    const opposite = prepended ? start : end - 1;
+    const remove = !pinned[candidate]
+      ? candidate
+      : !pinned[opposite]
+        ? opposite
+        : null;
+    // Only necessary reading occupancy may temporarily exceed the allowance.
+    if (remove === null) break;
+    bytes -= sizes[remove] ?? 0;
+    if (remove === start) start++;
+    else end--;
+  }
+  if (start === 0 && end === value.pages.length) return value;
+  const pages = value.pages.slice(start, end);
+  const last = pages.at(-1);
+  if (
+    end < value.pages.length &&
+    last?.kind === "page" &&
+    !last.next &&
+    last.continuation
+  ) {
+    pages[pages.length - 1] = {
+      ...last,
+      next: { ...last.continuation, append: true },
+    };
+  }
+  return { ...value, pages, pageParams: value.pageParams.slice(start, end) };
+}
 export function boundHistoryPageQuery(
   bridge: HistoryBridge,
   threadId: string,
@@ -65,10 +157,11 @@ export function projectHistoryPageQuery(
   });
 }
 
-/** Append committed pages in one read-only transcript; never page away a message. */
+/** Start at a bounded tail; older frozen ranges are explicit reading demand. */
 export function savedConversationQuery(
   bridge: HistoryBridge,
   threadId: string,
+  policy: HistoryCachePolicy = {},
 ) {
   return infiniteQueryOptions({
     queryKey: ["saved-native-conversation", threadId] as const,
@@ -80,19 +173,23 @@ export function savedConversationQuery(
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     gcTime: 5 * 60 * 1000,
+    structuralSharing: (old, value) => retainHistoryRange(old, value, policy),
     queryFn: async ({ pageParam, signal }) => {
       signal.throwIfAborted();
-      const page = await bridge.read(threadId, pageParam);
+      const page = pageParam
+        ? await bridge.read(threadId, pageParam)
+        : await bridge.read(threadId, null, "tail");
       signal.throwIfAborted();
       return page;
     },
     getNextPageParam: (page) =>
       page.kind === "page" ? (page.next ?? undefined) : undefined,
+    getPreviousPageParam: (page) =>
+      page.kind === "page" ? (page.previous ?? undefined) : undefined,
   });
 }
 
 const refreshVersions = new WeakMap<QueryClient, Map<string, object>>();
-const cachedRecordIds = new WeakMap<object, Set<string>>();
 
 /** Extend committed pages; return an unavailable observation without discarding a valid prefix. */
 export async function refreshSavedConversation(
@@ -121,15 +218,14 @@ export async function refreshSavedConversation(
       cached?.pages.findLastIndex((page) => page.kind === "page") ?? -1;
     const last = cached?.pages[lastIndex];
     const cursor = last?.kind === "page" ? last.continuation : undefined;
-    let page = await bridge.read(
-      threadId,
-      cursor ? { ...cursor, append: true } : null,
-    );
+    let page = cursor
+      ? await bridge.read(threadId, { ...cursor, append: true })
+      : await bridge.read(threadId, null, "tail");
     if (signal?.aborted || versions.get(threadId) !== version) return undefined;
     // A replaced/truncated source is a clean reset, never joined to old entries.
     const reset =
       !cursor || (page.kind === "unavailable" && page.reason === "changed");
-    if (cursor && reset) page = await bridge.read(threadId, null);
+    if (cursor && reset) page = await bridge.read(threadId, null, "tail");
     if (
       signal?.aborted ||
       versions.get(threadId) !== version ||
@@ -151,13 +247,10 @@ export async function refreshSavedConversation(
     const pageParams = hasUnavailableTail
       ? cached.pageParams.slice(0, lastIndex + 1)
       : cached.pageParams;
-    let ids = cachedRecordIds.get(cached);
-    if (!ids) {
-      ids = new Set<string>();
-      for (const loaded of cached.pages) {
-        if (loaded.kind === "page") {
-          for (const entry of loaded.entries) ids.add(entry.id);
-        }
+    const ids = new Set<string>();
+    for (const loaded of cached.pages) {
+      if (loaded.kind === "page") {
+        for (const entry of loaded.entries) ids.add(entry.id);
       }
     }
     const recordIds = ids;
@@ -172,7 +265,7 @@ export async function refreshSavedConversation(
     // An empty refresh replaces just the tail metadata, preventing one empty
     // cached page per native identity while still advancing omitted records.
     if (appended.entries.length === 0 && last?.kind === "page") {
-      const updated = client.setQueryData(options.queryKey, {
+      client.setQueryData(options.queryKey, {
         pages: [
           ...pages.slice(0, -1),
           {
@@ -185,14 +278,12 @@ export async function refreshSavedConversation(
         ],
         pageParams,
       });
-      if (updated) cachedRecordIds.set(updated, ids);
       return undefined;
     }
-    const updated = client.setQueryData(options.queryKey, {
+    client.setQueryData(options.queryKey, {
       pages: [...pages, appended],
       pageParams: [...pageParams, cursor ?? null],
     });
-    if (updated) cachedRecordIds.set(updated, ids);
     return undefined;
   } finally {
     if (versions.get(threadId) === version) versions.delete(threadId);

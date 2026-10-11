@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "d52d2c1c90514cf95a12b75444268f52f049339e290d8155861d3ae21679e3ef",
+  "inputsHash": "66e36e5b4c93e5129d770c58dbfee4d0ff1b3e0a6f3c27496f89110d186e75c1",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 635,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 283,
-      "lines": 54841,
+      "lines": 54987,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -106,7 +106,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 3869,
+      "lines": 3871,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -307,7 +307,7 @@
       ],
       "materialized": true,
       "files": 39,
-      "lines": 9346,
+      "lines": 9771,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -16826,6 +16826,18 @@
       "specifier": "@tanstack/react-query",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/wiring/conversation-cache.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/conversation/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/app/renderer/wiring/m2-thread-switch.test.ts",

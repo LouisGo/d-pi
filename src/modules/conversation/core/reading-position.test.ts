@@ -118,3 +118,15 @@ it("bounds source/body positions and releases them when the Thread is disposed",
   expect(positions.stateStore.getState().anchors.size).toBe(0);
   expect(positions.stateStore.getState().bodies.size).toBe(0);
 });
+it("retains bounded lightweight disclosure state independently of bodies and source generations", () => {
+  const positions = new ReadingPositions();
+  positions.rememberDisclosures("source", "row", [true, false]);
+  expect(positions.disclosures("source", "row")).toEqual([true, false]);
+  expect(positions.disclosures("other-generation", "row")).toBeUndefined();
+  for (let i = 0; i < 1100; i++)
+    positions.rememberDisclosures("source", String(i), [true]);
+  expect(positions.disclosures("source", "0")).toBeUndefined();
+  expect(positions.disclosures("source", "1099")).toEqual([true]);
+  positions.clear();
+  expect(positions.disclosures("source", "1099")).toBeUndefined();
+});

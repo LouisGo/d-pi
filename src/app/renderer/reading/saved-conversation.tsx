@@ -70,9 +70,43 @@ export function SavedConversation({
     (state) => state.nativeIdentities,
   );
   const client = useQueryClient();
+  const section = useRef<HTMLElement>(null);
+  const rowKeys = useMemo(
+    () => ({
+      records: new Map<string, string>(),
+      live: new Map<string, string>(),
+    }),
+    [threadId],
+  );
+  const source = JSON.stringify(["conversation", threadId]);
+  const protectedRecords = useCallback(() => {
+    const keys = new Set<string>();
+    const element = section.current;
+    if (!active || !element) return keys;
+    const anchor = positions?.get(source);
+    if (anchor?.rowId && !anchor.atEnd) keys.add(anchor.rowId);
+    const protect = (node: Node | null) => {
+      const row = (
+        node instanceof Element ? node : node?.parentElement
+      )?.closest<HTMLElement>("[data-reading-row]");
+      if (row && element.contains(row) && row.dataset.readingRow)
+        keys.add(row.dataset.readingRow);
+    };
+    protect(document.activeElement);
+    const selection = document.getSelection();
+    if (selection && !selection.isCollapsed) {
+      protect(selection.anchorNode);
+      protect(selection.focusNode);
+    }
+    const records = new Set<string>();
+    for (const [id, key] of rowKeys.records) if (keys.has(key)) records.add(id);
+    return records;
+  }, [active, positions, source, rowKeys]);
   const live = model.stateStore.getState();
   const saved = useInfiniteQuery({
-    ...savedConversationQuery(bridge, threadId),
+    ...savedConversationQuery(bridge, threadId, {
+      protectedRecordIds: protectedRecords,
+    }),
     enabled: active,
   });
   // A native end identity / resumed generation is a read-only invalidation,
@@ -161,16 +195,13 @@ export function SavedConversation({
       if (refresh.current === controller) setRefreshing(false);
     };
   }, [active, generation, identities, refreshNow]);
-  const source = JSON.stringify(["conversation", threadId]);
   const sentinel = useRef<HTMLDivElement>(null);
-  const { hasNextPage, fetchNextPage } = saved;
+  const { hasNextPage, fetchNextPage, hasPreviousPage, fetchPreviousPage } =
+    saved;
   const isFetching = saved.isFetching || refreshing;
+  const automaticCursor = useRef<string | null>(null);
   useEffect(() => {
     const node = sentinel.current;
-    if (active && gap && hasNextPage && !isFetching) {
-      void fetchNextPage();
-      return;
-    }
     if (
       !active ||
       !node ||
@@ -181,13 +212,22 @@ export function SavedConversation({
       return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) void fetchNextPage();
+        const last = saved.data?.pages.at(-1);
+        const cursor = last?.kind === "page" ? JSON.stringify(last.next) : null;
+        if (
+          cursor &&
+          cursor !== automaticCursor.current &&
+          entries.some((entry) => entry.isIntersecting)
+        ) {
+          automaticCursor.current = cursor;
+          void fetchNextPage();
+        }
       },
       { root: node.closest("[data-reading-pane]"), rootMargin: "300px" },
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [active, gap, hasNextPage, isFetching, fetchNextPage]);
+  }, [active, hasNextPage, isFetching, fetchNextPage]);
   const pages = saved.data?.pages ?? [];
   const unavailable =
     refreshIssue?.kind === "unavailable"
@@ -225,13 +265,6 @@ export function SavedConversation({
   const nativeIds = new Set(entries.map((entry) => entry.id));
   // Presentation identity is view state, separate from native persistence identity.
   // A newly confirmed native ID adopts its already mounted live row.
-  const rowKeys = useMemo(
-    () => ({
-      records: new Map<string, string>(),
-      live: new Map<string, string>(),
-    }),
-    [threadId],
-  );
   for (const id of live.itemIds) {
     const item = live.itemsById.get(id);
     const liveKey = JSON.stringify([generation, id]);
@@ -253,6 +286,16 @@ export function SavedConversation({
       return item?.nativeRecordId ? [[item.nativeRecordId, id] as const] : [];
     }),
   );
+  const liveKeys = new Set(
+    live.itemIds.map((id) => JSON.stringify([generation, id])),
+  );
+  for (const key of rowKeys.live.keys())
+    if (!liveKeys.has(key)) rowKeys.live.delete(key);
+  const anchorKey = positions?.get(source)?.rowId;
+  for (const [id, key] of rowKeys.records) {
+    if (!nativeIds.has(id) && !liveByNativeId.has(id) && key !== anchorKey)
+      rowKeys.records.delete(id);
+  }
   const appended = live.itemIds.filter((id) => {
     const item = live.itemsById.get(id);
     return (
@@ -300,8 +343,10 @@ export function SavedConversation({
         if (row) model.activities.revealMember(row.key);
         return row?.key;
       },
-      hasNextPage && !isFetching
-        ? async () => !(await fetchNextPage()).isError
+      (hasPreviousPage || hasNextPage) && !isFetching
+        ? async () =>
+            !(await (hasPreviousPage ? fetchPreviousPage() : fetchNextPage()))
+              .isError
         : undefined,
     );
   }, [
@@ -316,6 +361,8 @@ export function SavedConversation({
     hasNextPage,
     isFetching,
     fetchNextPage,
+    hasPreviousPage,
+    fetchPreviousPage,
   ]);
   const tail = pages.at(-1);
   const incomplete = tail?.kind === "page" && tail.incompleteTail;
@@ -325,6 +372,7 @@ export function SavedConversation({
   );
   return (
     <section
+      ref={section}
       className="conversation"
       data-reading-source={source}
       aria-label={t("ui.conversation.sectionLabel")}
@@ -370,6 +418,15 @@ export function SavedConversation({
           onClick={() => void refreshNow(new AbortController())}
         >
           {t("config.refresh")}
+        </Button>
+      )}
+      {hasPreviousPage && (
+        <Button
+          variant="ghost"
+          disabled={isFetching}
+          onClick={() => void fetchPreviousPage()}
+        >
+          {t("ui.history.earlier")}
         </Button>
       )}
       <ActivityReadingWindow
@@ -497,6 +554,15 @@ export function SavedConversation({
         )}
       {gap && <p role="status">{t("ui.conversation.gap")}</p>}
       <div ref={sentinel} />
+      {hasNextPage && (
+        <Button
+          variant="ghost"
+          disabled={isFetching}
+          onClick={() => void fetchNextPage()}
+        >
+          {t("ui.history.next")}
+        </Button>
+      )}
     </section>
   );
 }

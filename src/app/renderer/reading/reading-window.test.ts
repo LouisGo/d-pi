@@ -102,7 +102,7 @@ it("bounds mounted conversation bodies for thousands of available rows", async (
   }
 });
 
-it("releases default-open completed subagents but retains results explicitly opened by the reader", async () => {
+it("releases completed subagent DOM and restores its explicit expansion when remounted", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const count = 200;
   const pane = document.createElement("div");
@@ -173,12 +173,16 @@ it("releases default-open completed subagents but retains results explicitly ope
     await act(() => {
       readingWindow(pane)?.mount("180");
     });
-    expect(pane.querySelector('[data-reading-row="0"]')).toBe(first);
-    details.open = false;
-    await act(() => {
-      readingWindow(pane)?.mount("100");
-    });
     expect(pane.querySelector('[data-reading-row="0"]')).toBeNull();
+    await act(() => {
+      readingWindow(pane)?.mount("0");
+    });
+    expect(pane.querySelector('[data-reading-row="0"]')).not.toBe(first);
+    expect(
+      pane
+        .querySelector('[data-reading-row="0"] details')
+        ?.hasAttribute("open"),
+    ).toBe(true);
   } finally {
     await act(() => root.unmount());
     geometry.mockRestore();
@@ -187,7 +191,7 @@ it("releases default-open completed subagents but retains results explicitly ope
   }
 });
 
-it("keeps focused and expanded rows mounted through offscreen jumps and appends", async () => {
+it("keeps focused rows mounted but stores offscreen expansion as light state through appends", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const pane = document.createElement("div");
   pane.dataset.readingPane = "conversation";
@@ -231,14 +235,16 @@ it("keeps focused and expanded rows mounted through offscreen jumps and appends"
     first?.querySelector("button")?.blur();
     count++;
     await act(render);
-    expect(pane.querySelector('[data-reading-row="0"]')).toBe(first);
-    expect(details.open).toBe(true);
-    expect(pane.querySelectorAll("[data-reading-row]").length).toBeLessThan(80);
-    details.open = false;
-    await act(() => {
-      readingWindow(pane)?.mount("1999");
-    });
     expect(pane.querySelector('[data-reading-row="0"]')).toBeNull();
+    expect(pane.querySelectorAll("[data-reading-row]").length).toBeLessThan(80);
+    await act(() => {
+      readingWindow(pane)?.mount("0");
+    });
+    expect(
+      pane
+        .querySelector('[data-reading-row="0"] details')
+        ?.hasAttribute("open"),
+    ).toBe(true);
   } finally {
     await act(() => root.unmount());
     geometry.mockRestore();

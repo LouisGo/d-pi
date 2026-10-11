@@ -237,6 +237,9 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
         cursor,
         undefined,
         directory,
+        undefined,
+        undefined,
+        request.range,
       );
       if (!bindingCurrent())
         return { kind: "unavailable", reason: "changed" } as const;

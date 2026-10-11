@@ -13,6 +13,8 @@ export const HistoryCursorSchema = z.strictObject({
   endOffset: z.number().int().nonnegative().optional(),
   /** Extend a verified frozen snapshot from offset to the current EOF. */
   append: z.literal(true).optional(),
+  /** Read the bounded committed range immediately before offset. */
+  backward: z.literal(true).optional(),
   prefixHash: z
     .string()
     .regex(/^[a-f0-9]{64}$/)
@@ -87,6 +89,7 @@ export const HistoryPageSchema = z.discriminatedUnion("kind", [
     kind: z.literal("page"),
     entries: z.array(HistoryEntrySchema),
     next: HistoryCursorSchema.nullable(),
+    previous: HistoryCursorSchema.nullable().optional(),
     /** Last committed newline, including when next is null or the tail is partial. */
     continuation: HistoryCursorSchema.optional(),
     source: z.string(),
@@ -112,6 +115,7 @@ export type HistoryPage = z.infer<typeof HistoryPageSchema>;
 export const HistoryRequestSchema = z.strictObject({
   threadId: z.uuid(),
   cursor: HistoryCursorSchema.nullable(),
+  range: z.literal("tail").optional(),
 });
 export const HistoryToolRequestSchema = z.strictObject({
   threadId: z.uuid(),
@@ -141,7 +145,11 @@ export interface HistoryBridge {
     key: string,
     cursor: HistoryCursor | null,
   ): Promise<HistoryPage>;
-  read(threadId: string, cursor: HistoryCursor | null): Promise<HistoryPage>;
+  read(
+    threadId: string,
+    cursor: HistoryCursor | null,
+    range?: "tail",
+  ): Promise<HistoryPage>;
 }
 export const HistoryImageRequestSchema = z.strictObject({
   traceId: z.uuid(),

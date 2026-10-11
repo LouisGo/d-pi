@@ -13,6 +13,123 @@ import { join } from "node:path";
 import { expect, it } from "vitest";
 import { readNativeHistory, readNativeImage } from "./native-history";
 
+it("keeps a large complete final message alongside a partial JSONL tail", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-large-tail-"));
+  const threadId = crypto.randomUUID();
+  mkdirSync(join(root, threadId));
+  const sessionFile = join(root, threadId, "session.jsonl");
+  const text = "x".repeat(2 * 1024 * 1024);
+  writeFileSync(
+    sessionFile,
+    JSON.stringify({ type: "session", version: 3, id: "session" }) +
+      "\n" +
+      JSON.stringify({
+        type: "message",
+        id: "large",
+        parentId: null,
+        message: { role: "assistant", content: text },
+      }) +
+      "\n" +
+      '{"incomplete":"' +
+      "z".repeat(1100000),
+  );
+  try {
+    const page = await readNativeHistory(
+      root,
+      {
+        threadId,
+        configContextId: "fixture",
+        sessionId: "session",
+        sessionFile,
+      },
+      null,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      "tail",
+    );
+    expect(page).toMatchObject({
+      kind: "page",
+      entries: [{ id: "large", text }],
+      incompleteTail: true,
+      next: null,
+    });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+it("reads a bounded tail and its preceding frozen range without scanning earlier records", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-history-tail-"));
+  const threadId = crypto.randomUUID();
+  mkdirSync(join(root, threadId));
+  const sessionFile = join(root, threadId, "session.jsonl");
+  const binding = {
+    threadId,
+    configContextId: "fixture",
+    sessionId: "session",
+    sessionFile,
+  };
+  const records = Array.from({ length: 400 }, (_, index) =>
+    JSON.stringify({
+      type: "message",
+      id: `record-${index}`,
+      parentId: null,
+      message: { role: "assistant", content: `${index}:` + "界".repeat(3000) },
+    }),
+  );
+  // Tail reading must not parse unrelated malformed records in the old prefix.
+  writeFileSync(
+    sessionFile,
+    JSON.stringify({ type: "session", version: 3, id: "session" }) +
+      "\nnot-json\n" +
+      records.join("\n") +
+      "\n",
+  );
+  try {
+    const tail = await readNativeHistory(
+      root,
+      binding,
+      null,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      "tail",
+    );
+    if (tail.kind !== "page") throw Error("tail unavailable");
+    expect(tail.entries.at(-1)?.id).toBe("record-399");
+    expect(tail.entries.length).toBeLessThan(130);
+    expect(tail.next).toBeNull();
+    expect(tail.previous?.backward).toBe(true);
+    if (!tail.previous) throw Error("missing preceding range");
+    appendFileSync(
+      sessionFile,
+      JSON.stringify({
+        type: "message",
+        id: "new",
+        parentId: null,
+        message: { role: "user", content: "later" },
+      }) + "\n",
+    );
+    const previous = await readNativeHistory(root, binding, tail.previous);
+    if (previous.kind !== "page") throw Error("preceding range unavailable");
+    expect(previous.source).toBe(tail.source);
+    expect(previous.entries.at(-1)?.id).toBe(
+      `record-${Number(tail.entries[0]?.id.split("-")[1]) - 1}`,
+    );
+    expect(
+      previous.entries.some((entry) =>
+        tail.entries.some((later) => later.id === entry.id),
+      ),
+    ).toBe(false);
+    expect(previous.continuation?.offset).toBe(tail.previous.offset);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 it("reads wrapped edit semantic evidence from the original native record", async () => {
   const root = mkdtempSync(join(tmpdir(), "d-pi-semantic-history-"));
   const threadId = crypto.randomUUID();

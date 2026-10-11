@@ -127,6 +127,8 @@ function remember<Value>(
 /** Thread-owned, bounded presentation coordinates. It retains no message bodies. */
 export class ReadingPositions {
   private readonly store = positionStore();
+  private disclosurePositions: ReadonlyMap<string, readonly boolean[]> =
+    new Map();
   private disposed = false;
   readonly stateStore: Pick<
     PositionStore,
@@ -137,6 +139,23 @@ export class ReadingPositions {
   }
   body(key: string): ReadingBodyPosition | undefined {
     return this.store.getState().bodies.get(key);
+  }
+  disclosures(source: string, row: string): readonly boolean[] | undefined {
+    return this.disclosurePositions.get(JSON.stringify([source, row]));
+  }
+  rememberDisclosures(
+    source: string,
+    row: string,
+    values: readonly boolean[],
+  ): void {
+    const key = JSON.stringify([source, row]);
+    if (this.disposed || key.length > 4096 || !values.length) return;
+    this.disclosurePositions = remember(
+      this.disclosurePositions,
+      key,
+      values.slice(0, 64),
+      1024,
+    );
   }
   remember(source: string, anchor: ReadingAnchor): void {
     if (this.disposed || source.length > 4096) return;
@@ -182,6 +201,7 @@ export class ReadingPositions {
     this.clear();
   }
   clear(): void {
+    this.disclosurePositions = new Map();
     this.store.setState({
       anchors: new Map(),
       bodies: new Map(),
