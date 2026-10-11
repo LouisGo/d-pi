@@ -9,6 +9,29 @@ import { Markdown } from "./markdown";
 
 const staticPlugins = { code };
 
+it("bounds synthetic Markdown repair for long streams while keeping all received text and final formatting", async () => {
+  const fixture = mountMarkdown();
+  const prefix =
+    "PERF_STREAM_0 received identifier 中文\n".repeat(600) + "\n\n";
+  try {
+    await fixture.render(prefix + "_received unfinished", true);
+    expect(fixture.container.textContent).toContain("_received unfinished");
+    expect(fixture.container.textContent).toContain(
+      "PERF_STREAM_0 received identifier 中文",
+    );
+    await fixture.render(prefix + "_received unfinished_", false);
+    expect(fixture.container.querySelector("em")?.textContent).toBe(
+      "received unfinished",
+    );
+    await fixture.render("_short unfinished", true);
+    expect(fixture.container.querySelector("em")?.textContent).toBe(
+      "short unfinished",
+    );
+  } finally {
+    await fixture.dispose();
+  }
+});
+
 function mountMarkdown(staticReference = false) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const container = document.createElement("div");

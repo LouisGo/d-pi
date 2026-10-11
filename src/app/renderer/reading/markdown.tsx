@@ -27,6 +27,11 @@ const components = {
   a: MarkdownLink,
 };
 
+// Remend 1.3.1 rescans the preceding document per incomplete delimiter. Bound
+// that optional synthesis, not the received body: large streams keep every
+// character and CommonMark formatting, without invented closing markers.
+const MAX_STREAMING_REPAIR_CHARACTERS = 8192;
+
 function markdownBlocks(text: string): string[] {
   // 2.6.0 keeps footnotes together, but ordinary reference definitions otherwise
   // get parsed apart from their uses. Keep one document parse scope for those
@@ -78,7 +83,9 @@ export const Markdown = memo(function Markdown({
       // Streamdown's static branch replaces the block tree on message_end.
       // Keep its block identities while disabling remend for final/interrupted text.
       mode="streaming"
-      parseIncompleteMarkdown={streaming}
+      parseIncompleteMarkdown={
+        streaming && text.length <= MAX_STREAMING_REPAIR_CHARACTERS
+      }
       parseMarkdownIntoBlocksFn={markdownBlocks}
       isAnimating={streaming}
       components={components}
