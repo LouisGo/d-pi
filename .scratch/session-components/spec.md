@@ -16,9 +16,9 @@
 | --- | --- | --- | --- | --- |
 | WB00 | 当前运行基线 | complete | 18.8.9 实际依赖；A/B 回答独立结果；同目标单次发送；草稿跨卸载；代次隔离；written 与原生结束分开；stop 独立 | 下方 WB00 证据；已与WB01合装，待用户试用 |
 | WB01 | WB00 | complete | 命令卡→实时详情→pin→切 B→明确 B 草稿引用→回 A 原成员；有界摘要、final 对账、coverage、关闭释放、旧导航不抢占；键盘入口 | Source/Surface/reader/FrozenContext 与命令卡/Inspector 已装配；主矩阵143项与最后受影响31项通过；独立review已闭合；下方Dev源码试用交接 |
-| WB02 | WB01 | implementing | 活动组、常用 read/search/edit、轮次、变化摘要真实 | 裁剪前语义与生产专用Body已接，活动结构/来源导航仍待完成 |
-| WB03 | WB00；联调 WB01/02 | implementing | demand/范围读取/字节缓存/Worker/Viewer/native warm 有界 | 本轮已授权，随WB02交错落实资源策略 |
-| WB04 | WB00、WB01 | implementing | 多题/权限/超时/unknown/回答历史完整 | 本轮已授权，后续原生ask/approval与持久历史 |
+| WB02 | WB01 | complete | 活动组、常用 read/search/edit、轮次、变化摘要真实 | 真实语义/来源/生产Body与活动结构组合、失败降级、DOM/选区保留已验证；待用户试用 |
+| WB03 | WB00；联调 WB01/02 | implementing | demand/范围读取/字节缓存/Worker/Viewer/native warm 有界 | 资源边界与生产后台证据已取得；长段落输入延迟未达初始目标，正常Quit冷却未确认；用户选择先交付 |
+| WB04 | WB00、WB01 | complete | 多题/权限/超时/unknown/回答历史完整 | 原生AskTool/审批/答案历史与真实owner隐藏/切线程/断连组合已验证；C23沿用允许的独立呈现；待用户试用 |
 | WB05 | WB01、WB03、WB04 请求事实 | planned | 任务→子代理→Job→使用量/策略/资源 | 后续真实 owner scope 合同 |
 | WB06 | WB01、WB02、WB04 | planned | Plan 到安排执行；Diff/消息反馈；精确分叉 | 后续原生能力与反馈协调 |
 | WB07 | WB01、WB02、WB03 | planned | 搜索定位与专业 Body 复用来源/详情/资源 | 后续专业结果合同 |
@@ -267,8 +267,8 @@ AnswerHistory通过execution只读Query公开面接App持久事实：离线可�
     "engineering": "in-progress",
     "trial": "delivered",
     "acceptance": "pending",
-    "next": "推进WB02活动语义/结构，与WB03资源策略交错，再完成WB04完整交互",
-    "evidence": ["../../docs/product/session-components-plan-2026-10-11.md"],
+    "next": "先交付WB02/WB04与WB03已完成能力；保留长段落输入延迟与退出冷却核验缺口，WB03完整验收未完成",
+    "evidence": ["evidence/production-performance.json", "../../docs/product/session-components-plan-2026-10-11.md"],
     "constraints": "本轮授权WB02–WB04；WB05–WB08后续，不推送或发布，用户验收pending"
   }
 ]
@@ -370,3 +370,19 @@ Activation 独立复核（固定 `5a520bf..d17e3d5`）确认三项 P2，并逐�
 新增实际 AppModel→缓存 ThreadModel→ThreadWorkbench→RuntimePanel／DecisionDock 组合，只替换范围外 Composer 和受控 DesktopBridge transport。多题选项、自填半成品、独立问题草稿和唯一 Dock 编辑器跨隐藏／重挂／A→B→A 保持，同一 owner 在 cacheLimit=1 时因真实 pending 占用受到保护，原生绝对 deadline 不被 React 改写。回答传输失去确认后保留 unknown 与冻结意图，切线程／隐藏不自动 start 或再答；显式新连接代次拒绝旧提交与编辑句柄。该夹具不声称证明 Main 原生写入，落盘事实由既有正式 native／SQLite 证据覆盖。
 
 三个相关文件24/24通过。最初 fixture 使用错误 policy 字段、后续误要求新代次继续保留已淘汰旧镜像，均按正式 schema／当前连接保留合同修正；不是生产缺陷或 TDD 红灯。既有 NativeInteraction 测试 act 提示继续记录。未把这段工程组合冒称实机验收；隔离生产构建三路流、万条历史、20,000字输入、真实系统IME与后台性能证据正在采集，完整 WB02–WB04 继续。
+
+### 本轮交付与 WB03 未完成项（2026-10-11）
+
+用户明确选择“先交付已完成能力，记录性能缺口，WB03 完整验收保持未完成”。停止本轮更大的正文渲染改造；不以低 ROI 为由把失败改成通过。WB02/WB04 工程完成，WB03 保持 implementing；用户认可 pending，WB05–WB08 未实施，不推送、不发布。
+
+生产性能报告为 [production-performance.json](evidence/production-performance.json)，对应实际 [Chrome hidden trace](evidence/production-hidden-trace.json.gz)。固定官方 Electron44.4.5、OMP18.8.9、正式 Main/Host/Preload/Renderer，隔离 loopback 与原生 SessionManager 生成初始10,000条消息；真实单工具10MiB是完整artifact，inline仍沿原生40KiB裁剪，不冒称10MiB inline/wire。三路原生执行持续1,800,815ms，累计实际隐藏1,802,216ms，可见21,723ms完整扣除；最长连续隐藏836,255ms，明确 continuousHidden=false。45秒有效隐藏trace无数据丢失，Layout/Paint/Commit/FunctionCall/EventDispatch/UpdateLayoutTree均为0。隐藏后正式历史query按预算释放，Reading消费者和Surface归零；忙碌原生资源与App缓存分开计量。
+
+实际Preload V8覆盖计数：原生入站、物理port handler、公开safeParse调用逐项一致；增加10个消费者只增加delivery，不增加物理解析。单独15秒React观察有64次真实root commit、空闲Composer DOM变化0；这不等于Composer函数执行0。20,000字Composer及三路流下真实系统IME组合来自同源码较早独立运行，仅证明原生composition路径，不冒称IME延迟分布。
+
+前台失败先保留：最初真实Event Timing p95保守上界528ms。profile定位Remend1.3.1对长正文分隔符的重复前缀扫描；716b820仅在超过8192 UTF-16字符的stream中关闭可选synthetic repair，保留全部正文、CommonMark解析、短stream修补和最终格式。真实Streamdown反例先红后绿，Markdown/连续阅读18/18及Renderer类型通过，固定独立review无新增高价值问题。本地T3 markdown-incremental的闭合code前缀缓存不解决未闭合长paragraph，未直接复制。后台Main/Host/Preload为5a8114a，前台仅替换为716b820生产Renderer；参与源文件、实际加载入口、资产SHA与采样时间明确分阶段，未声称整个新candidate重新跑30分钟。
+
+长时流形成约30万字单paragraph后，真实浏览器trusted键入60次仍失败：修补后较早上界216ms，最终更长正文/独立React观察阶段360ms，目标50ms。不同正文长度和观察开销不支持直接百分比性能比较。未报告的Event Timing样本按24ms上界处理，已报告值加8ms舍入余量；排除宿主传输和物理键盘延迟。实际选区/焦点保留。短布局实验不足以达到目标；一个RAF移读尝试无实测收益，独立review又发现原生clamp先于RAF可取消来源恢复，已完整撤回。WB03此项未通过，后续需独立正文渲染方案，不能改供应商场景掩盖已知失败。
+
+正常退出：先由本次supplier自然结束三路SSE，实际control.streaming/stopping=false，再以CUA正常Cmd-Q退出owned隔离App。Main/native家族均已不存在，但三份lease仍各有1个本次真实owner，独占读锁可取得；verify-cold按合同返回非零、allNativeCold=false。Quit源码包含8秒有界退出与未确认时保留真实身份的恢复路径，本次日志不足以确定完整清理停在哪一阶段，不武断归因为泄漏或宣称clean cold。未删除lease、伪造ready、重新执行或停止用户Dev；本次supplier已停止，隔离数据保留供有界后续核对。此核验缺口与输入性能一起写入acceptance.complete=false。
+
+验证脚本在 validation/m2/production-*。dataset只在实际SQLite独占锁及owner=0下调用原生SDK，锁覆盖写入/关闭/核验；活跃scope反例在SDK调用前拒绝。probe以实际Main PID+run start双身份核验，旧PID/复用PID/缺失身份测试1/1通过；trace核实实际Browser PID，cleanup身份核验先于lease访问。固定独立review此前三项P2闭合；失败报告保留，不冒称完全验收。日常试用使用pnpm dev，正式项目SDK已按pnpm runtime:sdk更新至相应adapter；没有制作发布包。
