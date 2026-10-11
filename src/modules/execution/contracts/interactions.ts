@@ -1,9 +1,35 @@
 import { z } from "zod";
 import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
 import type { UiMessage } from "../../../shared/messages/contracts";
-export const DialogSchema = z.object({
+export const AskQuestionSchema = z.strictObject({
   id: z.string().min(1).max(256),
-  method: z.enum(["confirm", "select", "input", "editor"]),
+  question: z.string().max(8192),
+  header: z.string().max(256).optional(),
+  options: z
+    .array(
+      z.strictObject({
+        label: z.string().max(512),
+        description: z.string().max(2048).optional(),
+        preview: z.string().max(65536).optional(),
+      }),
+    )
+    .max(64)
+    .refine(
+      (options) =>
+        new Set(options.map((option) => option.label)).size === options.length,
+      "Duplicate native option labels",
+    ),
+  multi: z.boolean().optional(),
+  recommended: z.number().int().optional(),
+});
+export type AskQuestion = z.infer<typeof AskQuestionSchema>;
+export const AskAnswerItemSchema = z.strictObject({
+  id: z.string().min(1).max(256),
+  selectedOptions: z.array(z.string().max(512)).max(64),
+  customInput: z.string().max(16384).optional(),
+});
+const dialogBase = z.object({
+  id: z.string().min(1).max(256),
   title: z.string().max(2048),
   message: z.string().max(8192).optional(),
   options: z.array(z.string().max(512)).max(64).optional(),
@@ -15,30 +41,74 @@ export const DialogSchema = z.object({
   prefill: z.string().max(16384).optional(),
   timeout: z.number().nonnegative().finite().optional(),
 });
-export const InteractionSchema = DialogSchema.extend({
+const ordinaryDialog = dialogBase.extend({
+  method: z.enum(["confirm", "select", "input", "editor"]),
+});
+const askDialog = dialogBase.extend({
+  method: z.literal("ask"),
+  title: z.string().max(2048).default(""),
+  questions: z
+    .array(AskQuestionSchema)
+    .min(1)
+    .max(64)
+    .refine(
+      (questions) =>
+        new Set(questions.map((question) => question.id)).size ===
+        questions.length,
+      "Duplicate native question IDs",
+    ),
+});
+export const DialogSchema = z.discriminatedUnion("method", [
+  ordinaryDialog,
+  askDialog,
+]);
+const observation = {
   status: z.enum(["pending", "written", "cancelled", "expired", "unknown"]),
   expiresAt: z.number().nullable(),
   defaultAnswered: z.boolean().optional(),
-  // Local-only cleanup marker. cancelled+ dismissed means the App stopped
-  // waiting and released its gates; native never cancelled. Never set by
-  // native cancel frames. Renderers must not display it as "原生已取消".
+  // Local dismissal releases App gates; it is not a native cancellation.
   dismissed: z.boolean().optional(),
-});
+};
+export const InteractionSchema = z.discriminatedUnion("method", [
+  ordinaryDialog.extend(observation),
+  askDialog.extend(observation),
+]);
 export type Interaction = z.infer<typeof InteractionSchema>;
 export const AnswerSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("confirm"), confirmed: z.boolean() }),
   // Select accepts a provided option or a user-written answer via the same
   // native value frame. Confirm remains a separate response above.
   z.strictObject({ kind: z.literal("value"), value: z.string().max(16384) }),
+  z.strictObject({
+    kind: z.literal("ask"),
+    answers: z
+      .array(AskAnswerItemSchema)
+      .min(1)
+      .max(64)
+      .refine(
+        (answers) =>
+          new TextEncoder().encode(JSON.stringify(answers)).byteLength <=
+          262144,
+        "Answer exceeds byte budget",
+      ),
+  }),
   z.strictObject({ kind: z.literal("cancel") }),
 ]);
 export type Answer = z.infer<typeof AnswerSchema>;
 /** Result observation is independent of RuntimeView revision and native ending. */
+export const RequestKeySchema = z.strictObject({
+  threadId: ThreadIdSchema,
+  nativeSessionKey: z.string().min(1).max(512),
+  connectionGeneration: z.uuid(),
+  requestId: z.string().min(1).max(256),
+});
+export type RequestKey = z.infer<typeof RequestKeySchema>;
 export const InteractionOperationSchema = z.strictObject({
   operationId: TraceIdSchema,
   threadId: ThreadIdSchema,
   connectionGeneration: z.uuid(),
   requestId: z.string().min(1).max(256),
+  nativeSessionKey: z.string().min(1).max(512).optional(),
   kind: z.enum(["answer", "dismiss"]),
   status: z.enum([
     "dispatching",
@@ -50,7 +120,31 @@ export const InteractionOperationSchema = z.strictObject({
   message: z.string().max(64).optional(),
 });
 export type InteractionOperation = z.infer<typeof InteractionOperationSchema>;
+export interface AskInteractionDraft {
+  formVersion: 1;
+  questionId: string;
+  reviewing: boolean;
+  preview?: { questionId: string; label: string } | undefined;
+  answers: Record<
+    string,
+    {
+      selectedOptions: string[];
+      customInput: string;
+      custom: boolean;
+      explicitNone: boolean;
+    }
+  >;
+}
+export type AskFormAction =
+  | { kind: "question"; questionId: string }
+  | { kind: "review"; value: boolean }
+  | { kind: "preview"; questionId: string; label: string }
+  | { kind: "select"; questionId: string; label: string }
+  | { kind: "custom"; questionId: string; value: string }
+  | { kind: "custom-mode"; questionId: string; value: boolean }
+  | { kind: "none"; questionId: string };
 export interface InteractionDraft {
+  ask?: AskInteractionDraft;
   value: string;
   selection:
     | { kind: "option"; index: number; value: string }
@@ -67,9 +161,11 @@ export const AnswerCommandSchema = z.strictObject({
   traceId: TraceIdSchema,
   connectionGeneration: z.uuid(),
   id: z.string().min(1).max(256),
+  nativeSessionKey: z.string().min(1).max(512).optional(),
   answer: AnswerSchema,
 });
 export const InteractionViewSchema = z.object({
+  nativeSessionKey: z.string().min(1).max(512).optional(),
   connectionGeneration: z.uuid(),
   items: z.array(InteractionSchema).max(32),
   unsupported: z.boolean(),
@@ -91,7 +187,7 @@ export const DismissCommandSchema = z.strictObject({
 export function defaultAnswerFor(
   dialog: Pick<Interaction, "method" | "options" | "prefill">,
 ): Answer | null {
-  if (dialog.method === "confirm") return null;
+  if (dialog.method === "confirm" || dialog.method === "ask") return null;
   if (dialog.method === "select") {
     const first = dialog.options?.[0];
     return first === undefined
@@ -101,4 +197,50 @@ export function defaultAnswerFor(
   return dialog.prefill === undefined
     ? { kind: "cancel" }
     : { kind: "value", value: dialog.prefill };
+}
+
+/** Native 18.8.9 validates positional IDs, membership and single/multi semantics. */
+export function validAnswerFor(dialog: Interaction, answer: Answer): boolean {
+  if (answer.kind === "cancel") return true;
+  if (dialog.method === "ask") {
+    if (
+      answer.kind !== "ask" ||
+      answer.answers.length !== dialog.questions.length
+    )
+      return false;
+    return dialog.questions.every((question, index) => {
+      const value = answer.answers[index];
+      if (
+        !value ||
+        value.id !== question.id ||
+        new Set(value.selectedOptions).size !== value.selectedOptions.length ||
+        value.selectedOptions.some(
+          (label) => !question.options.some((option) => option.label === label),
+        )
+      )
+        return false;
+      return (
+        question.multi === true ||
+        (value.selectedOptions.length <= 1 &&
+          !(value.selectedOptions.length > 0 && value.customInput?.trim()))
+      );
+    });
+  }
+  return dialog.method === "confirm"
+    ? answer.kind === "confirm"
+    : answer.kind === "value";
+}
+
+/** Null is a private draft index for a source not observed yet, never a native ID. */
+export function interactionDraftIdentity(
+  threadId: string,
+  view: { connectionGeneration: string; nativeSessionKey?: string | undefined },
+  id: string,
+): string {
+  return JSON.stringify([
+    threadId,
+    view.nativeSessionKey ?? null,
+    view.connectionGeneration,
+    id,
+  ]);
 }

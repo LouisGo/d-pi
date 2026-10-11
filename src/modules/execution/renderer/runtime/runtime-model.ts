@@ -9,9 +9,12 @@ import {
 import type { SubagentConfigurationCommand } from "../../../configuration/contracts/public";
 import type {
   Answer,
+  AskFormAction,
   InteractionDraft,
   InteractionOperation,
+  RequestKey,
 } from "../../contracts/interactions";
+import { interactionDraftIdentity } from "../../contracts/interactions";
 import type {
   RuntimeBridge,
   RuntimeCommand,
@@ -20,6 +23,7 @@ import type {
 } from "../../contracts/public";
 import type { QueueAction } from "../../contracts/queue";
 import { RuntimeCommandSchema } from "../../contracts/runtime";
+import { buildAskAnswer, reduceAskForm, seedAskForm } from "../../core/public";
 
 export interface RuntimeState {
   view: RuntimeView | null;
@@ -81,6 +85,20 @@ export class RuntimeModel {
   private publish(view: RuntimeView): void {
     const state = this.store.getState();
     if (state.disposed) return;
+    if (
+      view.interactions &&
+      !view.interactions.nativeSessionKey &&
+      state.view?.interactions?.nativeSessionKey &&
+      view.interactions.connectionGeneration ===
+        state.view.interactions.connectionGeneration
+    )
+      view = {
+        ...view,
+        interactions: {
+          ...view.interactions,
+          nativeSessionKey: state.view.interactions.nativeSessionKey,
+        },
+      };
     this.observeInteractions(view);
     if (state.view && view.revision < state.view.revision) return;
     this.store.setState({ view });
@@ -367,7 +385,23 @@ export class RuntimeModel {
   }
   private interactionKey(id: string, view = this.getSnapshot()): string | null {
     const generation = view?.interactions?.connectionGeneration;
-    return view && generation ? `${view.threadId}:${generation}:${id}` : null;
+    return view && generation && view.interactions
+      ? interactionDraftIdentity(view.threadId, view.interactions, id)
+      : null;
+  }
+  interactionRequestKey(id: string): RequestKey | null {
+    const view = this.getSnapshot();
+    const source = view?.interactions;
+    return view &&
+      source?.nativeSessionKey &&
+      source.items.some((item) => item.id === id)
+      ? {
+          threadId: view.threadId,
+          nativeSessionKey: source.nativeSessionKey,
+          connectionGeneration: source.connectionGeneration,
+          requestId: id,
+        }
+      : null;
   }
   interactionDraft(id: string): InteractionDraft | null {
     const key = this.interactionKey(id);
@@ -388,6 +422,32 @@ export class RuntimeModel {
     const drafts = new Map(this.store.getState().interactionDrafts);
     drafts.set(key, { ...draft, ...patch });
     this.store.setState({ interactionDrafts: drafts });
+  }
+  editAsk(id: string, action: AskFormAction): void {
+    const item = this.getSnapshot()?.interactions?.items.find(
+      (item) => item.id === id,
+    );
+    const draft = this.interactionDraft(id);
+    const operation = this.interactionOperation(id);
+    if (
+      item?.method !== "ask" ||
+      !draft?.ask ||
+      item.status !== "pending" ||
+      (operation && operation.status !== "not-dispatched")
+    )
+      return;
+    this.editInteraction(id, {
+      ask: reduceAskForm(item.questions, draft.ask, action),
+    });
+  }
+  askAnswer(id: string): Extract<Answer, { kind: "ask" }> | null {
+    const item = this.getSnapshot()?.interactions?.items.find(
+      (item) => item.id === id,
+    );
+    const draft = this.interactionDraft(id);
+    return item?.method === "ask" && draft?.ask
+      ? buildAskAnswer(item.questions, draft.ask)
+      : null;
   }
   async followUpInteraction(
     id: string,
@@ -441,10 +501,39 @@ export class RuntimeModel {
     const drafts = new Map(state.interactionDrafts);
     const operations = new Map(state.interactionOperations);
     for (const item of view.interactions?.items ?? []) {
-      const key = `${view.threadId}:${generation}:${item.id}`;
+      const source = view.interactions;
+      if (!source) continue;
+      const key = interactionDraftIdentity(view.threadId, source, item.id);
+      // Resolve previously unknown source only within this exact native scope.
+      const previousSource = state.view?.interactions;
+      if (
+        !drafts.has(key) &&
+        source.nativeSessionKey &&
+        previousSource &&
+        !previousSource.nativeSessionKey &&
+        previousSource.connectionGeneration === generation &&
+        state.view?.threadId === view.threadId
+      ) {
+        const previousKey = interactionDraftIdentity(
+          view.threadId,
+          previousSource,
+          item.id,
+        );
+        const draft = drafts.get(previousKey),
+          operation = operations.get(previousKey);
+        if (draft) drafts.set(key, draft);
+        if (operation)
+          operations.set(key, {
+            ...operation,
+            nativeSessionKey: source.nativeSessionKey,
+          });
+      }
       if (!drafts.has(key))
         drafts.set(key, {
           value: item.prefill ?? "",
+          ...(item.method === "ask"
+            ? { ask: seedAskForm(item.questions) }
+            : {}),
           selection: null,
           followUpIds: [],
           followUpSending: false,
@@ -453,10 +542,13 @@ export class RuntimeModel {
     for (const result of view.interactionOperations ?? []) {
       if (
         result.threadId !== view.threadId ||
-        result.connectionGeneration !== generation
+        result.connectionGeneration !== generation ||
+        (result.nativeSessionKey !== undefined &&
+          result.nativeSessionKey !== view.interactions?.nativeSessionKey)
       )
         continue;
-      const key = `${view.threadId}:${generation}:${result.requestId}`;
+      const key = this.interactionKey(result.requestId, view);
+      if (!key) continue;
       const existing = operations.get(key);
       if (
         !existing ||
@@ -469,8 +561,8 @@ export class RuntimeModel {
     // that mirror. A reconnect cannot reuse an answer under an old ID.
     if (!state.view || view.revision >= state.view.revision) {
       const retained = new Set(
-        (view.interactions?.items ?? []).map(
-          (item) => `${view.threadId}:${generation}:${item.id}`,
+        (view.interactions?.items ?? []).map((item) =>
+          this.interactionKey(item.id, view),
         ),
       );
       for (const key of drafts.keys())
@@ -522,6 +614,9 @@ export class RuntimeModel {
       threadId: state.thread,
       connectionGeneration: generation,
       requestId: id,
+      ...(view.interactions?.nativeSessionKey
+        ? { nativeSessionKey: view.interactions.nativeSessionKey }
+        : {}),
       kind,
       status: "dispatching",
     };
@@ -537,6 +632,9 @@ export class RuntimeModel {
             traceId,
             connectionGeneration: generation,
             id,
+            ...(view.interactions?.nativeSessionKey
+              ? { nativeSessionKey: view.interactions.nativeSessionKey }
+              : {}),
             answer,
           }
         : {

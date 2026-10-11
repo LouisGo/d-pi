@@ -405,3 +405,120 @@ it("keeps an unknown answer locked while stop and another answer remain availabl
   expect(model.interactionDraft("A")?.value).toBe("draft");
   model.dispose();
 });
+
+it("owns rich drafts across presentation changes and freezes one complete response while another request remains editable", async () => {
+  const threadId = ThreadIdSchema.parse(crypto.randomUUID()),
+    connectionGeneration = crypto.randomUUID();
+  const questions = [
+    {
+      id: "q1",
+      question: "Single",
+      options: [{ label: "A" }, { label: "B" }],
+      recommended: 1,
+    },
+    {
+      id: "q2",
+      question: "Multi",
+      options: [{ label: "C" }, { label: "D" }],
+      multi: true,
+    },
+  ];
+  const base: RuntimeView = {
+    threadId,
+    connectionGeneration,
+    traceId: crypto.randomUUID(),
+    configuration: { code: "runtime.configDefault" },
+    revision: 1,
+    phase: "ready",
+    trusted: true,
+    busy: false,
+    model: "fixture",
+    message: { code: "runtime.readyToSend" },
+    interactions: {
+      connectionGeneration,
+      unsupported: false,
+      items: ["A", "B"].map((id) => ({
+        id,
+        method: "ask",
+        title: "",
+        questions,
+        status: "pending",
+        expiresAt: null,
+      })),
+    },
+  };
+  let deliver: (view: RuntimeView) => void = () => {};
+  let finish: (reply: RuntimeReply) => void = () => {};
+  const commands: unknown[] = [];
+  const model = new RuntimeModel({
+    subscribe: (listener) => {
+      deliver = listener;
+      return () => {};
+    },
+    request: async (command) => {
+      if (command.kind !== "answer") return { kind: "view", view: base };
+      commands.push(command);
+      return new Promise((resolve) => {
+        finish = resolve;
+      });
+    },
+  });
+  try {
+    await model.bind(threadId);
+    expect(model.interactionDraft("A")?.ask).toMatchObject({
+      formVersion: 1,
+      questionId: "q1",
+    });
+    expect(model.askAnswer("A")).toBeNull();
+    model.editAsk("A", { kind: "select", questionId: "q1", label: "B" });
+    model.editAsk("A", { kind: "none", questionId: "q2" });
+    model.editAsk("A", { kind: "question", questionId: "q2" });
+    expect(model.interactionRequestKey("A")).toBeNull();
+    deliver({
+      ...base,
+      revision: 2,
+      interactions: {
+        ...base.interactions!,
+        nativeSessionKey: "actual-native-session",
+      },
+    });
+    expect(model.interactionRequestKey("A")).toEqual({
+      threadId,
+      connectionGeneration,
+      nativeSessionKey: "actual-native-session",
+      requestId: "A",
+    });
+    expect(model.interactionDraft("A")?.ask?.questionId).toBe("q2");
+    const answer = model.askAnswer("A");
+    expect(answer).toEqual({
+      kind: "ask",
+      answers: [
+        { id: "q1", selectedOptions: ["B"] },
+        { id: "q2", selectedOptions: [] },
+      ],
+    });
+    if (!answer) throw Error("Incomplete form");
+    const pending = model.answer("A", answer);
+    const repeated = model.answer("A", answer);
+    model.editAsk("A", { kind: "select", questionId: "q1", label: "A" });
+    model.editAsk("B", {
+      kind: "custom",
+      questionId: "q1",
+      value: "  中文输入  ",
+    });
+    expect(commands).toHaveLength(1);
+    expect(model.interactionDraft("A")?.answer).toEqual(answer);
+    expect(
+      model.interactionDraft("A")?.ask?.answers.q1?.selectedOptions,
+    ).toEqual(["B"]);
+    expect(model.interactionDraft("B")?.ask?.answers.q1?.customInput).toBe(
+      "  中文输入  ",
+    );
+    finish({ kind: "view", view: { ...base, revision: 3 } });
+    await Promise.all([pending, repeated]);
+    expect(model.interactionOperation("A")?.status).toBe("unknown");
+    expect(model.interactionDraft("A")?.ask?.questionId).toBe("q2");
+  } finally {
+    model.dispose();
+  }
+});

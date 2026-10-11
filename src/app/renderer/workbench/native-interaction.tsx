@@ -3,6 +3,7 @@ import type {
   Interaction,
   SubmissionReceipt,
 } from "../../../modules/execution/contracts/public";
+import { interactionDraftIdentity } from "../../../modules/execution/contracts/public";
 import type { RuntimeModel } from "../../../modules/execution/renderer/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import {
@@ -59,12 +60,24 @@ export function NativeInteraction({
   const { t, formatMessage } = useI18n();
   const draft = useStore(model.stateStore, (state) =>
     state.interactionDrafts.get(
-      `${state.thread}:${state.view?.interactions?.connectionGeneration}:${item.id}`,
+      state.view?.interactions
+        ? interactionDraftIdentity(
+            state.view.threadId,
+            state.view.interactions,
+            item.id,
+          )
+        : "",
     ),
   );
   const operation = useStore(model.stateStore, (state) =>
     state.interactionOperations.get(
-      `${state.thread}:${state.view?.interactions?.connectionGeneration}:${item.id}`,
+      state.view?.interactions
+        ? interactionDraftIdentity(
+            state.view.threadId,
+            state.view.interactions,
+            item.id,
+          )
+        : "",
     ),
   );
   const value = draft?.value ?? item.prefill ?? "";

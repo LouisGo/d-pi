@@ -221,6 +221,14 @@ WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sour
 
 独立93fc09d复核发现P2：初次canonical校验后、parent读取await期间，artifact目录替换为外部symlink可被O_NOFOLLOW的叶子限制漏过。真实rename/symlink文件反例确认旧实现返回foreign完整结果后，现先捕获目录及child身份，打开后核对文件identity，所有解码完成后再核canonical路径、目录inode、父/子真实文件identity。变化明确unavailable；读取8/8及Host类型通过，独立构建Node/Electron Worker名额/取消/UTF-8回归再次通过，待增量复核。
 
+### WB04 无头合同与共享控制器（2026-10-11，继续实施）
+
+固定OMP18.8.9 `requestRpcAskDialog`/RpcAskDialogQuestion提供method:ask题组，推荐、多选、description/preview和自填原文保持独立字段，按题目顺序输出answers；单选不允许选项与非空自填并存，多选允许组合和显式select-none。不将TUI才有而RPC未提供的chat/图片/note响应伪装成支持。Native拥有ask的timeout及推荐默认，App既有120秒自动回答只沿用select/input/editor；deadline/cancel不附结束原因，不声称已自动回答。正式set_ask_dialog尚未启用，待完整表单与历史接线后启用。
+
+Thread-owned RuntimeModel复用独立回答ledger与一次准入，新增无React的ask-form reducer保存当前题、选项、自填、review/preview、App formVersion=1；推荐只提示不伪造用户答案，自填切换保留原始草稿。发送冻结整组答案及锁，其他请求不受影响。RequestKey提供真实nativeSessionKey、Thread、connectionGeneration和requestId，Host来自同get_state；源未知时只保留private-null索引，不制造原生身份。同scope观测到真实来源后迁移原草稿，连接改变不能复用；Main/Host回答核对可得来源身份。Timeline现有摘要消费同一identity helper，完整rich表单、持久AnswerHistory、Dock与activation仍待后续，不冒称WB04完成。
+
+验证：原rich合同7个失败反例、模型草稿缺口和真实RequestKey缺口先红后绿；合同与Host边界24、core reducer3、RuntimeModel11、Host41及既有问答组件15通过，包含独立并发锁、select-none/自填组合、源补齐保持草稿与外来native拒绝。新增歧义ID/label及回答256KiB预算反例通过，合同现5/5。Core/Main/Host类型通过；Renderer此前唯一ComposerTag data-file-icon声明遗漏已以类型增量修复，相关3测试及Renderer类型通过。99db856独立复核原目录竞态P2闭合，无新增高价值问题；Node/Electron证据仍仅Worker fixture。
+
 ### WB00 milestone（2026-10-11）
 
 - 先写 InteractionOperation/InteractionDraft 与执行模块合同。红灯确认同题双击两次派发、Host respond 缺失；实现后对应反例转绿。Thread-owned RuntimeModel 保留表单、冻结回答、操作结果和后续收据关联；Main 等待精确 Host 结果，授权 await 后再次校验代次，Host 单次 write 兜底。普通 interaction 状态和 answer operation 改名 written，收据 ACK 不变。

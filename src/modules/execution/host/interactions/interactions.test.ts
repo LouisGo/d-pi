@@ -424,3 +424,96 @@ it("distinguishes not-dispatched from unknown write and never rewrites the same 
   expect(interactions.snapshot()[0]?.status).toBe("unknown");
   interactions.dispose();
 });
+
+const questions = [
+  {
+    id: "one",
+    question: "Choose",
+    options: [{ label: "A", preview: "details" }, { label: "B" }],
+  },
+  {
+    id: "two",
+    question: "Choose several",
+    options: [{ label: "C" }, { label: "D" }],
+    multi: true,
+  },
+];
+it("writes one complete rich response in question order, preserving custom text and select-none", () => {
+  const interactions = new PendingInteractions();
+  try {
+    interactions.update({
+      type: "extension_ui_request",
+      id: "ask",
+      method: "ask",
+      questions,
+    });
+    expect(interactions.unsupported).toBe(false);
+    expect(interactions.snapshot()[0]).toMatchObject({
+      method: "ask",
+      questions,
+    });
+    const frames: string[] = [];
+    const answer = {
+      kind: "ask" as const,
+      answers: [
+        { id: "one", selectedOptions: [], customInput: "  原文\n  " },
+        { id: "two", selectedOptions: [] },
+      ],
+    };
+    expect(
+      interactions.respond("ask", answer, (frame) => frames.push(frame)),
+    ).toBe("written");
+    expect(frames.map((frame) => JSON.parse(frame))).toEqual([
+      { type: "extension_ui_response", id: "ask", answers: answer.answers },
+    ]);
+    expect(
+      interactions.respond("ask", answer, (frame) => frames.push(frame)),
+    ).toBe("not-dispatched");
+    expect(frames).toHaveLength(1);
+  } finally {
+    interactions.dispose();
+  }
+});
+it.each([
+  [
+    { id: "two", selectedOptions: ["C"] },
+    { id: "one", selectedOptions: ["A"] },
+  ],
+  [
+    { id: "one", selectedOptions: ["A", "B"] },
+    { id: "two", selectedOptions: [] },
+  ],
+  [
+    { id: "one", selectedOptions: ["A"], customInput: "also" },
+    { id: "two", selectedOptions: [] },
+  ],
+  [
+    { id: "one", selectedOptions: ["foreign"] },
+    { id: "two", selectedOptions: [] },
+  ],
+  [
+    { id: "one", selectedOptions: ["A"] },
+    { id: "two", selectedOptions: ["C", "C"] },
+  ],
+])(
+  "rejects incompatible rich answers before write without closing the request",
+  (answers) => {
+    const interactions = new PendingInteractions();
+    try {
+      interactions.update({
+        type: "extension_ui_request",
+        id: "ask",
+        method: "ask",
+        questions,
+      });
+      let writes = 0;
+      expect(
+        interactions.respond("ask", { kind: "ask", answers }, () => writes++),
+      ).toBe("not-dispatched");
+      expect(writes).toBe(0);
+      expect(interactions.snapshot()[0]?.status).toBe("pending");
+    } finally {
+      interactions.dispose();
+    }
+  },
+);

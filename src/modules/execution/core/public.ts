@@ -1,4 +1,9 @@
 export {
+  buildAskAnswer,
+  reduceAskForm,
+  seedAskForm,
+} from "./interactions/ask-form";
+export {
   type AdmissionResult,
   type AdmissionStore,
   RuntimeAdmission,

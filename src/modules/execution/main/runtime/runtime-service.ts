@@ -995,7 +995,10 @@ export class RuntimeService {
     if (command.kind === "answer") {
       if (
         !this.connection.connected ||
-        command.connectionGeneration !== this.currentConnectionGeneration
+        command.connectionGeneration !== this.currentConnectionGeneration ||
+        (command.nativeSessionKey !== undefined &&
+          command.nativeSessionKey !==
+            this.view?.interactions?.nativeSessionKey)
       )
         throw Error("Stale answer target");
       const key = `${command.connectionGeneration}:${command.id}`;
@@ -1027,7 +1030,10 @@ export class RuntimeService {
         // Authorization awaits cannot carry an old request into a reconnected native scope.
         if (
           !this.connection.connected ||
-          command.connectionGeneration !== this.currentConnectionGeneration
+          command.connectionGeneration !== this.currentConnectionGeneration ||
+          (command.nativeSessionKey !== undefined &&
+            command.nativeSessionKey !==
+              this.view?.interactions?.nativeSessionKey)
         )
           throw Error("Stale answer target");
         const result = await this.connection
@@ -1052,6 +1058,11 @@ export class RuntimeService {
                 threadId: command.threadId,
                 connectionGeneration: command.connectionGeneration,
                 requestId: command.id,
+                ...(this.view?.interactions?.nativeSessionKey
+                  ? {
+                      nativeSessionKey: this.view.interactions.nativeSessionKey,
+                    }
+                  : {}),
                 kind: "answer" as const,
                 status,
               },

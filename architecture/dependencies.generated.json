@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "7ec8521962a3b2b3aa27fa034ee9c4079f742fe4e7b21740f3502da8dff2f9d8",
+  "inputsHash": "24fc6784a7cccc99a6a199ef50e397bb4ec5bcca786f47bdb5285fc57d9f3f13",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 661,
-    "scannedFiles": 661,
+    "sourceFiles": 663,
+    "scannedFiles": 663,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 296,
-      "lines": 59103,
+      "lines": 59116,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -351,8 +351,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 62,
-      "lines": 16125,
+      "files": 64,
+      "lines": 16714,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -435,7 +435,7 @@
       ],
       "materialized": true,
       "files": 34,
-      "lines": 5099,
+      "lines": 5100,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -21486,6 +21486,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/native-interaction.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../../modules/execution/renderer/public",
       "kind": "import",
       "resolution": "module",
@@ -32313,6 +32325,18 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/execution/contracts/interactions.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": true,
+      "specifier": "./interactions",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/interactions.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/execution/contracts/interactions.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "contracts",
@@ -32683,6 +32707,60 @@
       "to": "src/modules/input/contracts/public.ts",
       "targetModule": "input",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/core/interactions/ask-form.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/core/interactions/ask-form.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./ask-form",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/core/interactions/ask-form.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/execution/core/interactions/ask-form.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/core/interactions/ask-form.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../contracts/interactions",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/interactions.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/core/public.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./interactions/ask-form",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/execution/core/interactions/ask-form.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/execution/core/public.ts",
@@ -35506,6 +35584,18 @@
       "sourceModule": "execution",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../contracts/interactions",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/interactions.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/renderer/runtime/runtime-model.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -35536,6 +35626,18 @@
       "to": "src/modules/execution/contracts/runtime.ts",
       "targetModule": "execution",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/renderer/runtime/runtime-model.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/core/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/execution/renderer/runtime/runtime-store.test.ts",

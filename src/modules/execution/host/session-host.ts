@@ -171,7 +171,8 @@ export function createSessionHost(
       interactions
         .snapshot()
         .filter(
-          (item) => item.status === "pending" && item.method !== "confirm",
+          (item) =>
+            item.status === "pending" && defaultAnswerFor(item) !== null,
         )
         .map((item) => [item.id, item] as const),
     );
@@ -206,6 +207,7 @@ export function createSessionHost(
         kind: "interactions",
         view: {
           connectionGeneration: start.connectionGeneration,
+          ...(state?.sessionId ? { nativeSessionKey: state.sessionId } : {}),
           items: interactions.snapshot(),
           unsupported: interactions.unsupported,
         },
@@ -785,6 +787,7 @@ export function createSessionHost(
           if (count !== total) throw Error("Native resume reading incomplete");
         }
       }
+      publishInteractions();
       send({
         kind: "ready",
         state,
@@ -1100,7 +1103,9 @@ export function createSessionHost(
           !native ||
           !start ||
           command.threadId !== start.threadId ||
-          command.connectionGeneration !== start.connectionGeneration
+          command.connectionGeneration !== start.connectionGeneration ||
+          (command.nativeSessionKey !== undefined &&
+            command.nativeSessionKey !== state?.sessionId)
         )
           return;
         const status = interactions.respond(

@@ -112,11 +112,16 @@ it("writes a custom question answer through the Host only for the live connectio
     traceId: crypto.randomUUID(),
     connectionGeneration,
     id: "custom-question",
+    nativeSessionKey: "session",
     answer: { kind: "value" as const, value },
   };
   await host.handle({
     kind: "answer",
     command: { ...command, connectionGeneration: crypto.randomUUID() },
+  });
+  await host.handle({
+    kind: "answer",
+    command: { ...command, nativeSessionKey: "foreign-native" },
   });
   expect(native.writes).toHaveLength(0);
   await host.handle({ kind: "answer", command });
@@ -315,6 +320,9 @@ it("forwards unknown host frames without treating them as interactions", async (
     sessionDirectory: "/sessions",
   });
 
+  const initialInteractions = messages.filter(
+    (message) => message.kind === "interactions",
+  );
   const frame = {
     type: "host_future_request",
     payload: { value: "forward-compatible" },
@@ -323,7 +331,7 @@ it("forwards unknown host frames without treating them as interactions", async (
 
   expect(nativeFrames).toEqual([frame]);
   expect(messages.filter((message) => message.kind === "interactions")).toEqual(
-    [],
+    initialInteractions,
   );
 });
 

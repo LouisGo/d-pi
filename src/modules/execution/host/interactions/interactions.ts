@@ -7,6 +7,7 @@ import {
   type Answer,
   DialogSchema,
   type Interaction,
+  validAnswerFor,
 } from "../../contracts/interactions";
 export class PendingInteractions {
   private readonly ids = new Set<string>();
@@ -58,23 +59,17 @@ export class PendingInteractions {
     }
   }
   private validateAnswer(dialog: Interaction, answer: Answer): boolean {
-    if (
-      answer.kind !== "cancel" &&
-      (dialog.method === "confirm") !== (answer.kind === "confirm")
-    )
-      return false;
-    // Select and input/editor share the SDK's string value response. Options
-    // are suggestions; the GUI also accepts an explicitly typed answer.
-    // Confirm keeps its distinct boolean response and is never inferred from text.
-    return true;
+    return validAnswerFor(dialog, answer);
   }
   private frameForAnswer(id: string, answer: Answer): string {
     const fields =
       answer.kind === "cancel"
         ? { cancelled: true }
-        : answer.kind === "confirm"
-          ? { confirmed: answer.confirmed }
-          : { value: answer.value };
+        : answer.kind === "ask"
+          ? { answers: answer.answers }
+          : answer.kind === "confirm"
+            ? { confirmed: answer.confirmed }
+            : { value: answer.value };
     return `${JSON.stringify({ type: NativeFrameTypes.extensionUiResponse, id, ...fields })}\n`;
   }
   /** User acknowledges an unknown/expired dialog locally. Clears the

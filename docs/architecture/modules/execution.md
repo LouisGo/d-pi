@@ -39,6 +39,12 @@ Host以原生生命周期的id、parentToolCallId、sessionFile关联只读结�
 
 观察owner替换/dispose中断读信号，读取绑定既有Effect Scope；逻辑取消后仍等待Worker exit才释放物理名额与完成Host dispose。过载/来源变化/无法校验明确unavailable；没有创建App子Thread，不改变原生任务终态或未知执行结果。
 
+## 完整问答合同（WB04，接线进行中）
+
+固定18.8.9 rich ask按questions保留原生多题、多选、推荐及description/preview，Answer.ask按顺序携带id、selectedOptions与customInput；Host检查ID/顺序/选项成员/单多选语义后只写一次。RPC未提供TUI chat、图片与note回答，不合成这些语义。ask的timeout/default归Native，App既有select/input/editor政策继续独立；cancel仅证明请求结束，不证明默认或原因。
+
+RuntimeModel与core ask-form拥有草稿、当前题、review/preview和发送锁，视图受控消费。可得RequestKey包含真实nativeSessionKey、Thread、代次与原生requestId；源未知的private draft索引不作为原生ID。同scope身份补齐保持草稿，来源改变不得复用答案。整组答案最多256KiB，native题组与Host镜像预算继续受限。正式opt-in、持久回答历史和完整Dock见所属记录，不能将近期32题镜像当作持久历史。
+
 ## 交接
 
 ### 独立交互操作（2026-10-11）
