@@ -1,4 +1,5 @@
 export const ui = {
+  "workbench.tool.surfaceLimit": "最多保留8个详情，请先关闭一个固定详情。",
   "workbench.tool.open": "打开命令详情",
   "workbench.tool.heading": "命令详情",
   "workbench.tool.sourceUnavailable": "来源身份暂不可用。",
@@ -6,6 +7,7 @@ export const ui = {
   "workbench.tool.pin": "固定",
   "workbench.tool.origin": "来源 Thread：{thread}",
   "workbench.tool.return": "返回来源",
+  "workbench.tool.retained": "来源暂不可读，保留最后已观察版本。",
   "workbench.tool.unavailable": "详情不可用，请从来源卡重新打开。",
   "workbench.tool.output": "命令输出，选中文字可冻结引用",
   "workbench.tool.saved": "已关联原生记录",
@@ -23,6 +25,7 @@ export const ui = {
   "workbench.tool.issue.stale": "目标草稿已变化或不可写，请就绪后重试。",
   "workbench.tool.issue.unavailable": "草稿当前无法接收此引用。",
   "workbench.tool.issue.composing": "请先完成输入法组字再插入。",
+  "workbench.tool.return.limit": "来源定位已达到16页读取预算。",
   "workbench.tool.return.missing":
     "来源不在当前已加载的阅读范围，请加载之前的记录或从卡片重新打开。",
   "workbench.tool.return.blocked": "Thread 导航被阻止，草稿已保留。",

@@ -290,8 +290,22 @@ export function SavedConversation({
               item?.tool?.toolCallId === ref.toolCallId)
           );
         })?.key,
+      hasNextPage && !isFetching
+        ? async () => !(await fetchNextPage()).isError
+        : undefined,
     );
-  }, [active, workbench, threadId, nativeSessionKey, rows, generation, model]);
+  }, [
+    active,
+    workbench,
+    threadId,
+    nativeSessionKey,
+    rows,
+    generation,
+    model,
+    hasNextPage,
+    isFetching,
+    fetchNextPage,
+  ]);
   const tail = pages.at(-1);
   const incomplete = tail?.kind === "page" && tail.incompleteTail;
   const omitted = pages.reduce(

@@ -161,3 +161,198 @@ it("closing or newer navigation invalidates an awaited return; late reads cannot
   });
   work.dispose();
 });
+
+it("opening a new source invalidates an awaited return from a pinned source", async () => {
+  let finish: (value: boolean) => void = () => {};
+  const work = new WindowWorkbench({
+    insert: () => ({ kind: "inserted" }),
+    select: () =>
+      new Promise((done) => {
+        finish = done;
+      }),
+  });
+  const target = {
+    source: {
+      kind: "live-tool" as const,
+      threadId: crypto.randomUUID(),
+      nativeSessionKey: "native",
+      connectionGeneration: crypto.randomUUID(),
+      toolCallId: "first",
+    },
+    title: "bash",
+    threadTitle: "A",
+    rowId: "row",
+  };
+  const id = work.open(target)!;
+  work.pin(id);
+  const pending = work.returnToSource(id);
+  work.open({ ...target, source: { ...target.source, toolCallId: "second" } });
+  expect(work.stateStore.getState().returning).toBeNull();
+  finish(true);
+  await pending;
+  work.dispose();
+});
+
+it("hands a completed live record to trusted history and retains observed content on eviction or a failed handoff", async () => {
+  let receive: (reply: ToolDetailReply) => void = () => {};
+  const release = vi.fn();
+  const tool = vi.fn(async (source, _cursor, readerId) => ({
+    kind: "tool-detail" as const,
+    readerId,
+    detail: {
+      source,
+      contentRevision: "native-version",
+      toolName: "bash",
+      argumentsText: "{}",
+      text: "persisted",
+      lifecycle: "completed" as const,
+      coverage: "observed" as const,
+      truncated: false,
+      nativeRecordId: "record",
+    },
+  }));
+  const work = new WindowWorkbench({
+    conversation: {
+      connect: () => () => {},
+      watchTool: (_source, listener) => {
+        receive = listener;
+        return release;
+      },
+    },
+    history: {
+      tool,
+      read: async () => ({ kind: "unavailable", reason: "unbound" }),
+      projectRead: async () => ({ kind: "unavailable", reason: "unbound" }),
+      projectList: async () => ({ kind: "unavailable", reason: "missing" }),
+    },
+    insert: () => ({ kind: "inserted" }),
+    select: async () => true,
+  });
+  const source = {
+    kind: "live-tool" as const,
+    threadId: crypto.randomUUID(),
+    nativeSessionKey: "native",
+    connectionGeneration: crypto.randomUUID(),
+    toolCallId: "tool",
+  };
+  const id = work.open({
+    source,
+    title: "bash",
+    threadTitle: "A",
+    rowId: "row",
+  })!;
+  work.pin(id);
+  const detail = {
+    source,
+    contentRevision: "2",
+    toolName: "bash",
+    argumentsText: "{}",
+    text: "observed",
+    lifecycle: "completed" as const,
+    coverage: "observed" as const,
+    truncated: false,
+    nativeRecordId: "record",
+  };
+  receive({ kind: "tool-detail", readerId: id, detail });
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(tool).toHaveBeenCalledWith(source, null, id, "record");
+  expect(work.stateStore.getState().surfaces[0]?.detail?.text).toBe(
+    "persisted",
+  );
+  expect(release).toHaveBeenCalledOnce();
+  receive({ kind: "tool-unavailable", readerId: id, reason: "missing" });
+  expect(work.stateStore.getState().surfaces[0]?.detail?.text).toBe(
+    "persisted",
+  );
+  work.dispose();
+});
+
+it("loads missing source membership in a bounded return intent and never focuses after cancellation", async () => {
+  const work = new WindowWorkbench({
+    insert: () => ({ kind: "inserted" }),
+    select: async () => true,
+  });
+  const source = {
+    kind: "native-record" as const,
+    threadId: crypto.randomUUID(),
+    nativeSessionKey: "native",
+    recordId: "record",
+    revision: "snapshot",
+  };
+  const id = work.open({
+    source,
+    title: "bash",
+    threadTitle: "A",
+    rowId: "record",
+  })!;
+  const locate = vi.fn(() => true);
+  let found = false;
+  const load = vi.fn(async () => {
+    found = true;
+    work.registerRows(source.threadId, "native", () =>
+      found ? "row" : undefined,
+    );
+    return true;
+  });
+  work.registerRows(source.threadId, "native", () => undefined, load);
+  work.registerAnchor(source.threadId, locate);
+  await work.returnToSource(id);
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(load).toHaveBeenCalledOnce();
+  expect(locate).toHaveBeenCalledWith("row");
+  found = false;
+  let finish: (value: boolean) => void = () => {};
+  work.registerRows(
+    source.threadId,
+    "native",
+    () => undefined,
+    () =>
+      new Promise((done) => {
+        finish = done;
+      }),
+  );
+  await work.returnToSource(id);
+  work.close(id);
+  work.registerRows(source.threadId, "native", () => "late");
+  finish(true);
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(locate).toHaveBeenCalledTimes(1);
+  work.dispose();
+});
+
+it("stops source membership loading after 16 pages", async () => {
+  const work = new WindowWorkbench({
+    insert: () => ({ kind: "inserted" }),
+    select: async () => true,
+  });
+  const source = {
+    kind: "native-record" as const,
+    threadId: crypto.randomUUID(),
+    nativeSessionKey: "native",
+    recordId: "absent",
+    revision: "snapshot",
+  };
+  const id = work.open({
+    source,
+    title: "bash",
+    threadTitle: "A",
+    rowId: "absent",
+  })!;
+  const load = vi.fn(async () => {
+    work.registerRows(source.threadId, "native", () => undefined, load);
+    return true;
+  });
+  work.registerRows(source.threadId, "native", () => undefined, load);
+  work.registerAnchor(source.threadId, () => false);
+  await work.returnToSource(id);
+  for (let step = 0; step < 100; step++) await Promise.resolve();
+  expect(load).toHaveBeenCalledTimes(16);
+  expect(work.stateStore.getState()).toMatchObject({
+    returning: null,
+    returnIssue: "limit",
+  });
+  work.dispose();
+});

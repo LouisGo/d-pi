@@ -41,13 +41,15 @@ type State = {
   selected: string | null;
   revealToken: number;
   returning: ReturnIntent | null;
-  returnIssue: "missing" | "blocked" | null;
+  returnIssue: "missing" | "blocked" | "limit" | null;
 };
 type Reader = {
   users: Set<string>;
   detail: ToolDetail | null;
   unavailable: string | null;
   release: () => void;
+  durable: boolean;
+  handoff: string | null;
 };
 const keyOf = sourceKey;
 
@@ -60,7 +62,10 @@ export class WindowWorkbench {
     returning: null,
     returnIssue: null,
   }));
-  readonly stateStore = this.store;
+  readonly stateStore: Pick<
+    typeof this.store,
+    "getState" | "getInitialState" | "subscribe"
+  > = this.store;
   private readonly readers = new Map<string, Reader>();
   private readonly anchors = new Map<
     string,
@@ -71,9 +76,13 @@ export class WindowWorkbench {
     {
       nativeSessionKey: string;
       resolve: (source: SourceRef) => string | undefined;
+      load?: (() => Promise<boolean>) | undefined;
     }
   >();
   private navigation = 0;
+  private pageTicket = 0;
+  private pageCount = 0;
+  private loadingTicket: number | null = null;
   private disposed = false;
   private locating = false;
   get locatingSource(): boolean {
@@ -100,6 +109,7 @@ export class WindowWorkbench {
   }
   open(target: ToolTarget): string | null {
     if (this.disposed) return null;
+    this.cancelReturn();
     const same = this.store
       .getState()
       .surfaces.find(
@@ -146,6 +156,8 @@ export class WindowWorkbench {
       detail: null,
       unavailable: null,
       release: () => {},
+      durable: false,
+      handoff: null,
     };
     this.readers.set(key, reader);
     const current = reader;
@@ -153,7 +165,9 @@ export class WindowWorkbench {
       if (this.disposed || this.readers.get(key) !== current) return;
       if (reply.kind === "tool-detail" && keyOf(reply.detail.source) !== key)
         return;
-      current.detail = reply.kind === "tool-detail" ? reply.detail : null;
+      if (current.durable) return;
+      current.detail =
+        reply.kind === "tool-detail" ? reply.detail : current.detail;
       current.unavailable =
         reply.kind === "tool-unavailable" ? reply.reason : null;
       for (const user of current.users)
@@ -174,6 +188,41 @@ export class WindowWorkbench {
     const accept = (reply: ToolDetailReply) => {
       clearTimeout(timeout);
       receive(reply);
+      if (
+        reply.kind === "tool-detail" &&
+        target.source.kind === "live-tool" &&
+        reply.detail.nativeRecordId &&
+        this.ports.history?.tool &&
+        current.handoff !== reply.detail.nativeRecordId
+      ) {
+        const recordId = reply.detail.nativeRecordId;
+        current.handoff = recordId;
+        void this.ports.history.tool(target.source, null, id, recordId).then(
+          (persisted) => {
+            if (
+              this.disposed ||
+              this.readers.get(key) !== current ||
+              current.durable
+            )
+              return;
+            receive(persisted);
+            if (
+              persisted.kind === "tool-detail" &&
+              keyOf(persisted.detail.source) === key
+            ) {
+              current.durable = true;
+              current.release();
+              current.release = () => {};
+            }
+          },
+          () =>
+            receive({
+              kind: "tool-unavailable",
+              readerId: id,
+              reason: "transport",
+            }),
+        );
+      }
     };
     if (
       target.source.kind === "live-tool" &&
@@ -344,8 +393,9 @@ export class WindowWorkbench {
     threadId: string,
     nativeSessionKey: string,
     resolve: (source: SourceRef) => string | undefined,
+    load?: (() => Promise<boolean>) | undefined,
   ): () => void {
-    const rows = { nativeSessionKey, resolve };
+    const rows = { nativeSessionKey, resolve, load };
     this.rows.set(threadId, rows);
     queueMicrotask(() => this.locate());
     return () => {
@@ -368,7 +418,49 @@ export class WindowWorkbench {
     try {
       if (row && anchor.locate(row))
         this.store.setState({ returning: null, returnIssue: null });
-      else this.store.setState({ returnIssue: "missing" });
+      else {
+        this.store.setState({ returnIssue: "missing" });
+        if (!row && rows.load && this.loadingTicket !== intent.ticket) {
+          if (this.pageTicket !== intent.ticket) {
+            this.pageTicket = intent.ticket;
+            this.pageCount = 0;
+          }
+          if (this.pageCount >= 16) {
+            this.store.setState({ returning: null, returnIssue: "limit" });
+            return;
+          }
+          this.pageCount++;
+          this.loadingTicket = intent.ticket;
+          void rows
+            .load()
+            .then(
+              (loaded) => {
+                if (!this.isNavigation(intent.ticket)) return;
+                if (!loaded)
+                  this.store.setState({
+                    returning: null,
+                    returnIssue: "missing",
+                  });
+              },
+              () => {
+                if (this.isNavigation(intent.ticket))
+                  this.store.setState({
+                    returning: null,
+                    returnIssue: "missing",
+                  });
+              },
+            )
+            .finally(() => {
+              if (this.loadingTicket === intent.ticket)
+                this.loadingTicket = null;
+              if (
+                this.isNavigation(intent.ticket) &&
+                this.rows.get(threadId) !== rows
+              )
+                this.locate();
+            });
+        }
+      }
     } finally {
       this.locating = false;
     }

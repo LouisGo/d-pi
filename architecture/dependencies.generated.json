@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "15b74e5e4131238c0bc897fafb057038f0fbcf188a3812a2b433137a23a20b10",
+  "inputsHash": "2d90cad374482c5b43bc512de138047ee25f195e009089a17218c161f2ae2acb",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 624,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 278,
-      "lines": 53191,
+      "lines": 53626,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -106,7 +106,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 3777,
+      "lines": 3785,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -194,7 +194,7 @@
       ],
       "materialized": true,
       "files": 66,
-      "lines": 14881,
+      "lines": 14907,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -307,7 +307,7 @@
       ],
       "materialized": true,
       "files": 33,
-      "lines": 7029,
+      "lines": 7146,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -2117,6 +2117,13 @@
       "dependency": "resources",
       "targetEnvironment": "contracts",
       "testOnly": true
+    },
+    {
+      "module": "conversation",
+      "environment": "main",
+      "dependency": "resources",
+      "targetEnvironment": "contracts",
+      "testOnly": false
     },
     {
       "module": "conversation",
@@ -29537,6 +29544,18 @@
       "specifier": "zod",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/main/native-history.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../resources/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/resources/contracts/public.ts",
+      "targetModule": "resources",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/conversation/main/native-history.ts",

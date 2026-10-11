@@ -68,6 +68,8 @@ export function createAppRouting(model: AppModel) {
     if (foundRoute?.id !== "/threads/$threadId") return false;
     const parsed = ThreadIdSchema.safeParse(rawParams.threadId);
     if (!parsed.success) return false;
+    if (new URLSearchParams(next.search).get("view") !== "conversation")
+      model.workbench.cancelReturn();
     selecting = true;
     try {
       const result = await model.selectThread(parsed.data);

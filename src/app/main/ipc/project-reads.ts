@@ -15,6 +15,7 @@ import {
   listProjectNativeHistory,
   readNativeHistory,
   readNativeImage,
+  readNativeTool,
   readProjectNativeHistory,
 } from "../../../modules/conversation/main/public";
 import {
@@ -156,16 +157,18 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
       | ReturnType<typeof HistoryToolRequestSchema.parse>,
   ) => {
     const { threadId, cursor } = request;
-    const thread = activeThreadFor(
-      context,
-      event,
-      "Invalid history source",
-      threadId,
-    );
+    const toolRead = "readerId" in request;
+    if (!context.sourceValid(event)) throw Error("Invalid history source");
+    const thread = toolRead
+      ? context.getStore()?.threads.threadContext(threadId)
+      : activeThreadFor(context, event, "Invalid history source", threadId);
+    if (!thread) throw Error("Missing Thread");
     const binding = context.getStore()?.threads.nativeSessionBinding(threadId);
     if (!binding) return { kind: "unavailable", reason: "unbound" };
     const bindingCurrent = () => {
-      activeThreadFor(context, event, "Invalid history source", threadId);
+      if (!context.sourceValid(event)) return false;
+      if (!toolRead)
+        activeThreadFor(context, event, "Invalid history source", threadId);
       const current = context
         .getStore()
         ?.threads.nativeSessionBinding(threadId);
@@ -186,59 +189,27 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
           reason,
         });
         if (
-          source.kind !== "native-record" ||
           source.threadId !== threadId ||
           source.nativeSessionKey !== binding.sessionId ||
-          source.revision !== cursor?.source ||
-          cursor.threadId !== threadId
+          !bindingCurrent() ||
+          (source.kind === "native-record" &&
+            (source.revision !== cursor?.source ||
+              cursor?.threadId !== threadId))
         )
           return unavailable("identity-changed");
-        const page = await readNativeHistory(
+        const recordId =
+          source.kind === "native-record" ? source.recordId : request.recordId;
+        if (!recordId) return unavailable("missing");
+        const reply = await readNativeTool(
           root,
           binding,
+          source,
           cursor,
-          undefined,
+          recordId,
+          request.readerId,
           directory,
         );
-        if (
-          !bindingCurrent() ||
-          page.kind !== "page" ||
-          page.source !== source.revision
-        )
-          return unavailable("identity-changed");
-        const entry = page.entries.find((item) => item.id === source.recordId);
-        if (!entry?.tool) return unavailable("missing");
-        const textBytes = Buffer.from(entry.text),
-          argsBytes = Buffer.from(
-            JSON.stringify(entry.tool.arguments?.value ?? ""),
-          );
-        const bound = (bytes: Buffer, limit: number) => {
-          let end = Math.min(bytes.length, limit);
-          while (end < bytes.length && (bytes[end] ?? 0) >> 6 === 2) end--;
-          return bytes.subarray(0, end).toString("utf8");
-        };
-        const truncated =
-          textBytes.length > 262144 ||
-          argsBytes.length > 32768 ||
-          entry.tool.truncated;
-        return {
-          kind: "tool-detail",
-          readerId: request.readerId,
-          detail: {
-            source,
-            contentRevision: page.source,
-            nativeRecordId: entry.id,
-            toolName: entry.tool.name,
-            argumentsText: bound(argsBytes, 32768),
-            text: bound(textBytes, 262144),
-            lifecycle:
-              entry.tool.lifecycle === "running"
-                ? "unknown"
-                : entry.tool.lifecycle,
-            coverage: truncated ? "partial" : entry.tool.coverage,
-            truncated,
-          },
-        } satisfies ToolDetailReply;
+        return bindingCurrent() ? reply : unavailable("identity-changed");
       }
       if ("recordId" in request) {
         const blobsDirectory = await context.nativeBlobsPath?.(
@@ -293,7 +264,7 @@ export function registerHistoryIpc(context: ProjectReadContext): void {
     };
     if (binding.origin !== "cli") return read(context.nativeSessionsPath());
     const root = await context.indexedNativeSessionsPath?.(randomUUID());
-    activeThreadFor(context, event, "Invalid history source", threadId);
+    if (!bindingCurrent()) return { kind: "unavailable", reason: "changed" };
     if (!root || !binding.historyRoot)
       return { kind: "unavailable", reason: "denied" };
     try {

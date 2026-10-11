@@ -3,6 +3,11 @@ import { constants } from "node:fs";
 import { open, realpath, stat } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import { z } from "zod";
+import type {
+  SourceRef,
+  ToolDetail,
+  ToolDetailReply,
+} from "../../resources/contracts/public";
 import type { NativeSessionBinding } from "../../threads/contracts/public";
 import type {
   HistoryCursor,
@@ -80,6 +85,81 @@ function classifyToolEffect(toolName: string): HistoryToolEffect {
   return "unknown";
 }
 
+type Call = { name: string; arguments?: unknown };
+type ToolRead = {
+  recordId: string;
+  toolCallId?: string;
+  parents: Map<string, string | null>;
+  calls: Map<string, Map<string, Call>>;
+  detail: Omit<ToolDetail, "source" | "contentRevision"> | null;
+};
+function boundedUtf8(
+  text: string,
+  limit: number,
+): { text: string; truncated: boolean } {
+  const bytes = Buffer.from(text);
+  let end = Math.min(bytes.length, limit);
+  while (end < bytes.length && (bytes[end] ?? 0) >> 6 === 2) end--;
+  return {
+    text: bytes.subarray(0, end).toString("utf8"),
+    truncated: bytes.length > limit,
+  };
+}
+/** Bounded record read on the same verified file/prefix, with actual ancestor parameters. */
+export async function readNativeTool(
+  root: string,
+  binding: NativeSessionBinding,
+  source: SourceRef,
+  cursor: HistoryCursor | null,
+  recordId: string,
+  readerId: string,
+  projectDirectory?: string,
+): Promise<ToolDetailReply> {
+  const unavailable = (
+    reason: "missing" | "identity-changed" | "limit",
+  ): ToolDetailReply => ({ kind: "tool-unavailable", readerId, reason });
+  const request: ToolRead = {
+    recordId,
+    ...(source.kind === "live-tool" ? { toolCallId: source.toolCallId } : {}),
+    parents: new Map(),
+    calls: new Map(),
+    detail: null,
+  };
+  let next: HistoryCursor | null = cursor ? { ...cursor, offset: 0 } : null;
+  for (let pageNumber = 0; pageNumber < 16; pageNumber++) {
+    const page = await readNativeHistory(
+      root,
+      binding,
+      next,
+      undefined,
+      projectDirectory,
+      undefined,
+      request,
+    );
+    if (page.kind !== "page")
+      return unavailable(
+        page.reason === "unsupported" ? "limit" : "identity-changed",
+      );
+    if (source.kind === "native-record" && page.source !== source.revision)
+      return unavailable("identity-changed");
+    if (request.detail)
+      return {
+        kind: "tool-detail",
+        readerId,
+        detail: {
+          ...request.detail,
+          source,
+          contentRevision: page.source,
+          nativeRecordId: recordId,
+        },
+      };
+    if (!page.next) return unavailable("missing");
+    next = page.next;
+    if (next.offset >= 16 * PAGE_BYTES) return unavailable("limit");
+  }
+  return unavailable("limit");
+}
+
 export async function readNativeHistory(
   root: string,
   binding: NativeSessionBinding,
@@ -92,6 +172,7 @@ export async function readNativeHistory(
     blobsDirectory?: string | undefined;
     receive: (image: HistoryImageReply) => void;
   },
+  toolRequest?: ToolRead,
 ): Promise<HistoryPage> {
   try {
     signal?.throwIfAborted();
@@ -205,7 +286,7 @@ export async function readNativeHistory(
       while (
         lastNewline < 0 &&
         offset + bytes.length < endOffset &&
-        buffer.length < MAX_RECORD_BYTES
+        buffer.length < (toolRequest ? PAGE_BYTES : MAX_RECORD_BYTES)
       ) {
         buffer = Buffer.alloc(
           Math.min(buffer.length * 2, MAX_RECORD_BYTES, endOffset - offset),
@@ -220,11 +301,9 @@ export async function readNativeHistory(
       const complete = bytes.subarray(0, lastNewline + 1);
       const utf8 = new TextDecoder("utf-8", { fatal: true });
       const entries: HistoryEntry[] = [];
-      const parentOf = new Map<string, string | null>();
-      const toolCallsByRecord = new Map<
-        string,
-        Map<string, { name: string; arguments?: unknown }>
-      >();
+      const parentOf = toolRequest?.parents ?? new Map<string, string | null>();
+      const toolCallsByRecord =
+        toolRequest?.calls ?? new Map<string, Map<string, Call>>();
       let omitted = 0;
       let lineOffset = offset;
       for (const line of utf8.decode(complete).split("\n")) {
@@ -362,6 +441,38 @@ export async function readNativeHistory(
             currentId = parentOf.get(currentId) ?? null;
           }
 
+          if (
+            toolRequest &&
+            id === toolRequest.recordId &&
+            (!toolRequest.toolCallId ||
+              toolRequest.toolCallId === message.toolCallId)
+          ) {
+            const output = boundedUtf8(text, 262144);
+            const args = boundedUtf8(
+              JSON.stringify(matchedCall?.arguments ?? null),
+              32768,
+            );
+            const nonText =
+              Array.isArray(message.content) &&
+              message.content.some(
+                (part) => !TextPartSchema.safeParse(part).success,
+              );
+            const partial =
+              output.truncated || args.truncated || !matchedCall || nonText;
+            toolRequest.detail = {
+              toolName: message.toolName,
+              argumentsText: args.text,
+              text: output.text,
+              lifecycle:
+                message.isError === true
+                  ? "failed"
+                  : message.isError === false
+                    ? "completed"
+                    : "unknown",
+              coverage: partial ? "partial" : "observed",
+              truncated: output.truncated || args.truncated,
+            };
+          }
           const argumentsPayload =
             matchedCall?.arguments !== undefined
               ? projectToolPayload(matchedCall.arguments, measureUtf8Bytes)

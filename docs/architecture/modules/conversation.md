@@ -109,3 +109,6 @@ OMP JSONL 仍为事实来源；Main 继续授权与解析，未引入新数据�
 ## 命令详情读取（WB01）
 
 ConversationProjection 只供有界卡片。Host 在摘要前观察原始生命周期，ToolDetail reader 独立分发版本；live-tool 绑定真实 nativeSessionKey、Thread、代次与 toolCallId。native-record 读取沿用绑定与 history cursor 的可信路径、文件头、前缀身份校验。来源叶子见 `resources/contracts/public.ts`，不依赖 input 或 execution。Surface 关闭只释放读取，不改变执行。
+
+WB01 复核补充：历史详情 lease 按捕获的 Thread/原生绑定和 sender 校验，切 Thread 不撤销已固定的只读来源。详情按可信冻结前缀恢复实际工具调用参数，输出独立于卡片投影；恢复扫描最多16页/16MiB，超过预算明确不可用。完成记录可通过真实 nativeRecordId 转接持久读取；转接失败保留最后已观察版本并标明不可用，不能清空后冒称内容不存在。导航在草稿保存之后、派发切换之前再次核对 ticket；新 Surface 意图使旧返回失效。
+返回来源的窗口协调器拥有读取预算：只在同原生身份的成员缺失时请求下一页，最多16页；Query/Reader仍拥有正文，视图只绑定读取适配器。新导航/关闭失效 ticket，迟到页可进入只读缓存但不定位/聚焦旧来源。

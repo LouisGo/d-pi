@@ -742,6 +742,13 @@ export class AppModel {
         this.publish({ ...state, busy: false });
         return { kind: "blocked", reason: "save-failed" };
       }
+      if (
+        sourceTicket !== undefined &&
+        !this.workbench.isNavigation(sourceTicket)
+      ) {
+        this.publish({ ...state, busy: false });
+        return { kind: "blocked", reason: "superseded" };
+      }
       const reply = await this.bridge.request(command);
       if (this.isCurrent(generation)) {
         if (reply.kind === "failed")

@@ -43,6 +43,7 @@ export function ToolCard({
 }) {
   const workbench = useContext(ToolWorkbenchContext);
   const { t } = useI18n();
+  const [atLimit, setAtLimit] = useState(false);
   return (
     <div className="command-card" data-command-card>
       <code>{command}</code>
@@ -56,10 +57,13 @@ export function ToolCard({
         variant="secondary"
         data-command-open={target ? sourceKey(target.source) : undefined}
         disabled={!target || !workbench}
-        onClick={() => target && workbench?.open(target)}
+        onClick={() => {
+          if (target && workbench) setAtLimit(workbench.open(target) === null);
+        }}
       >
         {t("workbench.tool.open")}
       </Button>
+      {atLimit && <p role="alert">{t("workbench.tool.surfaceLimit")}</p>}
       {partial && <small>{t("workbench.tool.partial")}</small>}
       {!target && <small>{t("workbench.tool.sourceUnavailable")}</small>}
     </div>
@@ -213,6 +217,9 @@ function ToolInspectorBody({
             surface.unavailable ? "workbench.tool.unavailable" : "app.loading",
           )}
         </p>
+      )}
+      {detail && surface.unavailable && (
+        <p role="status">{t("workbench.tool.retained")}</p>
       )}
       {detail && (
         <>

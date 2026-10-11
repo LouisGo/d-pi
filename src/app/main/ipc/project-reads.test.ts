@@ -625,3 +625,106 @@ it("projects real mixed attachment receipts through history IPC and its durable 
     });
   }
 });
+
+it("historical tool leases survive Thread selection, retain raw output and ancestor command, and reject rebinding", async () => {
+  const f = setup();
+  const threadId = f.thread.threadId;
+  const root = join(f.directory, "native");
+  mkdirSync(join(root, threadId), { recursive: true });
+  const sessionFile = join(root, threadId, "tool.jsonl");
+  const text = "full output\n".repeat(4000);
+  writeFileSync(
+    sessionFile,
+    [
+      { type: "session", version: 3, id: "session" },
+      {
+        type: "message",
+        id: "call",
+        parentId: null,
+        message: {
+          role: "assistant",
+          content: [
+            {
+              type: "toolCall",
+              id: "bash-1",
+              name: "bash",
+              arguments: { command: "printf actual" },
+            },
+          ],
+        },
+      },
+      {
+        type: "message",
+        id: "result",
+        parentId: "call",
+        message: {
+          role: "toolResult",
+          toolCallId: "bash-1",
+          toolName: "bash",
+          isError: false,
+          content: [{ type: "text", text }],
+        },
+      },
+    ]
+      .map((v) => JSON.stringify(v))
+      .join("\n") + "\n",
+  );
+  const binding = {
+    threadId,
+    sessionFile,
+    sessionId: "session",
+    configContextId: "fixture",
+  };
+  f.store.threads.bindNativeSession(binding);
+  f.context.nativeSessionsPath = () => root;
+  const page = await f.request("history:read", { threadId, cursor: null });
+  const entry = page.entries.find((e: { id: string }) => e.id === "result");
+  f.store.threads.create("/other");
+  const request = {
+    threadId,
+    source: {
+      kind: "native-record",
+      threadId,
+      nativeSessionKey: "session",
+      recordId: "result",
+      revision: page.source,
+    },
+    cursor: entry.toolCursor,
+    readerId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+  };
+  expect(await f.request("history:tool", request)).toMatchObject({
+    kind: "tool-detail",
+    detail: {
+      argumentsText: JSON.stringify({ command: "printf actual" }),
+      text,
+      lifecycle: "completed",
+    },
+  });
+  const liveRequest = {
+    ...request,
+    cursor: null,
+    recordId: "result",
+    source: {
+      kind: "live-tool",
+      threadId,
+      nativeSessionKey: "session",
+      toolCallId: "bash-1",
+      connectionGeneration: crypto.randomUUID(),
+    },
+  };
+  expect(await f.request("history:tool", liveRequest)).toMatchObject({
+    kind: "tool-detail",
+    detail: { source: liveRequest.source, text },
+  });
+  vi.spyOn(f.store.threads, "nativeSessionBinding").mockReturnValue({
+    ...binding,
+    sessionId: "replacement",
+  });
+  expect(await f.request("history:tool", request)).toMatchObject({
+    kind: "tool-unavailable",
+    reason: "identity-changed",
+  });
+  f.context.sourceValid = () => false;
+  await expect(f.request("history:tool", liveRequest)).rejects.toThrow();
+});

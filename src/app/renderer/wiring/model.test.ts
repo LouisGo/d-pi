@@ -46,6 +46,7 @@ async function setup(
   save: (command: SaveCommand) => Promise<SaveReply>,
   restored: () => Draft = () => draft,
   attachments?: DesktopBridge["attachments"],
+  onSelect?: () => void,
 ) {
   // Only the document theme surface and the process boundary are substituted;
   // AppModel and DraftController collaborate without React or native UI.
@@ -66,16 +67,19 @@ async function setup(
           },
         }))
         .with({ kind: "save" }, save)
-        .with({ kind: "select-thread" }, async () => ({
-          kind: "ready" as const,
-          draft: restored(),
-          directoryAvailable: true,
-          preferences: {
-            theme: "light" as const,
-            density: "normal" as const,
-            locale: "system" as const,
-          },
-        }))
+        .with({ kind: "select-thread" }, async () => {
+          onSelect?.();
+          return {
+            kind: "ready" as const,
+            draft: restored(),
+            directoryAvailable: true,
+            preferences: {
+              theme: "light" as const,
+              density: "normal" as const,
+              locale: "system" as const,
+            },
+          };
+        })
         .with(
           { kind: "choose-project" },
           { kind: "list-threads" },
@@ -684,4 +688,40 @@ it("reads a new thread list after an in-flight pre-mutation sample instead of re
   } finally {
     model.dispose();
   }
+});
+
+it("closing a source return while its draft flush waits prevents a late durable Thread switch", async () => {
+  const receipt = deferredReceipt();
+  const selected = vi.fn();
+  const input = await setup(
+    () => receipt.promise,
+    () => draft,
+    undefined,
+    selected,
+  );
+  input.controller.edit("pending save");
+  const id = input.model.workbench.open({
+    source: {
+      kind: "live-tool",
+      threadId: crypto.randomUUID(),
+      nativeSessionKey: "native",
+      connectionGeneration: crypto.randomUUID(),
+      toolCallId: "bash",
+    },
+    title: "bash",
+    threadTitle: "A",
+    rowId: "tool",
+  });
+  if (!id) throw Error("missing surface");
+  const pending = input.model.workbench.returnToSource(id);
+  await Promise.resolve();
+  expect(input.isEditable()).toBe(false);
+  input.model.workbench.close(id);
+  receipt.resolve(saved(1));
+  await pending;
+  expect(selected).not.toHaveBeenCalled();
+  expect(input.model.controller).toBe(input.controller);
+  expect(input.model.getSnapshot()).toMatchObject({ busy: false });
+  expect(input.isEditable()).toBe(true);
+  input.model.dispose();
 });

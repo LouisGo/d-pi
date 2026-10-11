@@ -1,4 +1,6 @@
 export const ui = {
+  "workbench.tool.surfaceLimit":
+    "Close a pinned detail before opening another (8 maximum).",
   "workbench.tool.open": "Open command details",
   "workbench.tool.heading": "Command details",
   "workbench.tool.sourceUnavailable": "Source identity is unavailable.",
@@ -6,6 +8,8 @@ export const ui = {
   "workbench.tool.pin": "Pin",
   "workbench.tool.origin": "Source Thread: {thread}",
   "workbench.tool.return": "Return to source",
+  "workbench.tool.retained":
+    "Source unavailable; showing the last observed version.",
   "workbench.tool.unavailable":
     "Details are unavailable. Reopen from the source card to retry.",
   "workbench.tool.output": "Command output — select text to freeze a reference",
@@ -27,6 +31,7 @@ export const ui = {
   "workbench.tool.issue.unavailable":
     "The draft cannot accept this reference now.",
   "workbench.tool.issue.composing": "Finish text composition before inserting.",
+  "workbench.tool.return.limit": "Source search reached its 16-page budget.",
   "workbench.tool.return.missing":
     "The source is not in the loaded reading window. Load earlier records or reopen from the card.",
   "workbench.tool.return.blocked":

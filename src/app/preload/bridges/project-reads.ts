@@ -46,19 +46,23 @@ export function createProjectReadBridge(
   }
   return {
     history: {
-      async tool(source, cursor, readerId) {
-        return ToolDetailReplySchema.parse(
+      async tool(source, cursor, readerId, recordId) {
+        const reply = ToolDetailReplySchema.parse(
           await ipcRenderer.invoke(
             "history:tool",
             HistoryToolRequestSchema.parse({
               source,
               cursor,
+              ...(recordId ? { recordId } : {}),
               readerId,
               threadId: source.threadId,
               traceId: readerId,
             }),
           ),
         );
+        if (reply.readerId !== readerId)
+          throw new ReadOperationError("invalid-reply");
+        return reply;
       },
       async image(threadId, cursor, recordId, index, traceId) {
         return HistoryImageReplySchema.parse(

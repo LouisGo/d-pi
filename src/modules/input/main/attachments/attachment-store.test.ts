@@ -5,7 +5,10 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { attachmentToken } from "../../core/attachments/tokens";
-import { serializeReference } from "../../core/references/serialize";
+import {
+  serializeFrozenContext,
+  serializeReference,
+} from "../../core/references/serialize";
 import { AttachmentStore } from "./attachment-store";
 
 let directory: string;
@@ -890,4 +893,27 @@ it("repairs restored legacy XLSX originals without rewriting copied frozen conte
     converterVersion: "omp18.8.9-markit-xlsx-coordinates-v1",
   });
   await restored.close();
+});
+
+it("prepares a frozen context verbatim without resolving attachment-looking output or its source Thread", async () => {
+  const s = store();
+  const frozen = serializeFrozenContext({
+    source: {
+      kind: "live-tool",
+      threadId: otherThread,
+      nativeSessionKey: "native-A",
+      connectionGeneration: randomUUID(),
+      toolCallId: "bash",
+    },
+    contentRevision: "2",
+    title: "bash",
+    text: `frozen output ${attachmentToken(randomUUID())}`,
+    coverage: "observed",
+  });
+  const text = `B draft\n${frozen}`;
+  expect(await s.prepare(thread, text)).toMatchObject({
+    ok: true,
+    content: { message: text, images: [], sources: [] },
+  });
+  await s.close();
 });

@@ -114,15 +114,17 @@ export const HistoryRequestSchema = z.strictObject({
 export const HistoryToolRequestSchema = z.strictObject({
   threadId: z.uuid(),
   source: SourceRefSchema,
-  cursor: HistoryCursorSchema,
+  cursor: HistoryCursorSchema.nullable(),
+  recordId: z.string().min(1).max(512).optional(),
   readerId: z.uuid(),
   traceId: z.uuid(),
 });
 export interface HistoryBridge {
   tool?(
     source: SourceRef,
-    cursor: HistoryCursor,
+    cursor: HistoryCursor | null,
     readerId: string,
+    recordId?: string,
   ): Promise<ToolDetailReply>;
   image?(
     threadId: string,
