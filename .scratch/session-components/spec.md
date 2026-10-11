@@ -16,9 +16,9 @@
 | --- | --- | --- | --- | --- |
 | WB00 | 当前运行基线 | complete | 18.8.9 实际依赖；A/B 回答独立结果；同目标单次发送；草稿跨卸载；代次隔离；written 与原生结束分开；stop 独立 | 下方 WB00 证据；已与WB01合装，待用户试用 |
 | WB01 | WB00 | complete | 命令卡→实时详情→pin→切 B→明确 B 草稿引用→回 A 原成员；有界摘要、final 对账、coverage、关闭释放、旧导航不抢占；键盘入口 | Source/Surface/reader/FrozenContext 与命令卡/Inspector 已装配；主矩阵143项与最后受影响31项通过；独立review已闭合；下方Dev源码试用交接 |
-| WB02 | WB01 | complete | 活动组、常用 read/search/edit、轮次、变化摘要真实 | 真实语义/来源/生产Body与活动结构组合、失败降级、DOM/选区保留已验证；待用户试用 |
+| WB02 | WB01 | implementing | 活动组、常用 read/search/edit、轮次、变化摘要真实 | 已有语义/来源/Body与活动结构组合证据；用户反馈正式GUI效果与交互不满足要求，撤回完成判断，优先补WB04真实对话所需接入 |
 | WB03 | WB00；联调 WB01/02 | implementing | demand/范围读取/字节缓存/Worker/Viewer/native warm 有界 | 资源边界与生产后台证据已取得；长段落输入延迟未达初始目标，正常Quit冷却未确认；用户选择先交付 |
-| WB04 | WB00、WB01 | complete | 多题/权限/超时/unknown/回答历史完整 | 原生AskTool/审批/答案历史与真实owner隐藏/切线程/断连组合已验证；C23沿用允许的独立呈现；待用户试用 |
+| WB04 | WB00、WB01 | implementing | 正式GUI真实发送与回复有反馈；多题/权限/超时/unknown/回答历史可操作 | 已有原生与owner组合证据；用户反馈基本消息不能正常回复且发送后无状态，撤回完成判断，新GOAL先修真实对话和等待/失败/恢复状态，再完成WB04可见交互 |
 | WB05 | WB01、WB03、WB04 请求事实 | planned | 任务→子代理→Job→使用量/策略/资源 | 后续真实 owner scope 合同 |
 | WB06 | WB01、WB02、WB04 | planned | Plan 到安排执行；Diff/消息反馈；精确分叉 | 后续原生能力与反馈协调 |
 | WB07 | WB01、WB02、WB03 | planned | 搜索定位与专业 Body 复用来源/详情/资源 | 后续专业结果合同 |
@@ -267,9 +267,9 @@ AnswerHistory通过execution只读Query公开面接App持久事实：离线可�
     "engineering": "in-progress",
     "trial": "delivered",
     "acceptance": "pending",
-    "next": "先交付WB02/WB04与WB03已完成能力；保留长段落输入延迟与退出冷却核验缺口，WB03完整验收未完成",
+    "next": "重开WB04：先修正式GUI真实消息发送与回复及发送/等待/失败/恢复状态，再交付可操作问答审批与历史；WB03性能和冷却缺口保留，不重复长时采集",
     "evidence": ["evidence/production-performance.json", "../../docs/product/session-components-plan-2026-10-11.md"],
-    "constraints": "本轮授权WB02–WB04；WB05–WB08后续，不推送或发布，用户验收pending"
+    "constraints": "用户否定当前可用体验；WB02/WB04完成判断已撤回，新thread授权继续WB04及基本对话阻塞修复；WB03完整验收未完成，WB05–WB08后续，不推送或发布"
   }
 ]
 ```
@@ -373,7 +373,7 @@ Activation 独立复核（固定 `5a520bf..d17e3d5`）确认三项 P2，并逐�
 
 ### 本轮交付与 WB03 未完成项（2026-10-11）
 
-用户明确选择“先交付已完成能力，记录性能缺口，WB03 完整验收保持未完成”。停止本轮更大的正文渲染改造；不以低 ROI 为由把失败改成通过。WB02/WB04 工程完成，WB03 保持 implementing；用户认可 pending，WB05–WB08 未实施，不推送、不发布。
+用户明确选择“先交付已完成能力，记录性能缺口，WB03 完整验收保持未完成”。停止本轮更大的正文渲染改造；不以低 ROI 为由把失败改成通过。当时将WB02/WB04标为工程完成，该判断已因后续用户反馈撤回，当前状态以下方更正及工作包表为准。WB03 保持 implementing；用户认可 pending，WB05–WB08 未实施，不推送、不发布。
 
 生产性能报告为 [production-performance.json](evidence/production-performance.json)，对应实际 [Chrome hidden trace](evidence/production-hidden-trace.json.gz)。固定官方 Electron44.4.5、OMP18.8.9、正式 Main/Host/Preload/Renderer，隔离 loopback 与原生 SessionManager 生成初始10,000条消息；真实单工具10MiB是完整artifact，inline仍沿原生40KiB裁剪，不冒称10MiB inline/wire。三路原生执行持续1,800,815ms，累计实际隐藏1,802,216ms，可见21,723ms完整扣除；最长连续隐藏836,255ms，明确 continuousHidden=false。45秒有效隐藏trace无数据丢失，Layout/Paint/Commit/FunctionCall/EventDispatch/UpdateLayoutTree均为0。隐藏后正式历史query按预算释放，Reading消费者和Surface归零；忙碌原生资源与App缓存分开计量。
 
@@ -386,3 +386,19 @@ Activation 独立复核（固定 `5a520bf..d17e3d5`）确认三项 P2，并逐�
 正常退出：先由本次supplier自然结束三路SSE，实际control.streaming/stopping=false，再以CUA正常Cmd-Q退出owned隔离App。Main/native家族均已不存在，但三份lease仍各有1个本次真实owner，独占读锁可取得；verify-cold按合同返回非零、allNativeCold=false。Quit源码包含8秒有界退出与未确认时保留真实身份的恢复路径，本次日志不足以确定完整清理停在哪一阶段，不武断归因为泄漏或宣称clean cold。未删除lease、伪造ready、重新执行或停止用户Dev；本次supplier已停止，隔离数据保留供有界后续核对。此核验缺口与输入性能一起写入acceptance.complete=false。
 
 验证脚本在 validation/m2/production-*。dataset只在实际SQLite独占锁及owner=0下调用原生SDK，锁覆盖写入/关闭/核验；活跃scope反例在SDK调用前拒绝。probe以实际Main PID+run start双身份核验，旧PID/复用PID/缺失身份测试1/1通过；trace核实实际Browser PID，cleanup身份核验先于lease访问。固定独立review此前三项P2闭合；失败报告保留，不冒称完全验收。日常试用使用pnpm dev，正式项目SDK已按pnpm runtime:sdk更新至相应adapter；没有制作发布包。
+
+### 用户反馈后的现状更正与 WB04 重开（2026-10-11）
+
+用户明确反馈：正式界面效果与交互差，基本消息不能正常回复，发送后看不到任何状态。此前WB02/WB04完成判断撤回，当前均为implementing。现有测试证明了限定范围内的协议、原生调用与组件组合，没有证明用户实际配置下的正式GUI真实AI对话可用；本次消息失败根因尚未查明，不能归咎于网络或Provider配置。
+
+已实现的基础包括：工具语义与活动组、来源详情和冻结引用；Thread-owned交互草稿、唯一编辑入口、原生AskTool/工具审批观察、回答历史、unknown围栏及恢复入口。它们是后续复用的代码与证据，不等同于完整的用户体验。原始完整方案继续有效，尤其§9.3与§12.6 WB04；C23允许缺可靠toolCallId时独立呈现，不得猜测配对。
+
+用户授权开全新本地thread，以/GOAL继续执行WB04，并修复使真实对话无法完成的基本链路。交接源码基线为main `ad19288cb0496fbe9d64db5eaba8e82920cc566e`，此后的本次变更仅更正跟踪与生成看板。旧GOAL保持paused，本thread不继续应用代码实施；新thread从交接提交继续，不能只给计划。
+
+1. 先在正式工作台沿用用户真实配置观察并修复发送→Main/Host/OMP→Provider→回复显示的链路。发送后立即提供真实的发送、连接、等待回复、生成或失败状态及适用恢复动作；只有实际重连时显示重连，不能伪造“正在思考”掩盖失败，也不能让用户等待空白界面。
+2. 完成原方案WB04可见GUI：多题/选择/自填、默认/超时、审批独立降级、唯一编辑器与切线程草稿保留、回答历史、unknown与恢复操作。实际能力不足时按合同明确展示，不发明协议或自动重发unknown。
+3. 以正式pnpm dev工作台的一次真实AI回复及继续对话作为首个实机停止条件，再验证受影响的问答/审批/恢复交互。真实截图与简短操作步骤说明用户能体验什么；现有loopback/原生/owner证据复用，只补具体缺口，不用组件页或脚本通过代替GUI可用。
+
+需要外部实现依据时直接查同级本地t3code与文档指向的固定OMP源码，并遵守项目所有权、共享token、Icon Layer、focus-visible、状态与诊断合同。已知WB03长段落输入延迟与退出冷却缺口继续保留，完整验收未完成；本次不重复30分钟后台采集、不开展无关矩阵或扩大到WB05–WB08，不推送或发布。
+
+本次整理观察到用户Dev Main PID66647（launcher66603），继任者须重新核实当前进程、构建与窗口，不能照旧PID执行或把启动日志当真实回复证据。保留用户会话、草稿、配置和lease；不得通过删库、新建替代会话、清除真实身份或伪造ready掩盖故障。需要Main/preload更新时按既有Dev流程协调重启，先保护未保存输入和正在执行的请求。
