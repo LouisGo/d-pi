@@ -1,5 +1,7 @@
 import type { IpcRenderer } from "electron";
 import {
+  AnswerHistoryPageSchema,
+  AnswerHistoryRequestSchema,
   RuntimeCommandSchema,
   RuntimeReplySchema,
   RuntimeViewSchema,
@@ -11,7 +13,10 @@ import { createConversationPort } from "./conversation-port";
 import { createInboundBroadcast } from "./inbound-broadcast";
 export function createExecutionBridge(
   ipcRenderer: IpcRenderer,
-): Pick<DesktopBridge, "submission" | "conversation" | "runtime"> {
+): Pick<
+  DesktopBridge,
+  "submission" | "conversation" | "runtime" | "answerHistory"
+> {
   const submission = createInboundBroadcast(
     ipcRenderer,
     "submission:state",
@@ -30,6 +35,17 @@ export function createExecutionBridge(
     (view) => [view.threadId],
   );
   return {
+    answerHistory: {
+      async request(raw) {
+        const request = AnswerHistoryRequestSchema.parse(raw);
+        const page = AnswerHistoryPageSchema.parse(
+          await ipcRenderer.invoke("runtime:answer-history", request),
+        );
+        if (page.threadId !== request.threadId)
+          throw Error("Foreign answer history reply");
+        return page;
+      },
+    },
     submission: {
       async request(command) {
         return SubmissionReplySchema.parse(

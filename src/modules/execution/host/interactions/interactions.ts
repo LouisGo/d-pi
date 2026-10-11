@@ -25,7 +25,11 @@ export class PendingInteractions {
     this.dispose();
     for (const [id, dialog] of this.dialogs)
       if (dialog.status === "pending") {
-        this.dialogs.set(id, { ...dialog, status: "unknown" });
+        this.dialogs.set(id, {
+          ...dialog,
+          status: "unknown",
+          requestPresence: "unknown",
+        });
         this.ids.delete(id);
       }
     this.changed();
@@ -39,7 +43,11 @@ export class PendingInteractions {
         dialog.expiresAt <= Date.now()
       ) {
         this.clearTimer(id);
-        this.dialogs.set(id, { ...dialog, status: "expired" });
+        this.dialogs.set(id, {
+          ...dialog,
+          status: "expired",
+          requestPresence: "unknown",
+        });
         this.ids.delete(id);
         done = true;
       }
@@ -91,7 +99,16 @@ export class PendingInteractions {
     id: string,
     answer: Answer,
     write: (frame: string) => void,
+    operationId: string = randomUUID(),
   ): boolean {
+    return this.respondDefault(id, answer, write, operationId) === "written";
+  }
+  respondDefault(
+    id: string,
+    answer: Answer,
+    write: (frame: string) => void,
+    operationId: string = randomUUID(),
+  ): "not-dispatched" | "written" | "unknown" {
     // Atomic default write: status and defaultAnswered land in one mutation
     // so callers publish a single snapshot. Success shows sent+defaultAnswered
     // (stays in the active group); failure leaves unknown without the flag.
@@ -100,39 +117,20 @@ export class PendingInteractions {
     this.expire();
     const dialog = this.dialogs.get(id);
     if (!dialog || dialog.status !== "pending" || !this.ids.has(id))
-      return false;
-    if (!this.validateAnswer(dialog, answer)) return false;
-    this.dialogs.set(id, { ...dialog, status: "unknown" });
-    try {
-      write(this.frameForAnswer(id, answer));
-    } catch {
-      this.clearTimer(id);
-      this.ids.delete(id);
-      return false;
-    }
-    this.clearTimer(id);
-    this.dialogs.set(id, {
-      ...dialog,
-      status: "written",
-      defaultAnswered: true,
-    });
-    this.ids.delete(id);
-    return true;
-  }
-  answer(id: string, answer: Answer, write: (frame: string) => void): boolean {
-    return this.respond(id, answer, write) === "written";
-  }
-  respond(
-    id: string,
-    answer: Answer,
-    write: (frame: string) => void,
-  ): "not-dispatched" | "written" | "unknown" {
-    this.expire();
-    const dialog = this.dialogs.get(id);
-    if (!dialog || dialog.status !== "pending" || !this.ids.has(id))
       return "not-dispatched";
     if (!this.validateAnswer(dialog, answer)) return "not-dispatched";
-    this.dialogs.set(id, { ...dialog, status: "unknown" });
+    const answerEvidence = {
+      operationId,
+      origin: "default" as const,
+      status: "unknown" as const,
+      observedAt: new Date().toISOString(),
+    };
+    this.dialogs.set(id, {
+      ...dialog,
+      status: "unknown",
+      requestPresence: "unknown",
+      answerEvidence,
+    });
     try {
       write(this.frameForAnswer(id, answer));
     } catch {
@@ -141,7 +139,56 @@ export class PendingInteractions {
       return "unknown";
     }
     this.clearTimer(id);
-    this.dialogs.set(id, { ...dialog, status: "written" });
+    this.dialogs.set(id, {
+      ...dialog,
+      status: "written",
+      defaultAnswered: true,
+      requestPresence: "unknown",
+      answerEvidence: { ...answerEvidence, status: "written" },
+    });
+    this.ids.delete(id);
+    return "written";
+  }
+  answer(id: string, answer: Answer, write: (frame: string) => void): boolean {
+    return this.respond(id, answer, write) === "written";
+  }
+  respond(
+    id: string,
+    answer: Answer,
+    write: (frame: string) => void,
+    operationId: string = randomUUID(),
+  ): "not-dispatched" | "written" | "unknown" {
+    this.expire();
+    const dialog = this.dialogs.get(id);
+    if (!dialog || dialog.status !== "pending" || !this.ids.has(id))
+      return "not-dispatched";
+    if (!this.validateAnswer(dialog, answer)) return "not-dispatched";
+    const answerEvidence = {
+      operationId,
+      origin: "user" as const,
+      status: "unknown" as const,
+      observedAt: new Date().toISOString(),
+    };
+    this.dialogs.set(id, {
+      ...dialog,
+      status: "unknown",
+      requestPresence: "unknown",
+      answerEvidence,
+    });
+    try {
+      write(this.frameForAnswer(id, answer));
+    } catch {
+      this.clearTimer(id);
+      this.ids.delete(id);
+      return "unknown";
+    }
+    this.clearTimer(id);
+    this.dialogs.set(id, {
+      ...dialog,
+      status: "written",
+      requestPresence: "unknown",
+      answerEvidence: { ...answerEvidence, status: "written" },
+    });
     this.ids.delete(id);
     return "written";
   }
@@ -155,7 +202,11 @@ export class PendingInteractions {
       this.ids.delete(frame.targetId);
       const dialog = this.dialogs.get(frame.targetId);
       if (dialog)
-        this.dialogs.set(frame.targetId, { ...dialog, status: "cancelled" });
+        this.dialogs.set(frame.targetId, {
+          ...dialog,
+          status: "cancelled",
+          requestPresence: "ended",
+        });
       return;
     }
     if (
@@ -174,7 +225,11 @@ export class PendingInteractions {
       }
       const dialog = this.dialogs.get(frame.id);
       if (dialog && dialog.status === "pending") {
-        this.dialogs.set(frame.id, { ...dialog, status: "cancelled" });
+        this.dialogs.set(frame.id, {
+          ...dialog,
+          status: "cancelled",
+          requestPresence: "ended",
+        });
         this.changed();
       } else if (had || timer) {
         this.changed();
@@ -222,6 +277,7 @@ export class PendingInteractions {
       this.dialogs.set(frame.id, {
         ...dialog.data,
         status: "pending",
+        requestPresence: "observed",
         expiresAt:
           dialog.data.timeout === undefined
             ? null
@@ -255,3 +311,5 @@ export class PendingInteractions {
     return false;
   }
 }
+
+import { randomUUID } from "node:crypto";

@@ -7,6 +7,7 @@ import type {
   HistoryBridge,
 } from "../../modules/conversation/contracts/public";
 import type {
+  AnswerHistoryBridge,
   RuntimeBridge,
   SubmissionBridge,
 } from "../../modules/execution/contracts/public";
@@ -243,6 +244,7 @@ export interface DesktopBridge {
   submission?: SubmissionBridge;
   conversation?: ConversationPort;
   runtime?: RuntimeBridge;
+  answerHistory?: AnswerHistoryBridge;
   request<C extends Command>(command: C): Promise<ReplyFor<C>>;
   onCloseRequest(listener: (token: string) => void): () => void;
   onCloseCancelled(listener: () => void): () => void;

@@ -78,6 +78,22 @@ afterEach(() => {
   native.options.length = 0;
 });
 
+function createPermittedDefaultHost(messages: HostMessage[], exit: () => void) {
+  const host = createSessionHost((message) => {
+    messages.push(message);
+    if (message.kind === "prepare-default-answer")
+      queueMicrotask(() => {
+        void host.handle({
+          kind: "answer-permit",
+          traceId: message.traceId,
+          connectionGeneration: message.requestKey.connectionGeneration,
+          allowed: true,
+        });
+      });
+  }, exit);
+  return host;
+}
+
 it("writes a custom question answer through the Host only for the live connection generation", async () => {
   const messages: HostMessage[] = [];
   const host = createSessionHost((message) => messages.push(message), vi.fn());
@@ -340,7 +356,7 @@ it("answers timed-out questions with the timeout default while confirm dialogs k
   try {
     const messages: HostMessage[] = [];
     const exit = vi.fn();
-    const host = createSessionHost((message) => messages.push(message), exit);
+    const host = createPermittedDefaultHost(messages, exit);
     const threadId = ThreadIdSchema.parse(crypto.randomUUID());
     const connectionGeneration = crypto.randomUUID();
     await host.handle({
@@ -406,7 +422,7 @@ it("fires the default just before a short native timeout", async () => {
   try {
     const messages: HostMessage[] = [];
     const exit = vi.fn();
-    const host = createSessionHost((message) => messages.push(message), exit);
+    const host = createPermittedDefaultHost(messages, exit);
     await host.handle({
       kind: "start",
       threadId: crypto.randomUUID(),
@@ -446,7 +462,7 @@ it("publishes the timeout default as one sent+flagged snapshot", async () => {
   try {
     const messages: HostMessage[] = [];
     const exit = vi.fn();
-    const host = createSessionHost((message) => messages.push(message), exit);
+    const host = createPermittedDefaultHost(messages, exit);
     await host.handle({
       kind: "start",
       threadId: crypto.randomUUID(),
@@ -588,7 +604,7 @@ it("honors a long native timeout instead of answering at the 120s fallback", asy
   try {
     const messages: HostMessage[] = [];
     const exit = vi.fn();
-    const host = createSessionHost((message) => messages.push(message), exit);
+    const host = createPermittedDefaultHost(messages, exit);
     await host.handle({
       kind: "start",
       threadId: crypto.randomUUID(),
@@ -1967,3 +1983,84 @@ it("binds terminal reads to the actual parent and delays scope closure until the
   await closing;
   expect(exit).toHaveBeenCalledWith(0);
 });
+it.each(["live", "cancelled", "denied"] as const)(
+  "waits for exact Main persistence permission before an App default can write (%s)",
+  async (scenario) => {
+    vi.useFakeTimers();
+    const messages: HostMessage[] = [];
+    const host = createSessionHost(
+      (message) => messages.push(message),
+      vi.fn(),
+    );
+    const generation = crypto.randomUUID();
+    try {
+      await host.handle({
+        kind: "start",
+        threadId: crypto.randomUUID(),
+        traceId: crypto.randomUUID(),
+        processInstanceId: crypto.randomUUID(),
+        connectionGeneration: generation,
+        configContextId: "fixture",
+        binary: "/fixture/omp",
+        identity: { directory: "/project", device: "1", inode: "2" },
+        environment: {},
+        sessionDirectory: "/sessions",
+      });
+      native.observers[0]?.({
+        kind: "frame",
+        frame: {
+          type: "extension_ui_request",
+          method: "input",
+          id: "A",
+          title: "Question",
+          prefill: "frozen",
+        },
+      });
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(native.writes).toHaveLength(0);
+      if (scenario === "cancelled")
+        native.observers[0]?.({
+          kind: "frame",
+          frame: {
+            type: "extension_ui_request",
+            method: "cancel",
+            targetId: "A",
+          },
+        });
+      const request = messages.find(
+        (message) => message.kind === "prepare-default-answer",
+      );
+      if (!request || request.kind !== "prepare-default-answer")
+        throw Error("Missing durable default request");
+      await host.handle({
+        kind: "answer-permit",
+        traceId: request.traceId,
+        connectionGeneration: crypto.randomUUID(),
+        allowed: scenario !== "denied",
+      });
+      expect(native.writes).toHaveLength(0);
+      await host.handle({
+        kind: "answer-permit",
+        traceId: request.traceId,
+        connectionGeneration: generation,
+        allowed: scenario !== "denied",
+      });
+      await vi.advanceTimersByTimeAsync(0);
+      expect(native.writes.map((frame) => JSON.parse(frame))).toEqual(
+        scenario === "live"
+          ? [{ type: "extension_ui_response", id: "A", value: "frozen" }]
+          : [],
+      );
+      expect(messages).toContainEqual(
+        expect.objectContaining({
+          kind: "operation-result",
+          traceId: request.traceId,
+          operation: "answer",
+          status: scenario === "live" ? "written" : "not-dispatched",
+        }),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  },
+);

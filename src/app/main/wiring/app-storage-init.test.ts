@@ -37,6 +37,48 @@ it("releases the opened storage idempotently", () => {
   });
 });
 
+it("publishes persistent answers only after interrupted intents are recovered without dispatch", () => {
+  fixture((path, dir) => {
+    const store = AppStorage.open(path);
+    const threadId = store.drafts.create(dir).threadId;
+    const key = {
+      threadId,
+      nativeSessionKey: "native",
+      connectionGeneration: crypto.randomUUID(),
+      requestId: "A",
+    };
+    const operationId = crypto.randomUUID();
+    store.answerHistory.prepare(
+      key,
+      {
+        id: "A",
+        method: "input",
+        title: "Question",
+        status: "pending",
+        expiresAt: null,
+      },
+      operationId,
+      { kind: "value", value: "frozen" },
+    );
+    store.close();
+    const reopened = AppStorage.open(path);
+    try {
+      expect(reopened.answerHistory.page(threadId).entries[0]).toMatchObject({
+        kind: "answer",
+        operationId,
+        status: "unknown",
+        answer: { value: "frozen" },
+      });
+      expect(
+        reopened.database.connection.prepare("PRAGMA user_version").get()
+          ?.user_version,
+      ).toBe(17);
+    } finally {
+      reopened.close();
+    }
+  });
+});
+
 it("closes a failed migration while preserving its actual cause and original schema", () => {
   fixture((path) => {
     const prior = new DatabaseSync(path);
@@ -71,6 +113,39 @@ it("closes a failed migration while preserving its actual cause and original sch
       }
     } finally {
       close.mockRestore();
+    }
+  });
+});
+it("backs up the exact v16 boundary before adding answer history and keeps existing drafts", () => {
+  fixture((path, dir) => {
+    const old = AppStorage.open(path);
+    const threadId = old.drafts.create(dir).threadId;
+    old.drafts.save(threadId, 0, "precious original");
+    old.database.connection.exec(
+      "DROP TABLE interaction_history; PRAGMA user_version=16;",
+    );
+    old.close();
+    const reopened = AppStorage.open(path);
+    try {
+      expect(reopened.drafts.read(threadId).text).toBe("precious original");
+      expect(reopened.answerHistory.page(threadId).entries).toEqual([]);
+      const backup = new DatabaseSync(`${path}.before-v17`, { readOnly: true });
+      try {
+        expect(backup.prepare("PRAGMA user_version").get()?.user_version).toBe(
+          16,
+        );
+        expect(
+          backup
+            .prepare(
+              "SELECT name FROM sqlite_master WHERE name='interaction_history'",
+            )
+            .get(),
+        ).toBeUndefined();
+      } finally {
+        backup.close();
+      }
+    } finally {
+      reopened.close();
     }
   });
 });

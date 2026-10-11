@@ -34,6 +34,7 @@ export const DiagnosticOperationSchema = z.enum([
   "runtime:configure-subagent",
   "runtime:manage-queue",
   "runtime:answer",
+  "runtime:answer-history",
   "runtime:dismiss",
   "runtime:stop",
   "runtime:continue",

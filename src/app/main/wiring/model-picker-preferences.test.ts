@@ -50,7 +50,7 @@ it("migrates v12 and persists picker preferences across restart without changing
     expect(
       reopened.database.connection.prepare("PRAGMA user_version").get()
         ?.user_version,
-    ).toBe(16);
+    ).toBe(17);
     reopened.close();
     const backup = new DatabaseSync(`${path}.before-v13`, { readOnly: true });
     expect(backup.prepare("PRAGMA user_version").get()?.user_version).toBe(12);

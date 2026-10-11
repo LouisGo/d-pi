@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
 import type { UiMessage } from "../../../shared/messages/contracts";
+import { utf8ByteLength } from "../../../shared/text/utf8";
 export const AskQuestionSchema = z.strictObject({
   id: z.string().min(1).max(256),
   question: z.string().max(8192),
@@ -58,22 +59,12 @@ const askDialog = dialogBase.extend({
       "Duplicate native question IDs",
     ),
 });
-export const DialogSchema = z.discriminatedUnion("method", [
-  ordinaryDialog,
-  askDialog,
-]);
-const observation = {
-  status: z.enum(["pending", "written", "cancelled", "expired", "unknown"]),
-  expiresAt: z.number().nullable(),
-  defaultAnswered: z.boolean().optional(),
-  // Local dismissal releases App gates; it is not a native cancellation.
-  dismissed: z.boolean().optional(),
-};
-export const InteractionSchema = z.discriminatedUnion("method", [
-  ordinaryDialog.extend(observation),
-  askDialog.extend(observation),
-]);
-export type Interaction = z.infer<typeof InteractionSchema>;
+export const DialogSchema = z
+  .discriminatedUnion("method", [ordinaryDialog, askDialog])
+  .refine(
+    (dialog) => utf8ByteLength(JSON.stringify(dialog)) <= 1048576,
+    "Native question exceeds byte budget",
+  );
 export const AnswerSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("confirm"), confirmed: z.boolean() }),
   // Select accepts a provided option or a user-written answer via the same
@@ -86,15 +77,34 @@ export const AnswerSchema = z.discriminatedUnion("kind", [
       .min(1)
       .max(64)
       .refine(
-        (answers) =>
-          new TextEncoder().encode(JSON.stringify(answers)).byteLength <=
-          262144,
+        (answers) => utf8ByteLength(JSON.stringify(answers)) <= 262144,
         "Answer exceeds byte budget",
       ),
   }),
   z.strictObject({ kind: z.literal("cancel") }),
 ]);
 export type Answer = z.infer<typeof AnswerSchema>;
+export const AnswerEvidenceSchema = z.strictObject({
+  operationId: TraceIdSchema,
+  origin: z.enum(["user", "default"]),
+  status: z.enum(["written", "unknown"]),
+  observedAt: z.iso.datetime(),
+});
+const observation = {
+  status: z.enum(["pending", "written", "cancelled", "expired", "unknown"]),
+  expiresAt: z.number().nullable(),
+  defaultAnswered: z.boolean().optional(),
+  answerEvidence: AnswerEvidenceSchema.optional(),
+  // Local dismissal releases App gates; it is not a native cancellation.
+  dismissed: z.boolean().optional(),
+  // Local expiry/write cannot prove native completion; exact cancel can.
+  requestPresence: z.enum(["observed", "ended", "unknown"]).optional(),
+};
+export const InteractionSchema = z.discriminatedUnion("method", [
+  ordinaryDialog.extend(observation),
+  askDialog.extend(observation),
+]);
+export type Interaction = z.infer<typeof InteractionSchema>;
 /** Result observation is independent of RuntimeView revision and native ending. */
 export const RequestKeySchema = z.strictObject({
   threadId: ThreadIdSchema,

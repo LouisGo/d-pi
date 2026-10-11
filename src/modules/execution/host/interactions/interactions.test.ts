@@ -517,3 +517,66 @@ it.each([
     }
   },
 );
+it("retains frozen write evidence separately from native request completion and local expiry", () => {
+  const interactions = new PendingInteractions();
+  interactions.update({
+    type: "extension_ui_request",
+    id: "A",
+    method: "input",
+    title: "Question",
+  });
+  const operationId = crypto.randomUUID();
+  interactions.respond(
+    "A",
+    { kind: "value", value: "  frozen  " },
+    () => {},
+    operationId,
+  );
+  interactions.update({
+    type: "extension_ui_request",
+    method: "cancel",
+    targetId: "A",
+  });
+  expect(interactions.snapshot()[0]).toMatchObject({
+    status: "cancelled",
+    requestPresence: "ended",
+    answerEvidence: {
+      operationId,
+      origin: "user",
+      status: "written",
+    },
+  });
+  interactions.update({
+    type: "extension_ui_request",
+    id: "B",
+    method: "input",
+    title: "Default",
+  });
+  interactions.answerDefault(
+    "B",
+    { kind: "value", value: "default" },
+    () => {
+      throw Error("write failed");
+    },
+    crypto.randomUUID(),
+  );
+  expect(interactions.snapshot()[1]).toMatchObject({
+    requestPresence: "unknown",
+    answerEvidence: {
+      origin: "default",
+      status: "unknown",
+    },
+  });
+  interactions.update({
+    type: "extension_ui_request",
+    id: "C",
+    method: "confirm",
+    title: "Timeout",
+    timeout: 0,
+  });
+  expect(interactions.snapshot()[2]).toMatchObject({
+    status: "expired",
+    requestPresence: "unknown",
+  });
+  interactions.dispose();
+});

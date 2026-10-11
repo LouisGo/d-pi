@@ -4,8 +4,11 @@ import { DirectoryIdentitySchema } from "../../threads/contracts/public";
 import { ControlCommandSchema, ControlStateSchema } from "./control";
 import {
   AnswerCommandSchema,
+  AnswerSchema,
   DismissCommandSchema,
+  InteractionSchema,
   InteractionViewSchema,
+  RequestKeySchema,
 } from "./interactions";
 import { NativeFailureSummarySchema } from "./native-failure";
 import { QueueCommandSchema } from "./queue";
@@ -79,6 +82,12 @@ export const HostStartSchema = z.strictObject({
 });
 export type HostStart = z.infer<typeof HostStartSchema>;
 export const HostCommandSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("answer-permit"),
+    traceId: z.uuid(),
+    connectionGeneration: z.uuid(),
+    allowed: z.boolean(),
+  }),
   HostStartSchema,
   z.strictObject({
     kind: z.literal("configure-subagent"),
@@ -152,6 +161,13 @@ export type NativeState = z.infer<typeof NativeStateSchema>;
 
 export type HostCommand = z.infer<typeof HostCommandSchema>;
 export const HostMessageSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("prepare-default-answer"),
+    traceId: z.uuid(),
+    requestKey: RequestKeySchema,
+    dialog: InteractionSchema,
+    answer: AnswerSchema,
+  }),
   z.strictObject({
     kind: z.literal("cooldown-committed"),
     traceId: z.uuid(),

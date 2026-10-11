@@ -19,6 +19,7 @@ import {
   type HostStart,
   type NativeState,
   NativeStateSchema,
+  RequestKeySchema,
   type SubmissionRejectionReason,
 } from "../contracts/public";
 import { QueueSnapshotSchema } from "../contracts/queue";
@@ -92,6 +93,10 @@ export function createSessionHost(
   let subagentObservation: NativeSubagentObservation | null = null;
   let start: HostStart | null = null;
   let permit: ((allowed: boolean) => void) | null = null;
+  const answerPermits = new Map<
+    string,
+    { generation: string; finish: (allowed: boolean) => void }
+  >();
   let cooldown: {
     traceId: string;
     connectionGeneration: string;
@@ -145,11 +150,57 @@ export function createSessionHost(
     const answer = defaultAnswerFor(dialog);
     if (!answer) return;
     const traceId = randomUUID();
+    if (!state?.sessionId) return;
+    const target = RequestKeySchema.parse({
+      threadId: start.threadId,
+      nativeSessionKey: state.sessionId,
+      connectionGeneration: start.connectionGeneration,
+      requestId: id,
+    });
+    const allowed = await tasks.permit((finish) => {
+      answerPermits.set(traceId, {
+        generation: target.connectionGeneration,
+        finish,
+      });
+      try {
+        send({
+          kind: "prepare-default-answer",
+          traceId,
+          requestKey: target,
+          dialog,
+          answer,
+        });
+      } catch {
+        finish(false);
+      }
+      return () => {
+        answerPermits.delete(traceId);
+      };
+    });
+    if (
+      !allowed ||
+      closing ||
+      disconnected ||
+      start.connectionGeneration !== target.connectionGeneration ||
+      state?.sessionId !== target.nativeSessionKey
+    ) {
+      send({
+        kind: "operation-result",
+        traceId,
+        connectionGeneration: target.connectionGeneration,
+        operation: "answer",
+        status: "not-dispatched",
+      });
+      return;
+    }
     // Single visible transition: sent+defaultAnswered together. Publishing an
     // intermediate sent without the flag would move the card to history and
     // unmount the editor, losing half-typed input on the next snapshot.
-    const written = interactions.answerDefault(id, answer, (frame) =>
-      native?.write(frame),
+    const status = interactions.respondDefault(
+      id,
+      answer,
+      (frame) => native?.write(frame),
+      traceId,
     );
     publishInteractions();
     // written is only the synchronous local Writable observation; no native ACK.
@@ -158,7 +209,7 @@ export function createSessionHost(
       traceId,
       connectionGeneration: start.connectionGeneration,
       operation: "answer",
-      status: written ? "written" : "unknown",
+      status,
     });
     await refresh();
   }
@@ -910,6 +961,12 @@ export function createSessionHost(
         }
         return Promise.resolve();
       })
+      .with({ kind: "answer-permit" }, (value) => {
+        const request = answerPermits.get(value.traceId);
+        if (request?.generation === value.connectionGeneration)
+          request.finish(value.allowed);
+        return Promise.resolve();
+      })
       .with({ kind: "cooldown-permit" }, (value) => {
         if (
           cooldown?.traceId === value.traceId &&
@@ -1112,6 +1169,7 @@ export function createSessionHost(
           command.id,
           command.answer,
           (frame) => native?.write(frame),
+          command.traceId,
         );
         clearDefaultAnswerTimer(command.id);
         publishInteractions();

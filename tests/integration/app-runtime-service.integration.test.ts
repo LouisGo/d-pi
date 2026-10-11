@@ -1299,6 +1299,23 @@ it("control and answers reject stale generations and revoked grants while allowi
     }),
   ).rejects.toThrow("Execution grant");
   const previousPost = f.postMessage.getMockImplementation();
+  f.host.emit("message", {
+    kind: "interactions",
+    view: {
+      connectionGeneration: start.connectionGeneration,
+      nativeSessionKey: "native",
+      unsupported: false,
+      items: [
+        {
+          id: "request",
+          method: "confirm",
+          title: "Approve?",
+          status: "pending",
+          expiresAt: null,
+        },
+      ],
+    },
+  });
   f.postMessage.mockImplementation((raw, ports) => {
     previousPost?.(raw, ports);
     const command = HostTransportCommandSchema.parse(raw).command;
@@ -2472,6 +2489,7 @@ it("awaits independent answer writes with Main admission while stop stays availa
     kind: "interactions",
     view: {
       connectionGeneration: generation,
+      nativeSessionKey: "native",
       unsupported: false,
       items: ["A", "B"].map((id) => ({
         id,
@@ -2504,6 +2522,23 @@ it("awaits independent answer writes with Main admission while stop stays availa
           HostTransportCommandSchema.parse(raw).command.kind === "answer",
       ),
     ).toHaveLength(2),
+  );
+  expect(
+    f.store.answerHistory
+      .page(f.draft.threadId)
+      .entries.filter((entry) => entry.kind === "answer"),
+  ).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        operationId: a.traceId,
+        status: "dispatching",
+        answer: a.kind === "answer" ? a.answer : undefined,
+      }),
+      expect.objectContaining({
+        operationId: b.traceId,
+        status: "dispatching",
+      }),
+    ]),
   );
   await f.runtime.execute(
     RuntimeCommandSchema.parse({
@@ -2538,5 +2573,199 @@ it("awaits independent answer writes with Main admission while stop stays availa
       expect.objectContaining({ requestId: "A", status: "unknown" }),
       expect.objectContaining({ requestId: "B", status: "written" }),
     ]),
+  );
+  expect(
+    f.store.answerHistory
+      .page(f.draft.threadId)
+      .entries.filter((entry) => entry.kind === "answer"),
+  ).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ operationId: a.traceId, status: "unknown" }),
+      expect.objectContaining({ operationId: b.traceId, status: "written" }),
+    ]),
+  );
+});
+
+it("does not write an answer when its frozen intent cannot be persisted", async () => {
+  const f = await running(),
+    ready = await f.act("inspect");
+  f.host.emit("message", {
+    kind: "interactions",
+    view: {
+      connectionGeneration: ready.connectionGeneration,
+      nativeSessionKey: "native",
+      unsupported: false,
+      items: [
+        {
+          id: "A",
+          method: "input",
+          title: "Question",
+          status: "pending",
+          expiresAt: null,
+        },
+      ],
+    },
+  });
+  vi.spyOn(f.store.answerHistory, "prepare").mockImplementation(() => {
+    throw Error("disk full");
+  });
+  await expect(
+    f.runtime.execute(
+      RuntimeCommandSchema.parse({
+        kind: "answer",
+        threadId: f.draft.threadId,
+        traceId: crypto.randomUUID(),
+        connectionGeneration: ready.connectionGeneration,
+        id: "A",
+        answer: { kind: "value", value: "frozen" },
+      }),
+    ),
+  ).rejects.toThrow("disk full");
+  expect(
+    f.postMessage.mock.calls
+      .map(([raw]) => HostTransportCommandSchema.parse(raw).command)
+      .filter((command) => command.kind === "answer"),
+  ).toHaveLength(0);
+});
+it("persists the exact default intent before issuing Host permission and records the actual write result", async () => {
+  const f = await running(),
+    ready = await f.act("inspect");
+  const generation = ready.connectionGeneration!;
+  const dialog = {
+    id: "default",
+    method: "input",
+    title: "Question",
+    prefill: "frozen",
+    status: "pending",
+    expiresAt: null,
+  };
+  f.host.emit("message", {
+    kind: "interactions",
+    view: {
+      connectionGeneration: generation,
+      nativeSessionKey: "native",
+      unsupported: false,
+      items: [dialog],
+    },
+  });
+  const traceId = crypto.randomUUID();
+  f.host.emit("message", {
+    kind: "prepare-default-answer",
+    traceId,
+    requestKey: {
+      threadId: f.draft.threadId,
+      nativeSessionKey: "native",
+      connectionGeneration: generation,
+      requestId: "default",
+    },
+    dialog,
+    answer: { kind: "value", value: "frozen" },
+  });
+  await vi.waitFor(() =>
+    expect(
+      f.postMessage.mock.calls.map(
+        ([raw]) => HostTransportCommandSchema.parse(raw).command,
+      ),
+    ).toContainEqual({
+      kind: "answer-permit",
+      traceId,
+      connectionGeneration: generation,
+      allowed: true,
+    }),
+  );
+  expect(f.store.answerHistory.page(f.draft.threadId).entries[0]).toMatchObject(
+    {
+      kind: "answer",
+      operationId: traceId,
+      origin: "default",
+      answer: { value: "frozen" },
+      status: "dispatching",
+    },
+  );
+  f.host.emit("message", {
+    kind: "interactions",
+    view: {
+      connectionGeneration: generation,
+      nativeSessionKey: "native",
+      unsupported: false,
+      items: [{ ...dialog, status: "written" }],
+    },
+  });
+  expect(f.runtime.hasActiveWork()).toBe(true);
+  f.host.emit("message", {
+    kind: "operation-result",
+    operation: "answer",
+    traceId,
+    connectionGeneration: generation,
+    status: "written",
+  });
+  expect(f.store.answerHistory.page(f.draft.threadId).entries[0]).toMatchObject(
+    { status: "written" },
+  );
+  expect(f.runtime.hasActiveWork()).toBe(false);
+});
+it("keeps a post-write persistence failure unknown and blocks another answer instead of returning a safe retry", async () => {
+  const f = await running(),
+    ready = await f.act("inspect");
+  f.host.emit("message", {
+    kind: "interactions",
+    view: {
+      connectionGeneration: ready.connectionGeneration,
+      nativeSessionKey: "native",
+      unsupported: false,
+      items: [
+        {
+          id: "A",
+          method: "input",
+          title: "Question",
+          status: "pending",
+          expiresAt: null,
+        },
+      ],
+    },
+  });
+  const command = RuntimeCommandSchema.parse({
+    kind: "answer",
+    threadId: f.draft.threadId,
+    traceId: crypto.randomUUID(),
+    connectionGeneration: ready.connectionGeneration,
+    id: "A",
+    answer: { kind: "value", value: "frozen" },
+  });
+  const pending = f.runtime.execute(command);
+  await vi.waitFor(() =>
+    expect(
+      f.postMessage.mock.calls.map(
+        ([raw]) => HostTransportCommandSchema.parse(raw).command,
+      ),
+    ).toContainEqual({ kind: "answer", command }),
+  );
+  vi.spyOn(f.store.answerHistory, "finish").mockImplementation(() => {
+    throw Error("disk full after write");
+  });
+  f.host.emit("message", {
+    kind: "operation-result",
+    operation: "answer",
+    traceId: command.traceId,
+    connectionGeneration: ready.connectionGeneration,
+    status: "written",
+  });
+  expect(await pending).toMatchObject({
+    evidenceCoverage: "gap",
+    interactionOperations: [
+      expect.objectContaining({
+        operationId: command.traceId,
+        status: "unknown",
+      }),
+    ],
+  });
+  await expect(
+    f.runtime.execute({
+      ...command,
+      traceId: TraceIdSchema.parse(crypto.randomUUID()),
+    }),
+  ).rejects.toThrow(/Duplicate answer/);
+  expect(f.store.answerHistory.page(f.draft.threadId).entries[0]).toMatchObject(
+    { kind: "answer", status: "dispatching", answer: { value: "frozen" } },
   );
 });

@@ -1,3 +1,4 @@
+export * from "./answer-history";
 export * from "./control";
 export * from "./host";
 export * from "./interactions";

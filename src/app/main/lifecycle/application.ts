@@ -27,6 +27,7 @@ import {
 } from "../../../shared/i18n/locale";
 import { ThreadIdSchema } from "../../../shared/identity";
 import { uiMessage } from "../../../shared/messages/contracts";
+import { registerAnswerHistoryIpc } from "../ipc/answer-history";
 import { registerAttachmentIpc } from "../ipc/attachments";
 import { registerAttentionIpc } from "../ipc/attention";
 import { registerConfigurationIpc } from "../ipc/configuration";
@@ -501,6 +502,11 @@ export function startDesktopApplication(mainDirectory: string): void {
       registerSubmissionIpc({
         ...ipcSourceContext,
         getRuntime,
+      });
+      registerAnswerHistoryIpc({
+        ...ipcSourceContext,
+        getStore: () => services.store,
+        getDiagnostics: () => diagnostics,
       });
       registerRuntimeRequestIpc({
         ...ipcSourceContext,

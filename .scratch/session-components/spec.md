@@ -231,6 +231,14 @@ Thread-owned RuntimeModel复用独立回答ledger与一次准入，新增无Reac
 
 固定b66874e..f9e2985独立review发现P2：发送后真实来源补齐迁移了dispatching，但收尾仍匹配旧private-null索引。两个失败/断连反例先红后绿，改为按同Thread、代次、requestId与operationId结算迁移后的同一操作，已知来源变更不能结算；已取得written不被晚断连覆盖。RuntimeModel14/14与Renderer类型通过，待固定修正范围复核。WB04持久历史与GUI仍继续实施。
 
+### WB04 持久回答事实与默认写前许可（2026-10-11，继续实施）
+
+SQLite v17新增App-owned interaction_history：完整RequestKey、不可改写题目、每次操作独立冻结答案/来源、时间和实际发送观察。全部App观测记录保留，按rowid有界分页（20项/2MiB）；先取有界元数据再逐项读正文，1MiB题目/256KiB答案预算。当前窗口32题不是历史保留上限；不冒称重建启用前的原生历史。scope失联/打开恢复将未决dispatching归unknown，原生存在性单独归unknown，written不被cancel覆盖；不自动重发。v16完成备份、迁移后恢复再发布，旧收据恢复顺序保留，局部索引避免每次disconnect解析全部旧正文。
+
+Main在用户写前持久冻结题目与答案，写前失败不派发；写后持久失败保留unknown、gate与可见gap。App默认回答由Host Scope等待精确Main许可：校验当前身份、题目、授权和真实默认，落盘后许可；等待中取消/过期重新检查，输出实际not-dispatched或unknown。默认未结算证据有32项预算，阻止idle/quit回收；Host镜像仅携带发送元数据，正文由持久历史按需读，不复制整组答案。只读IPC/preload校验窗口来源、Thread、分页和同一trace，不启动native或记录答案到诊断。
+
+参考固定OMP RPC与既有App默认合同；本地T3 pendingUserInput及orchestration-v2/ProjectionStore核对真实请求/响应上下文与来源，未迁入其provider projection或额外业务解释。来源竞态固定f9e2985..9b5af77独立复核已闭合，无新增高价值问题。新增历史测试先记录模块缺失；Host事实分离、Main写前缺口和默认许可缺口均有真实失败反例转绿。11文件162项通过，包含完整Main62→63项、Host44项、SQLite重开/75请求150事实、中文字节页、默认许可/取消/拒绝与写后失败。五环境类型通过；Core原TextEncoder不在平台无关lib内，改复用现有utf8ByteLength并核验。生产build与40项架构通过，保留既有大chunk警告；本段没有实机GUI、真实ask供应商/OMP组合或生产Workbench性能trace。GUI多题/AnswerHistory组件、Dock、Recovery/Activation和整包验收仍继续，正式rich ask尚未启用，goal保持active。
+
 ### WB00 milestone（2026-10-11）
 
 - 先写 InteractionOperation/InteractionDraft 与执行模块合同。红灯确认同题双击两次派发、Host respond 缺失；实现后对应反例转绿。Thread-owned RuntimeModel 保留表单、冻结回答、操作结果和后续收据关联；Main 等待精确 Host 结果，授权 await 后再次校验代次，Host 单次 write 兜底。普通 interaction 状态和 answer operation 改名 written，收据 ACK 不变。

@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "ee21f28e1301b642a7f6ba81ff4ec17f4ac1ecdee1ac961ae97420b8948536b8",
+  "inputsHash": "14d086e84ea6cad340dd0aa4754d9335c57c7131c67ce4058d9c54d4d0365a96",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 663,
-    "scannedFiles": 663,
+    "sourceFiles": 669,
+    "scannedFiles": 669,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 296,
-      "lines": 59116,
+      "files": 299,
+      "lines": 59358,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -68,7 +68,7 @@
       ],
       "materialized": true,
       "files": 35,
-      "lines": 3909,
+      "lines": 3944,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -118,7 +118,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 3909,
+      "lines": 3910,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -351,8 +351,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 64,
-      "lines": 16834,
+      "files": 67,
+      "lines": 17874,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -1233,9 +1233,9 @@
     {
       "module": "app",
       "environment": "main",
-      "dependency": "input",
-      "targetEnvironment": "core",
-      "testOnly": true
+      "dependency": "execution",
+      "targetEnvironment": "contracts",
+      "testOnly": false
     },
     {
       "module": "app",
@@ -1243,6 +1243,13 @@
       "dependency": "platform",
       "targetEnvironment": "main",
       "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "main",
+      "dependency": "input",
+      "targetEnvironment": "core",
+      "testOnly": true
     },
     {
       "module": "app",
@@ -1277,13 +1284,6 @@
       "environment": "main",
       "dependency": "changes",
       "targetEnvironment": "main",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "main",
-      "dependency": "execution",
-      "targetEnvironment": "contracts",
       "testOnly": false
     },
     {
@@ -3192,6 +3192,141 @@
       "targetEnvironment": "main"
     },
     {
+      "from": "src/app/main/ipc/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../wiring/app-storage",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/answer-history.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./answer-history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/ipc/answer-history.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/answer-history.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/answer-history.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/main/ipc/answer-history.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/main/ipc/answer-history.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../platform/main/diagnostics/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/main/diagnostics/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/answer-history.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../wiring/app-storage",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/wiring/app-storage.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/ipc/answer-history.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./context",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/ipc/context.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
+    },
+    {
       "from": "src/app/main/ipc/attachment-document.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "main",
@@ -4846,6 +4981,18 @@
       "to": "src/shared/messages/contracts.ts",
       "targetModule": "shared",
       "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/main/lifecycle/application.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../ipc/answer-history",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/main/ipc/answer-history.ts",
+      "targetModule": "app",
+      "targetEnvironment": "main"
     },
     {
       "from": "src/app/main/lifecycle/application.ts",
@@ -7753,6 +7900,48 @@
       "to": "src/app/contracts/desktop-bridge.ts",
       "targetModule": "app",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/preload/bridges/execution.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "electron",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/preload/bridges/execution.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/preload/bridges/execution.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/preload/bridges/execution.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "./execution",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/preload/bridges/execution.ts",
+      "targetModule": "app",
+      "targetEnvironment": "preload"
     },
     {
       "from": "src/app/preload/bridges/execution.ts",
@@ -32154,6 +32343,51 @@
       "targetEnvironment": "main"
     },
     {
+      "from": "src/modules/execution/contracts/answer-history.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/contracts/answer-history.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/execution/contracts/answer-history.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "../../../shared/text/utf8",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/text/utf8.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/execution/contracts/answer-history.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./interactions",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/interactions.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/execution/contracts/control.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "contracts",
@@ -32370,6 +32604,18 @@
       "targetEnvironment": "shared"
     },
     {
+      "from": "src/modules/execution/contracts/interactions.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "../../../shared/text/utf8",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/text/utf8.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
       "from": "src/modules/execution/contracts/native-failure.test.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "contracts",
@@ -32419,6 +32665,18 @@
       "specifier": "zod",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/contracts/public.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./answer-history",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/answer-history.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/execution/contracts/public.ts",
@@ -34248,6 +34506,153 @@
       "targetEnvironment": "host"
     },
     {
+      "from": "src/modules/execution/main/interactions/answer-history-repository.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/interactions/answer-history-repository.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:fs",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/interactions/answer-history-repository.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:os",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/interactions/answer-history-repository.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:path",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/interactions/answer-history-repository.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:sqlite",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/interactions/answer-history-repository.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/interactions/answer-history-repository.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../../platform/main/storage/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/main/storage/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/execution/main/interactions/answer-history-repository.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../../threads/main/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/threads/main/public.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/execution/main/interactions/answer-history-repository.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/main/interactions/answer-history-repository.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "./answer-history-repository",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/main/interactions/answer-history-repository.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/execution/main/interactions/answer-history-repository.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "node:util",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/main/interactions/answer-history-repository.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../../../platform/main/storage/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/platform/main/storage/public.ts",
+      "targetModule": "platform",
+      "targetEnvironment": "main"
+    },
+    {
+      "from": "src/modules/execution/main/interactions/answer-history-repository.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/main/public.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "./interactions/answer-history-repository",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/execution/main/interactions/answer-history-repository.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "main"
+    },
+    {
       "from": "src/modules/execution/main/public.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "main",
@@ -34600,6 +35005,18 @@
       "sourceModule": "execution",
       "sourceEnvironment": "main",
       "test": false,
+      "specifier": "../../contracts/interactions",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/interactions.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/main/runtime/runtime-service.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
       "specifier": "../../contracts/native-failure",
       "kind": "import",
       "resolution": "module",
@@ -34678,6 +35095,18 @@
       "to": "src/modules/execution/core/submission/submission-admission.ts",
       "targetModule": "execution",
       "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/execution/main/runtime/runtime-service.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "main",
+      "test": false,
+      "specifier": "../interactions/answer-history-repository",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/main/interactions/answer-history-repository.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "main"
     },
     {
       "from": "src/modules/execution/main/runtime/runtime-service.ts",

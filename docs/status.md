@@ -94,4 +94,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: af3a37c7e2aaee428eb254e2fbfd7052efdbf1c5da0690151cca18d6f03625d3; sources: 187 -->
+<!-- source-sha256: 212f2413b097fb8ce77e67799c17aaad5fe77cc620a21dc4b787286cb81c99f6; sources: 187 -->

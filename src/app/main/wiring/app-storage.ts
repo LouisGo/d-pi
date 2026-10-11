@@ -1,4 +1,5 @@
 import {
+  AnswerHistoryRepository,
   QueueChangeRepository,
   SubmissionRepository,
 } from "../../../modules/execution/main/public";
@@ -17,6 +18,7 @@ export class AppStorage {
     readonly submissions: SubmissionRepository,
     readonly preferences: PreferenceRepository,
     readonly queueChanges: QueueChangeRepository,
+    readonly answerHistory: AnswerHistoryRepository,
   ) {}
 
   static open(path: string): AppStorage {
@@ -36,6 +38,8 @@ export class AppStorage {
       // before publishing; recovery never dispatches an OMP operation.
       const queueChanges = new QueueChangeRepository(database);
       queueChanges.recoverInterruptedChanges();
+      const answerHistory = new AnswerHistoryRepository(database);
+      answerHistory.recoverInterruptedAnswers();
       return new AppStorage(
         database,
         threads,
@@ -43,6 +47,7 @@ export class AppStorage {
         submissions,
         preferences,
         queueChanges,
+        answerHistory,
       );
     } catch (error) {
       database.close();

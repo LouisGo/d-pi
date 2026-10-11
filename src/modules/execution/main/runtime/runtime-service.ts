@@ -18,6 +18,7 @@ import type {
 } from "../../../threads/contracts/public";
 import type { ThreadRepository } from "../../../threads/main/public";
 import type { HostMessage, ProcessExitEvidence } from "../../contracts/host";
+import { DialogSchema, defaultAnswerFor } from "../../contracts/interactions";
 import {
   type NativeFailureSummary,
   nativeFailureCode,
@@ -46,12 +47,17 @@ import {
   canSubmit,
   queueCapped,
 } from "../../core/submission/submission-admission";
+import type { AnswerHistoryRepository } from "../interactions/answer-history-repository";
 import type { QueueChangeRepository } from "../queue/queue-change-repository";
 import type { SubmissionRepository } from "../submission/submission-repository";
 import { HostConnection } from "../transport/host-connection";
 import { indexedSessionDirectory } from "../transport/indexed-session-binding";
 
 type RuntimeStore = {
+  answerHistory: Pick<
+    AnswerHistoryRepository,
+    "observeRequest" | "prepare" | "finish" | "disconnectScope"
+  >;
   queueChanges: Pick<
     QueueChangeRepository,
     "prepare" | "finish" | "list" | "find"
@@ -81,6 +87,16 @@ type RuntimeStore = {
     | "observePromptResult"
   >;
 };
+
+function answerSendObservation(
+  status: Extract<HostMessage, { kind: "operation-result" }>["status"],
+): "written" | "not-dispatched" | "unknown" {
+  return match(status)
+    .with("written", () => "written" as const)
+    .with("not-dispatched", "failed", () => "not-dispatched" as const)
+    .with("unknown", "acknowledged", () => "unknown" as const)
+    .exhaustive();
+}
 
 function boundedDisplayValue(value: string, maxLength: number): string {
   return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value;
@@ -123,6 +139,7 @@ export class RuntimeService {
   private instanceDirectory: DirectoryIdentity | undefined;
   private commandsInFlight = 0;
   private readonly interactionAdmissions = new Set<string>();
+  private readonly pendingDefaultAnswers = new Set<string>();
   private released = false;
   private uncertainLifetime = false;
   constructor(
@@ -388,6 +405,17 @@ export class RuntimeService {
   private onExit(evidence?: ProcessExitEvidence): void {
     if (evidence) this.recordProcessExit(evidence);
     this.recordHost("exited");
+    this.pendingDefaultAnswers.clear();
+    if (this.view && this.currentConnectionGeneration) {
+      try {
+        this.store.answerHistory.disconnectScope(
+          this.view.threadId,
+          this.currentConnectionGeneration,
+        );
+      } catch {
+        this.lostEvidence = true;
+      }
+    }
     const uncertain = this.executingIds.size > 0;
     for (const submissionId of this.executingIds) {
       try {
@@ -531,6 +559,9 @@ export class RuntimeService {
     >,
   ): void {
     match(message)
+      .with({ kind: "prepare-default-answer" }, (request) => {
+        void this.prepareDefaultAnswer(request);
+      })
       .with({ kind: "subagents" }, ({ connectionGeneration, state }) => {
         if (connectionGeneration === this.currentConnectionGeneration)
           this.update({ subagents: state });
@@ -583,6 +614,23 @@ export class RuntimeService {
           nativeFailure,
         }) => {
           if (connectionGeneration !== this.currentConnectionGeneration) return;
+          if (
+            operation === "answer" &&
+            this.pendingDefaultAnswers.delete(traceId)
+          ) {
+            try {
+              this.store.answerHistory.finish(
+                traceId,
+                answerSendObservation(status),
+              );
+            } catch {
+              this.lostEvidence = true;
+              this.update({
+                evidenceCoverage: "gap",
+                message: uiMessage("runtime.evidenceGap"),
+              });
+            }
+          }
           if (
             operation === "manage-queue" ||
             operation === "configure-subagent"
@@ -640,6 +688,35 @@ export class RuntimeService {
       )
       .with({ kind: "interactions" }, ({ view }) => {
         if (view.connectionGeneration === this.currentConnectionGeneration) {
+          if (view.nativeSessionKey && this.view) {
+            try {
+              for (const item of view.items) {
+                const key = {
+                  threadId: this.view.threadId,
+                  nativeSessionKey: view.nativeSessionKey,
+                  connectionGeneration: view.connectionGeneration,
+                  requestId: item.id,
+                };
+                this.store.answerHistory.observeRequest(key, item);
+                if (item.answerEvidence) {
+                  const evidence = item.answerEvidence;
+                  this.store.answerHistory.finish(
+                    evidence.operationId,
+                    evidence.status,
+                    evidence.observedAt,
+                    key,
+                  );
+                  this.pendingDefaultAnswers.delete(evidence.operationId);
+                }
+              }
+            } catch {
+              this.lostEvidence = true;
+              this.update({
+                evidenceCoverage: "gap",
+                message: uiMessage("runtime.evidenceGap"),
+              });
+            }
+          }
           if (
             view.unsupported ||
             view.items.some(
@@ -763,6 +840,70 @@ export class RuntimeService {
     } finally {
       this.commandsInFlight--;
       this.settled();
+    }
+  }
+  private async prepareDefaultAnswer(
+    request: Extract<HostMessage, { kind: "prepare-default-answer" }>,
+  ): Promise<void> {
+    const { requestKey: key, traceId, answer } = request;
+    const current = () =>
+      this.connection.connected &&
+      this.view?.threadId === key.threadId &&
+      this.currentConnectionGeneration === key.connectionGeneration &&
+      this.view.interactions?.nativeSessionKey === key.nativeSessionKey;
+    let allowed = false;
+    try {
+      if (!current()) throw Error("Stale default answer");
+      const thread = this.store.threads.threadContext(key.threadId);
+      if (!thread) throw Error("Unknown answer Thread");
+      if (answer.kind !== "cancel") {
+        const identity = await identifyDirectory(thread.directory);
+        const grant = this.store.threads.executionGrant(
+          thread.workingDirectoryId,
+        );
+        if (
+          !grant ||
+          !this.instanceDirectory ||
+          !sameDirectoryIdentity(grant, identity) ||
+          !sameDirectoryIdentity(this.instanceDirectory, identity)
+        )
+          throw Error("Execution grant invalid");
+      }
+      const item = this.view?.interactions?.items.find(
+        (item) => item.id === key.requestId,
+      );
+      if (
+        !current() ||
+        item?.status !== "pending" ||
+        this.pendingDefaultAnswers.size >= 32 ||
+        !isDeepStrictEqual(
+          DialogSchema.parse(item),
+          DialogSchema.parse(request.dialog),
+        ) ||
+        !isDeepStrictEqual(defaultAnswerFor(item), answer)
+      )
+        throw Error("Invalid default answer");
+      allowed = this.store.answerHistory.prepare(
+        key,
+        item,
+        traceId,
+        answer,
+        "default",
+      );
+      if (allowed) this.pendingDefaultAnswers.add(traceId);
+    } catch {
+      // No permission means no native write. A question-history persistence
+      // failure is already visible through its independent observation path.
+    }
+    try {
+      this.connection.send({
+        kind: "answer-permit",
+        traceId,
+        connectionGeneration: key.connectionGeneration,
+        allowed,
+      });
+    } catch {
+      /* An unobserved permit remains a durable unknown after recovery. */
     }
   }
   private async executeCommand(command: RuntimeCommand): Promise<RuntimeView> {
@@ -1036,16 +1177,42 @@ export class RuntimeService {
               this.view?.interactions?.nativeSessionKey)
         )
           throw Error("Stale answer target");
+        const source = this.view?.interactions?.nativeSessionKey;
+        const item = this.view?.interactions?.items.find(
+          (item) => item.id === command.id,
+        );
+        if (!source || !item) throw Error("Answer history source unavailable");
+        const requestKey = {
+          threadId: command.threadId,
+          nativeSessionKey: source,
+          connectionGeneration: command.connectionGeneration,
+          requestId: command.id,
+        };
+        if (
+          !this.store.answerHistory.prepare(
+            requestKey,
+            item,
+            command.traceId,
+            command.answer,
+          )
+        )
+          throw Error("Duplicate answer intent");
         const result = await this.connection
           .operation({ kind: "answer", command })
           .catch(() => ({ status: "unknown" as const }));
+        let status = answerSendObservation(result.status);
+        try {
+          this.store.answerHistory.finish(command.traceId, status);
+        } catch {
+          // A failed post-write commit cannot be returned as a safe retry.
+          status = "unknown";
+          this.lostEvidence = true;
+          this.update({
+            evidenceCoverage: "gap",
+            message: uiMessage("runtime.evidenceGap"),
+          });
+        }
         if (command.connectionGeneration === this.currentConnectionGeneration) {
-          const status: "written" | "not-dispatched" | "unknown" =
-            result.status === "written"
-              ? "written"
-              : result.status === "not-dispatched" || result.status === "failed"
-                ? "not-dispatched"
-                : "unknown";
           if (status === "not-dispatched")
             this.interactionAdmissions.delete(key);
           this.update({
@@ -1507,6 +1674,7 @@ export class RuntimeService {
     const pending = this.view?.interactions;
     return (
       this.pendingEvidence.size > 0 ||
+      this.pendingDefaultAnswers.size > 0 ||
       this.executingIds.size > 0 ||
       this.view?.queueOperation?.status === "pending" ||
       this.view?.subagentOperation?.status === "pending" ||
@@ -1578,7 +1746,12 @@ export class RuntimeService {
     if (this.released || !this.connection.connected || !this.sessionStarted)
       return "unavailable";
     if (this.commandsInFlight) return "command";
-    if (this.lostEvidence || this.pendingEvidence.size) return "evidence";
+    if (
+      this.lostEvidence ||
+      this.pendingEvidence.size ||
+      this.pendingDefaultAnswers.size
+    )
+      return "evidence";
     if (
       this.uncertainLifetime ||
       [

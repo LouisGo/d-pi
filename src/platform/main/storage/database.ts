@@ -35,7 +35,8 @@ export class AppDatabase {
         version !== 13 &&
         version !== 14 &&
         version !== 15 &&
-        version !== 16
+        version !== 16 &&
+        version !== 17
       )
         throw new Error("Unsupported schema version");
       if (version === 0) {
@@ -88,7 +89,8 @@ export class AppDatabase {
         version !== 13 &&
         version !== 14 &&
         version !== 15 &&
-        version !== 16
+        version !== 16 &&
+        version !== 17
       ) {
         const temporary = `${path}.before-v3.${randomUUID()}.tmp`;
         try {
@@ -130,7 +132,8 @@ export class AppDatabase {
       this.originalVersion !== 13 &&
       this.originalVersion !== 14 &&
       this.originalVersion !== 15 &&
-      this.originalVersion !== 16
+      this.originalVersion !== 16 &&
+      this.originalVersion !== 17
     ) {
       const temporary = `${this.path}.before-v4.${randomUUID()}.tmp`;
       try {
@@ -157,7 +160,8 @@ export class AppDatabase {
       this.originalVersion !== 13 &&
       this.originalVersion !== 14 &&
       this.originalVersion !== 15 &&
-      this.originalVersion !== 16
+      this.originalVersion !== 16 &&
+      this.originalVersion !== 17
     ) {
       const temporary = `${this.path}.before-v5.${randomUUID()}.tmp`;
       try {
@@ -183,7 +187,8 @@ export class AppDatabase {
       this.originalVersion !== 13 &&
       this.originalVersion !== 14 &&
       this.originalVersion !== 15 &&
-      this.originalVersion !== 16
+      this.originalVersion !== 16 &&
+      this.originalVersion !== 17
     ) {
       const temporary = `${this.path}.before-v6.${randomUUID()}.tmp`;
       try {
@@ -206,7 +211,8 @@ export class AppDatabase {
       this.originalVersion !== 13 &&
       this.originalVersion !== 14 &&
       this.originalVersion !== 15 &&
-      this.originalVersion !== 16
+      this.originalVersion !== 16 &&
+      this.originalVersion !== 17
     ) {
       const temporary = `${this.path}.before-v7.${randomUUID()}.tmp`;
       try {
@@ -231,6 +237,7 @@ export class AppDatabase {
     this.migrateSubmissionPresentationIndex();
     this.migrateSidebarPreferences();
     this.migrateThreadManagement();
+    this.migrateAnswerHistory();
   }
   private migrateAttachments(): void {
     if (this.originalVersion >= 8) return;
@@ -435,6 +442,34 @@ export class AppDatabase {
         native_id TEXT
       );
       PRAGMA user_version=16;
+    `),
+    );
+  }
+
+  private migrateAnswerHistory(): void {
+    if (this.originalVersion >= 17) return;
+    const temporary = `${this.path}.before-v17.${randomUUID()}.tmp`;
+    try {
+      this.connection.prepare("VACUUM INTO ?").run(temporary);
+      renameSync(temporary, `${this.path}.before-v17`);
+    } finally {
+      rmSync(temporary, { force: true });
+    }
+    this.transaction(() =>
+      this.connection.exec(`
+      CREATE TABLE interaction_history(
+        id TEXT PRIMARY KEY,
+        thread_id TEXT NOT NULL REFERENCES thread(id),
+        record TEXT NOT NULL CHECK(json_valid(record))
+      );
+      CREATE INDEX interaction_history_thread ON interaction_history(thread_id);
+      CREATE INDEX interaction_history_pending_answer
+        ON interaction_history(thread_id,json_extract(record,'$.requestKey.connectionGeneration'))
+        WHERE json_extract(record,'$.kind')='answer' AND json_extract(record,'$.status')='dispatching';
+      CREATE INDEX interaction_history_observed_request
+        ON interaction_history(thread_id,json_extract(record,'$.requestKey.connectionGeneration'))
+        WHERE json_extract(record,'$.kind')='request' AND json_extract(record,'$.presence')='observed';
+      PRAGMA user_version=17;
     `),
     );
   }
