@@ -529,6 +529,26 @@
   .runtime-panel > [hidden] {
     display: none;
   }
+  .execution-status {
+    width: 100%;
+    max-width: var(--content-width);
+    margin-inline: auto;
+    padding: var(--spacing) var(--control-padding);
+    font-size: var(--text-small);
+  }
+  .execution-status-summary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: calc(var(--spacing) * 2);
+  }
+  .execution-status[data-tone="danger"] {
+    color: var(--destructive);
+  }
+  .execution-status p {
+    margin-block: var(--spacing);
+    overflow-wrap: anywhere;
+  }
 }
 
 /* Shared portaled surfaces use Base UI lifecycle attributes and geometry. */

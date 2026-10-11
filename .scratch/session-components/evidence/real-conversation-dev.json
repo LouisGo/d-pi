@@ -1,0 +1,229 @@
+{
+  "scope": "Formal pnpm dev, existing user Codex configuration and original native file, real GPT-6-Luna provider. No mock/loopback.",
+  "sourceCommit": "cdcd4cb8844c4517de33bee284f3a639b5672202",
+  "dirty": true,
+  "sourceHashes": {
+    "src/app/renderer/workbench/execution-status.tsx": "64fd15fa2aa2d421f9b4d4c95d0a1e09b89089835a25221166ac956074f8c34c",
+    "src/app/renderer/workbench/thread-workbench.tsx": "1b9f3f47f16c54964e73c3517dd249df1d97c1064511f4c5baa9cbdab37d21b8",
+    "resources/sdk/host.mjs": "45dea08af1807cf2206826c495d4f8c21f7758e501d51b05692f56ea538477c9"
+  },
+  "threadId": "4497bfcb-552f-460c-adb7-095a6310a1aa",
+  "nativeSessionId": "01a12b96-d3bf-7000-a4df-1ba48af0710c",
+  "nativeSessionFile": "/Users/louistation/.d-pi/dev/d-pi-290bf7a6186d/native-sessions/4497bfcb-552f-460c-adb7-095a6310a1aa/2026-10-11T15-31-07-327Z_01a12b96-d3bf-7000-a4df-1ba48af0710c.jsonl",
+  "sdkVersion": "18.8.9",
+  "connectivity": {
+    "oldNativeProcess": 68549,
+    "oldNativeProxyEnvironmentPresent": false,
+    "oldPrewarmFailure": "Codex websocket transport error: connection timeout",
+    "currentShellProxyMatchesExistingMacOSProxy": true,
+    "existingProxyEndpoint": "127.0.0.1:12450",
+    "viaExistingEnvironmentHttpStatus": 405,
+    "withoutProxyResult": "DNS resolving timed out after 8 seconds; http=000",
+    "inference": "Old native environment bypassed the existing proxy. Native failed with Unable to connect. Restart inheriting the current terminal environment succeeded. Does not prove every provider/network path."
+  },
+  "formalGuiObserved": [
+    "before fix only bottom Generating, empty reply area",
+    "after fix Submitted waiting for model response beside Composer",
+    "real first reply visible",
+    "second reply correctly repeated previous reply in same session"
+  ],
+  "receipts": [
+    {
+      "submissionId": "c5f0f4be-ece8-4a36-adb5-321e0213670b",
+      "threadId": "4497bfcb-552f-460c-adb7-095a6310a1aa",
+      "traceId": "574e18d0-f2b8-473b-91c9-e3eec0accdb0",
+      "revision": 3,
+      "text": "请只回复：d-pi 对话验证成功。不要调用工具。",
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "b6341f3f-70cd-4201-bad6-8f5c0d2ab3fb",
+        "connectionGeneration": "74ac5217-c219-46be-b43c-6c40b373c0bc",
+        "configContextId": "9b75d487133e7b2565bd0e64b974b92f6e9c2687e897d63e205087f28229eff4",
+        "nativeSessionRef": "/Users/louistation/.d-pi/dev/d-pi-290bf7a6186d/native-sessions/4497bfcb-552f-460c-adb7-095a6310a1aa/2026-10-11T15-31-07-327Z_01a12b96-d3bf-7000-a4df-1ba48af0710c.jsonl"
+      },
+      "requestId": "8eb29310-55c9-4246-85c2-47c1d4cba288",
+      "createdAt": "2026-10-11T15:48:22.265Z",
+      "updatedAt": "2026-10-11T15:54:54.026Z",
+      "state": "acknowledged",
+      "acknowledgedAt": "2026-10-11T15:48:22.287Z",
+      "outcome": "aborted",
+      "promptResult": {
+        "status": "aborted",
+        "agentInvoked": true,
+        "sessionSettled": true,
+        "source": "native-prompt-result"
+      }
+    },
+    {
+      "submissionId": "649098aa-3ab1-4156-8365-7ad9bddf6198",
+      "threadId": "4497bfcb-552f-460c-adb7-095a6310a1aa",
+      "traceId": "3335dbf0-dcc2-4790-af6e-18762e5997fe",
+      "revision": 5,
+      "text": "请只回复：d-pi 正式对话成功。不要调用工具。",
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "e3e4d8a2-e4e2-4e19-aa65-a8fae1b33d29",
+        "connectionGeneration": "e278ef64-343b-448b-ab52-848043401250",
+        "configContextId": "9b75d487133e7b2565bd0e64b974b92f6e9c2687e897d63e205087f28229eff4",
+        "nativeSessionRef": "/Users/louistation/.d-pi/dev/d-pi-290bf7a6186d/native-sessions/4497bfcb-552f-460c-adb7-095a6310a1aa/2026-10-11T15-31-07-327Z_01a12b96-d3bf-7000-a4df-1ba48af0710c.jsonl"
+      },
+      "requestId": "7ffdc69d-b205-4e9a-8365-b7d3774523c2",
+      "createdAt": "2026-10-11T15:56:05.675Z",
+      "updatedAt": "2026-10-11T15:56:09.086Z",
+      "state": "acknowledged",
+      "acknowledgedAt": "2026-10-11T15:56:05.702Z",
+      "outcome": "completed",
+      "promptResult": {
+        "status": "completed",
+        "agentInvoked": true,
+        "sessionSettled": true,
+        "source": "native-prompt-result"
+      }
+    },
+    {
+      "submissionId": "a750ffdc-a415-4da6-9f0c-e207f38377a4",
+      "threadId": "4497bfcb-552f-460c-adb7-095a6310a1aa",
+      "traceId": "c793a4d6-c61e-466e-bbd7-88368a069892",
+      "revision": 7,
+      "text": "继续上一轮：请复述你刚刚回复的那句话，并另起一行写‘第二轮连续对话成功’。不要调用工具。",
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "e3e4d8a2-e4e2-4e19-aa65-a8fae1b33d29",
+        "connectionGeneration": "e278ef64-343b-448b-ab52-848043401250",
+        "configContextId": "9b75d487133e7b2565bd0e64b974b92f6e9c2687e897d63e205087f28229eff4",
+        "nativeSessionRef": "/Users/louistation/.d-pi/dev/d-pi-290bf7a6186d/native-sessions/4497bfcb-552f-460c-adb7-095a6310a1aa/2026-10-11T15-31-07-327Z_01a12b96-d3bf-7000-a4df-1ba48af0710c.jsonl"
+      },
+      "requestId": "d5f65e45-51ca-43e7-850b-0fc7a8f9d17f",
+      "createdAt": "2026-10-11T15:56:32.433Z",
+      "updatedAt": "2026-10-11T15:56:34.764Z",
+      "state": "acknowledged",
+      "acknowledgedAt": "2026-10-11T15:56:32.442Z",
+      "outcome": "completed",
+      "promptResult": {
+        "status": "completed",
+        "agentInvoked": true,
+        "sessionSettled": true,
+        "source": "native-prompt-result"
+      }
+    },
+    {
+      "submissionId": "b90a0685-0ea8-493b-ab92-2657e6682fa8",
+      "threadId": "4497bfcb-552f-460c-adb7-095a6310a1aa",
+      "traceId": "602a06c8-0e71-45e8-8510-c9664b34550b",
+      "revision": 9,
+      "text": "请调用 ask 工具向我提两题后等待回答，不要写文件或执行命令。题1 id=style：‘请选择交付方式’，单选选项‘立即交付’、‘继续打磨’，推荐第一个。题2 id=checks：‘选择验证项’，multi=true，选项‘真实对话’、‘问答交互’，推荐第一个。收到整组回答后只简短复述我选的内容。",
+      "delivery": "followUp",
+      "target": {
+        "processInstanceId": "e3e4d8a2-e4e2-4e19-aa65-a8fae1b33d29",
+        "connectionGeneration": "e278ef64-343b-448b-ab52-848043401250",
+        "configContextId": "9b75d487133e7b2565bd0e64b974b92f6e9c2687e897d63e205087f28229eff4",
+        "nativeSessionRef": "/Users/louistation/.d-pi/dev/d-pi-290bf7a6186d/native-sessions/4497bfcb-552f-460c-adb7-095a6310a1aa/2026-10-11T15-31-07-327Z_01a12b96-d3bf-7000-a4df-1ba48af0710c.jsonl"
+      },
+      "requestId": "2e6fa889-42f2-4691-b90a-b3268c8bb2fe",
+      "createdAt": "2026-10-11T15:58:39.094Z",
+      "updatedAt": "2026-10-11T16:00:56.164Z",
+      "state": "acknowledged",
+      "acknowledgedAt": "2026-10-11T15:58:39.103Z",
+      "outcome": "completed",
+      "promptResult": {
+        "status": "completed",
+        "agentInvoked": true,
+        "sessionSettled": true,
+        "source": "native-prompt-result"
+      }
+    }
+  ],
+  "nativeMessages": [
+    {
+      "recordId": "3f1a752b",
+      "timestamp": "2026-10-11T15:48:22.468Z",
+      "role": "user",
+      "stopReason": null,
+      "errorMessage": null,
+      "text": "请只回复：d-pi 对话验证成功。不要调用工具。"
+    },
+    {
+      "recordId": "94fc2835",
+      "timestamp": "2026-10-11T15:54:30.102Z",
+      "role": "assistant",
+      "stopReason": "error",
+      "errorMessage": "Unable to connect. Is the computer able to access the url?",
+      "text": ""
+    },
+    {
+      "recordId": "7149816b",
+      "timestamp": "2026-10-11T15:54:54.015Z",
+      "role": "assistant",
+      "stopReason": "aborted",
+      "errorMessage": "Request was aborted",
+      "text": ""
+    },
+    {
+      "recordId": "9eae073f",
+      "timestamp": "2026-10-11T15:56:05.945Z",
+      "role": "user",
+      "stopReason": null,
+      "errorMessage": null,
+      "text": "请只回复：d-pi 正式对话成功。不要调用工具。"
+    },
+    {
+      "recordId": "b3607c38",
+      "timestamp": "2026-10-11T15:56:09.074Z",
+      "role": "assistant",
+      "stopReason": "stop",
+      "errorMessage": null,
+      "text": "d-pi 正式对话成功。"
+    },
+    {
+      "recordId": "0aeb9860",
+      "timestamp": "2026-10-11T15:56:32.576Z",
+      "role": "user",
+      "stopReason": null,
+      "errorMessage": null,
+      "text": "继续上一轮：请复述你刚刚回复的那句话，并另起一行写‘第二轮连续对话成功’。不要调用工具。"
+    },
+    {
+      "recordId": "49a7787a",
+      "timestamp": "2026-10-11T15:56:34.761Z",
+      "role": "assistant",
+      "stopReason": "stop",
+      "errorMessage": null,
+      "text": "d-pi 正式对话成功。\n第二轮连续对话成功"
+    },
+    {
+      "recordId": "88c831c5",
+      "timestamp": "2026-10-11T15:58:39.277Z",
+      "role": "user",
+      "stopReason": null,
+      "errorMessage": null,
+      "text": "请调用 ask 工具向我提两题后等待回答，不要写文件或执行命令。题1 id=style：‘请选择交付方式’，单选选项‘立即交付’、‘继续打磨’，推荐第一个。题2 id=checks：‘选择验证项’，multi=true，选项‘真实对话’、‘问答交互’，推荐第一个。收到整组回答后只简短复述我选的内容。"
+    },
+    {
+      "recordId": "3217ac5c",
+      "timestamp": "2026-10-11T15:58:44.315Z",
+      "role": "assistant",
+      "stopReason": "toolUse",
+      "errorMessage": null,
+      "text": ""
+    },
+    {
+      "recordId": "ede5c919",
+      "timestamp": "2026-10-11T16:00:49.361Z",
+      "role": "toolResult",
+      "stopReason": null,
+      "errorMessage": null,
+      "text": "User answers:\nstyle: 立即交付\nchecks: [真实对话, 问答交互] + \"中文草稿：保留切换体验\""
+    },
+    {
+      "recordId": "7b6be10f",
+      "timestamp": "2026-10-11T16:00:56.156Z",
+      "role": "assistant",
+      "stopReason": "stop",
+      "errorMessage": null,
+      "text": "交付方式：立即交付。验证项：真实对话、问答交互。补充内容：中文草稿：保留切换体验。"
+    }
+  ],
+  "limitations": [
+    "No user acceptance claim. WB04 GUI interaction validation continues; existing native timeout/approval/unknown evidence is bounded. No repeated performance sampling."
+  ]
+}

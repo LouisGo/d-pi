@@ -402,3 +402,11 @@ Activation 独立复核（固定 `5a520bf..d17e3d5`）确认三项 P2，并逐�
 需要外部实现依据时直接查同级本地t3code与文档指向的固定OMP源码，并遵守项目所有权、共享token、Icon Layer、focus-visible、状态与诊断合同。已知WB03长段落输入延迟与退出冷却缺口继续保留，完整验收未完成；本次不重复30分钟后台采集、不开展无关矩阵或扩大到WB05–WB08，不推送或发布。
 
 本次整理观察到用户Dev Main PID66647（launcher66603），继任者须重新核实当前进程、构建与窗口，不能照旧PID执行或把启动日志当真实回复证据。保留用户会话、草稿、配置和lease；不得通过删库、新建替代会话、清除真实身份或伪造ready掩盖故障。需要Main/preload更新时按既有Dev流程协调重启，先保护未保存输入和正在执行的请求。
+
+### 正式 Dev 真实对话与可见发送状态（2026-10-12，WB04 继续）
+
+- 本 thread 持续目标已建立并核实 active，起点 main `cdcd4cb` clean。先操作当时正式 Dev：简单请求取得同 trace `574e18d0-f2b8-473b-91c9-e3eec0accdb0` 的 prepared→dispatching→ACK，原生写入用户消息，回复区空白，仅底部笼统“生成中”。原生随后记录 `Unable to connect`，没有把 ACK 当回复完成。
+- 原生 PID68549 的代理环境缺失；当前终端及 macOS 已配置 `127.0.0.1:12450`，经现有代理同地址返回 HTTP405，禁用代理的有界探测在 DNS 阶段8秒超时。正常退出旧 Dev、沿用当前终端环境重新启动后，同一 native file/ID、同一 Codex GPT-6-Luna 与既有凭据先回复“d-pi 正式对话成功。”，第二轮复述上句并回复“第二轮连续对话成功”。这是限定路径的环境证据，未改变 Provider/认证配置或引入系统代理策略，不能外推全部网络路径。原配置、会话、草稿保留，无 unknown 自动重发。退出后正式 `pnpm runtime:sdk` 已同步此前 AskTool/审批 adapter，18.8.9、112包、477.1MiB；当前正式 Dev 已加载。
+- Composer 上方新增只读 ExecutionStatus，直接消费 RuntimeModel/SubmissionModel/ConversationModel：准备、连接、派发确认、等待模型首响应、实际思考/文本/工具、原生重试、待回答、暂停/停止、失败和 unknown。思考/重试只依据当前连接真实正文/生命周期；失败与未知停止动画并给发送记录、诊断ID入口。无新增业务事实、计时结算、提交重试。正式 GUI 观察到等待条即时可见和两轮真实回复。
+- 先在实际 AppModel→ThreadWorkbench 组合复现无等待条的红灯，再修复；三个受影响文件15/15通过，包含实际正文、旧连接隔离、unknown无自动命令和失败呈现。Renderer类型、design/i18n、diff检查通过，Impeccable detector无发现。范围证据 [real-conversation-dev.json](evidence/real-conversation-dev.json) 保留测试消息、原生record、收据trace、源码SHA与限制；不是 mock 或 loopback。
+- WB04 正式两题 AskTool 表单已实际到达，多选/自填、Dock转交及A→B→A草稿/焦点观察成立，整组回答与历史正在核对；本段不提前宣布WB04整体完成。WB03已知性能/冷却缺口与WB05–WB08边界保持，用户认可pending。

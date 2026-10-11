@@ -26,6 +26,7 @@ import { AnswerHistory } from "./answer-history";
 import { locateActivation } from "./attention-location";
 import { Composer } from "./composer";
 import { DecisionDock } from "./decision-dock";
+import { ExecutionStatus } from "./execution-status";
 import { FilePanel } from "./file-panel";
 import { RuntimeInspection, RuntimePanel } from "./runtime-panel";
 import { SubagentControls } from "./subagent-controls";
@@ -519,6 +520,16 @@ const ThreadContent = memo(function ThreadContent({
         </ReadingPane>
       </div>
       {thread.runtime && <DecisionDock model={thread.runtime} />}
+      {thread.runtime && (
+        <ExecutionStatus
+          runtime={thread.runtime}
+          submission={thread.submission}
+          reading={thread.reading}
+          onReviewOperations={
+            submission ? () => onReadingViewChange("submissions") : undefined
+          }
+        />
+      )}
       <Composer
         thread={thread}
         model={model}

@@ -264,6 +264,13 @@ async function fixture() {
     editRich,
     button,
     failAnswer: () => failAnswer(),
+    async publishRuntime(change: Partial<RuntimeView>) {
+      current = { ...current, ...change, revision: current.revision + 1 };
+      await act(() => {
+        for (const listener of listeners.get(a.threadId) ?? [])
+          listener(current);
+      });
+    },
     async disconnect() {
       current = {
         ...current,
@@ -295,6 +302,21 @@ async function fixture() {
     },
   };
 }
+
+it("shows the real execution wait beside the formal Composer before an assistant message exists", async () => {
+  const view = await fixture();
+  try {
+    await view.publishRuntime({ busy: true, interactions: undefined });
+    const status = view.host.querySelector('[data-execution-status="waiting"]');
+    expect(status).not.toBeNull();
+    expect(status?.textContent).toContain("等待模型响应");
+    expect(view.host.textContent).not.toContain("思考中");
+    await view.publishRuntime({ busy: false });
+    expect(view.host.querySelector("[data-execution-status]")).toBeNull();
+  } finally {
+    await view.cleanup();
+  }
+});
 
 it("retains the real Thread answer owner, current question, Dock transfer and deadlines through selection and window hiding", async () => {
   const view = await fixture();
