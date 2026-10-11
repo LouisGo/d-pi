@@ -316,3 +316,6 @@ Main 通知冻结当时事件与 SourceTarget（真实 RequestKey、发送收据
 
 
 Activation 独立复核（固定 `5a520bf..d17e3d5`）确认三项 P2，并逐项由正式拥有者反例复现后修正：ready/DOM ACK 的协议失败独立保留，普通推送与 visible 回包不能抹掉显式刷新入口；SubmissionModel 公布实际 list 读取状态，定位等待完成，成功空样本或读取失败才明确不可用；已接受的新 Thread/阅读页/开发页导航取消旧定位，组合态拒绝切换则保留。关窗/重载卸载不发送取消，仍由 Main 排队等新窗口。收据测试改为正式 SubmissionModel 与 Submissions，覆盖延迟有目标、空样本和传输失败，实际 DOM focus 后再确认。七文件77/77及Renderer类型、design通过，保留既有 React act 提示。反例日志 `/tmp/d-pi-activation-protocol-red.log`、`receipt-red.log`、`navigation-red.log`；本段最终矩阵 `/tmp/d-pi-activation-review-green.log`。修正仍待固定复核，不新增 native/provider/系统IME或完整工作包验收声明。
+
+
+固定 `d17e3d5..d601843` 复核闭合协议失败与收据读取两项，另发现导航取消早于 Main applied 的 P2：取消原生目录选择器也丢掉旧意图。已将 changeThread 取消移至 applied 回执，并捕获目标对象防晚到结果取消新意图；cancelled/failed/unknown 保留，unknown 经显式权威核对确定切到新 Thread 后再结束。先前测试首轮有一条用了错误公开方法名（chooseProject），修正为实际 choose 后，在固定旧 model 反例三项真实失败（`/tmp/d-pi-activation-applied-red2.log`）；三文件38/38与Renderer类型已通过，新增权威核对回归继续检查。窗口卸载不取消的边界保持，待固定复核。

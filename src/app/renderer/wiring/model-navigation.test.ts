@@ -16,10 +16,12 @@ async function fixture({
   loseSelectionReply = false,
   rejectSelection = false,
   loseRestore = false,
+  cancelProject = false,
 }: {
   loseSelectionReply?: boolean;
   rejectSelection?: boolean;
   loseRestore?: boolean;
+  cancelProject?: boolean;
 } = {}) {
   vi.stubGlobal("document", { documentElement: { dataset: {} } });
   const first = DraftSchema.parse({
@@ -43,6 +45,8 @@ async function fixture({
   let unreadable = loseRestore;
   const bridge: DesktopBridge = {
     request: async (command) => {
+      if (command.kind === "choose-project" && cancelProject)
+        return { kind: "cancelled" };
       if (command.kind === "list-threads")
         return parseDesktopReply(command, {
           kind: "threads",
@@ -199,4 +203,37 @@ it("keeps an activation when composing input refuses a Thread switch", async () 
   input.compose();
   await input.model.selectThread(input.second.threadId);
   expect(input.model.attention.locationStore.getState().target).toBe(target);
+});
+
+it("keeps an activation when the native project picker is cancelled", async () => {
+  const input = await fixture({ cancelProject: true });
+  const target = locate(input);
+  expect(await input.model.choose()).toEqual({ kind: "cancelled" });
+  expect(input.model.attention.locationStore.getState().target).toBe(target);
+});
+
+it.each([false, true])(
+  "keeps an activation when Main selection fails (unreadable=%s)",
+  async (loseRestore) => {
+    const input = await fixture({ rejectSelection: true, loseRestore });
+    const target = locate(input);
+    const result = await input.model.selectThread(input.second.threadId);
+    expect(result.kind).toBe(loseRestore ? "unknown" : "failed");
+    expect(input.model.attention.locationStore.getState().target).toBe(target);
+  },
+);
+
+it("ends the preserved activation only after an unknown switch is authoritatively reconciled to another Thread", async () => {
+  const input = await fixture({ loseSelectionReply: true, loseRestore: true });
+  const target = locate(input);
+  expect((await input.model.selectThread(input.second.threadId)).kind).toBe(
+    "unknown",
+  );
+  expect(input.model.attention.locationStore.getState().target).toBe(target);
+  input.allowRead();
+  expect((await input.model.reconcileSelection()).kind).toBe("applied");
+  expect(input.model.attention.locationStore.getState()).toMatchObject({
+    target: null,
+    completed: { outcome: "cancelled" },
+  });
 });

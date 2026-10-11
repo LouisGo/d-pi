@@ -744,6 +744,17 @@ export class AppModel {
     if (binding && !binding.boundary.freeze())
       return { kind: "blocked", reason: "composing" };
     const previous = this.activeThread;
+    const previousActivation = this.attention.locationStore.getState().target;
+    const finishNavigation = (result: ThreadTransitionResult) => {
+      if (
+        result.kind === "applied" &&
+        previousActivation &&
+        (command.kind !== "thread-command" ||
+          command.mutation.kind === "delete")
+      )
+        this.attention.completeLocation(previousActivation, "cancelled");
+      return result;
+    };
     previous?.deactivate();
     this.publish({
       ...state,
@@ -767,15 +778,12 @@ export class AppModel {
         this.publish({ ...state, busy: false });
         return { kind: "blocked", reason: "superseded" };
       }
-      if (
-        command.kind !== "thread-command" ||
-        command.mutation.kind === "delete"
-      )
-        this.attention.cancelLocation();
       const reply = await this.bridge.request(command);
       if (this.isCurrent(generation)) {
         if (reply.kind === "failed")
-          return await this.readSelection(generation, previous, reply.error);
+          return finishNavigation(
+            await this.readSelection(generation, previous, reply.error),
+          );
         if (reply.kind === "thread-command-result") {
           const restored = await this.bridge.request({
             kind: "restore",
@@ -797,9 +805,9 @@ export class AppModel {
             }
           }
           await this.refreshThreads(true);
-          return result;
+          return finishNavigation(result);
         }
-        return this.acceptRestore(reply);
+        return finishNavigation(this.acceptRestore(reply));
       }
       return { kind: "blocked", reason: "superseded" };
     } catch {
@@ -807,7 +815,7 @@ export class AppModel {
       if (this.isCurrent(generation)) {
         const result = await this.readSelection(generation, previous, error);
         if (command.kind === "thread-command") await this.refreshThreads(true);
-        return result;
+        return finishNavigation(result);
       }
       return { kind: "blocked", reason: "superseded" };
     } finally {
@@ -872,6 +880,7 @@ export class AppModel {
       return { kind: "blocked", reason: "busy" };
     const binding = this.editorBinding;
     const previous = this.activeThread;
+    const previousActivation = this.attention.locationStore.getState().target;
     const generation = ++this.requestGeneration;
     this.publish({ ...state, busy: true });
     const result = await this.readSelection(
@@ -879,6 +888,8 @@ export class AppModel {
       previous,
       state.notice ?? transportFailure(crypto.randomUUID()),
     );
+    if (result.kind === "applied" && previousActivation)
+      this.attention.completeLocation(previousActivation, "cancelled");
     if (
       this.activeThread === previous &&
       this.editorBinding === binding &&
