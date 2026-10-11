@@ -130,6 +130,85 @@ it("extracts wrapped edit semantics before clipping and keeps them on native fin
   p.dispose();
 });
 
+it("transmits proven delta-only batches proportionally to new text and keeps cumulative snapshots authoritative", () => {
+  const events: ConversationEvent[] = [];
+  const p = new ConversationProjection(crypto.randomUUID(), (event) =>
+    events.push(event),
+  );
+  p.accept({
+    type: "message_start",
+    message: { role: "assistant", content: "" },
+  });
+  p.flush();
+  const chunk = "x".repeat(256);
+  const serialize = vi.spyOn(JSON, "stringify");
+  for (let i = 0; i < 100; i++) {
+    p.accept({
+      type: "message_update",
+      assistantMessageEvent: { type: "text_delta", delta: chunk },
+    });
+    p.flush();
+  }
+  const appends = events.filter((event) => event.kind === "append");
+  expect(appends).toHaveLength(100);
+  expect(appends.reduce((sum, event) => sum + event.text.length, 0)).toBe(
+    25600,
+  );
+  expect(appends.every((event) => !("text" in event.item))).toBe(true);
+  // Budget accounting must not repeatedly stringify the accumulated native body either.
+  expect(
+    serialize.mock.calls.every(
+      ([value]) => typeof value !== "string" || value.length <= chunk.length,
+    ),
+  ).toBe(true);
+  serialize.mockRestore();
+  p.accept({
+    type: "message_update",
+    message: { role: "assistant", content: "rolling replacement" },
+    assistantMessageEvent: { type: "text_delta", delta: "ignored" },
+  });
+  p.flush();
+  expect(events.at(-1)).toMatchObject({
+    kind: "update",
+    bodyMode: "snapshot",
+    item: { text: "rolling replacement" },
+  });
+  p.accept({
+    type: "message_end",
+    message: { role: "assistant", content: "exact final" },
+  });
+  expect(events.at(-1)).toMatchObject({
+    kind: "update",
+    bodyMode: "final",
+    item: { text: "exact final" },
+  });
+  p.dispose();
+});
+it("keeps JSON-escaped and split-surrogate append accounting inside the actual projection byte budget", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {}, 1024);
+  p.accept({
+    type: "message_start",
+    message: { role: "assistant", content: "" },
+  });
+  p.flush();
+  for (const delta of [
+    "\ud83d",
+    "\ude80",
+    ...Array.from({ length: 24 }, () => '\n"\\'.repeat(16)),
+  ]) {
+    p.accept({
+      type: "message_update",
+      assistantMessageEvent: { type: "text_delta", delta },
+    });
+    p.flush();
+    expect(
+      Buffer.byteLength(JSON.stringify(p.snapshot().items)),
+    ).toBeLessThanOrEqual(1024);
+  }
+  expect(p.snapshot().gap).toBe(true);
+  p.dispose();
+});
+
 it("defers superseded full snapshots until a lifecycle barrier and preserves delta ordering", () => {
   const emitted: string[] = [];
   const p = new ConversationProjection(crypto.randomUUID(), (event) => {
@@ -405,8 +484,10 @@ it.each([
 it("flushes a token batch on the timer and leaves final authoritative text exact", () => {
   vi.useFakeTimers();
   const texts: string[] = [];
+  const appends: string[] = [];
   const p = new ConversationProjection(crypto.randomUUID(), (event) => {
     if (event.kind === "update") texts.push(event.item.text);
+    if (event.kind === "append") appends.push(event.text);
   });
   try {
     p.accept({
@@ -427,7 +508,8 @@ it("flushes a token batch on the timer and leaves final authoritative text exact
       type: "message_end",
       message: { role: "assistant", content: "final" },
     });
-    expect(texts).toEqual(["partial", "partial stale", "final"]);
+    expect(texts).toEqual(["partial", "final"]);
+    expect(appends).toEqual([" stale"]);
     expect(p.snapshot()).toMatchObject({
       seq: 3,
       items: [{ text: "final", state: "complete" }],

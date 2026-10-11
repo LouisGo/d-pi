@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "51967e5ec0994914e5658af65449b067d5deed5b91e8bde818017dc4fbefcc6b",
+  "inputsHash": "d52d2c1c90514cf95a12b75444268f52f049339e290d8155861d3ae21679e3ef",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 633,
-    "scannedFiles": 633,
+    "sourceFiles": 635,
+    "scannedFiles": 635,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 281,
-      "lines": 54616,
+      "files": 283,
+      "lines": 54841,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -307,7 +307,7 @@
       ],
       "materialized": true,
       "files": 39,
-      "lines": 8940,
+      "lines": 9346,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -340,7 +340,7 @@
       ],
       "materialized": true,
       "files": 59,
-      "lines": 14914,
+      "lines": 14928,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -7277,6 +7277,18 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/app/preload/bridges/attention.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": false,
+      "specifier": "./inbound-broadcast",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/preload/bridges/inbound-broadcast.ts",
+      "targetModule": "app",
+      "targetEnvironment": "preload"
+    },
+    {
       "from": "src/app/preload/bridges/configuration.ts",
       "sourceModule": "app",
       "sourceEnvironment": "preload",
@@ -7308,6 +7320,18 @@
       "to": "src/app/contracts/desktop-bridge.ts",
       "targetModule": "app",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/preload/bridges/configuration.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": false,
+      "specifier": "./inbound-broadcast",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/preload/bridges/inbound-broadcast.ts",
+      "targetModule": "app",
+      "targetEnvironment": "preload"
     },
     {
       "from": "src/app/preload/bridges/conversation-port.test.ts",
@@ -7353,6 +7377,15 @@
       "sourceModule": "app",
       "sourceEnvironment": "preload",
       "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/preload/bridges/conversation-port.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": false,
       "specifier": "../../../modules/conversation/contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -7371,6 +7404,18 @@
       "to": "src/modules/resources/contracts/public.ts",
       "targetModule": "resources",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/preload/bridges/conversation-port.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": false,
+      "specifier": "../../../shared/identity",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/identity.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
     },
     {
       "from": "src/app/preload/bridges/diagnostics.test.ts",
@@ -7502,6 +7547,57 @@
       "targetEnvironment": "preload"
     },
     {
+      "from": "src/app/preload/bridges/execution.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": false,
+      "specifier": "./inbound-broadcast",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/preload/bridges/inbound-broadcast.ts",
+      "targetModule": "app",
+      "targetEnvironment": "preload"
+    },
+    {
+      "from": "src/app/preload/bridges/inbound-broadcast.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/preload/bridges/inbound-broadcast.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/preload/bridges/inbound-broadcast.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": true,
+      "specifier": "./inbound-broadcast",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/preload/bridges/inbound-broadcast.ts",
+      "targetModule": "app",
+      "targetEnvironment": "preload"
+    },
+    {
+      "from": "src/app/preload/bridges/inbound-broadcast.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/app/preload/bridges/locale.ts",
       "sourceModule": "app",
       "sourceEnvironment": "preload",
@@ -7545,6 +7641,18 @@
       "to": "src/app/contracts/desktop-bridge.ts",
       "targetModule": "app",
       "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/preload/bridges/locale.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "preload",
+      "test": false,
+      "specifier": "./inbound-broadcast",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/preload/bridges/inbound-broadcast.ts",
+      "targetModule": "app",
+      "targetEnvironment": "preload"
     },
     {
       "from": "src/app/preload/bridges/project-reads.test.ts",
@@ -29283,6 +29391,18 @@
       "specifier": "zustand/vanilla",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/modules/conversation/core/model.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/conversation/core/model.ts",

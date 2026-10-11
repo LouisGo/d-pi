@@ -27,7 +27,14 @@ async function fixture() {
   const views = new Map<string, RuntimeView>();
   const listeners = new Set<(view: RuntimeView) => void>();
   const inspected: string[] = [];
+  const reading = new Map<string, number>();
   const bridge: DesktopBridge = {
+    conversation: {
+      connect: (threadId) => {
+        reading.set(threadId, (reading.get(threadId) ?? 0) + 1);
+        return () => reading.set(threadId, (reading.get(threadId) ?? 0) - 1);
+      },
+    },
     request: async (command) => {
       if (command.kind === "list-threads")
         return parseDesktopReply(command, { kind: "threads", threads: drafts });
@@ -84,6 +91,7 @@ async function fixture() {
     model,
     drafts,
     inspected,
+    reading,
     select,
     busy: (index: number, busy: boolean) => {
       const draft = drafts[index];
@@ -95,6 +103,25 @@ async function fixture() {
     },
   };
 }
+it("releases background transcript demand while runtime facts continue, and reacquires on selection", async () => {
+  const f = await fixture();
+  try {
+    const a = f.drafts[0];
+    if (!a) throw Error("missing first draft");
+    const runtime = f.model.runtime;
+    expect(f.reading.get(a.threadId)).toBe(1);
+    f.busy(0, true);
+    await f.select(1);
+    expect(f.reading.get(a.threadId)).toBe(0);
+    expect(runtime?.getSnapshot()?.busy).toBe(true);
+    f.busy(0, false);
+    expect(runtime?.getSnapshot()?.busy).toBe(false);
+    await f.select(0);
+    expect(f.reading.get(a.threadId)).toBe(1);
+  } finally {
+    f.model.dispose();
+  }
+});
 it("reuses complete Thread resources, touches visits, and evicts the least recent idle owner at capacity", async () => {
   const f = await fixture();
   try {

@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
+import {
+  type ThreadId,
+  ThreadIdSchema,
+  TraceIdSchema,
+} from "../../../shared/identity";
 import { UiMessageSchema } from "../../../shared/messages/contracts";
 import {
   AttachmentFailureReasonSchema,
@@ -214,5 +218,8 @@ export const SubmissionReplySchema = z.discriminatedUnion("kind", [
 export type SubmissionReply = z.infer<typeof SubmissionReplySchema>;
 export interface SubmissionBridge {
   request(command: SubmissionCommand): Promise<SubmissionReply>;
-  subscribe(listener: (reply: SubmissionReply) => void): () => void;
+  subscribe(
+    listener: (reply: SubmissionReply) => void,
+    threadId?: ThreadId,
+  ): () => void;
 }

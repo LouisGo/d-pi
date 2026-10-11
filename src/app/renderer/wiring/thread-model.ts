@@ -169,6 +169,7 @@ export class ThreadModel {
   activate(): void {
     if (this.disposed || this.active) return;
     this.active = true;
+    this.syncReading();
     this.automaticRecoveryAttempted = false;
     this.runtime?.setPreparationActive(this.preparationSuspensions === 0);
     const generation = ++this.activationGeneration;
@@ -229,6 +230,7 @@ export class ThreadModel {
     ++this.activationGeneration;
     this.runtime?.setPreparationActive(false);
     this.attachmentImports?.invalidateTargets();
+    this.reading?.disconnect();
   }
 
   /** New user intent may prepare the same session; it never replays an old receipt. */
@@ -322,7 +324,9 @@ export class ThreadModel {
     this.previousRuntimeView = view;
     if (
       this.reading &&
-      (!previous ||
+      this.active &&
+      (!this.reading.connected ||
+        !previous ||
         previous.threadId !== view.threadId ||
         (view.phase === "ready" && previous.phase !== "ready"))
     )

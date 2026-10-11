@@ -136,7 +136,7 @@ export class SubmissionModel {
     private readonly canPrepareInput: () => boolean = () => true,
     private readonly prepareExecution?: () => Promise<boolean>,
   ) {
-    this.remove = bridge.subscribe((reply) => this.accept(reply));
+    this.remove = bridge.subscribe((reply) => this.accept(reply), threadId);
     void this.refresh();
   }
   /**

@@ -5,9 +5,15 @@ import {
   ConfigurationReplySchema,
 } from "../../../modules/configuration/contracts/public";
 import type { DesktopBridge } from "../../contracts/desktop-bridge";
+import { createInboundBroadcast } from "./inbound-broadcast";
 export function createConfigurationBridge(
   ipcRenderer: IpcRenderer,
 ): Pick<DesktopBridge, "configuration"> {
+  const subscribe = createInboundBroadcast(
+    ipcRenderer,
+    "configuration:state",
+    ConfigurationEventSchema,
+  );
   return {
     configuration: {
       async request(command) {
@@ -19,13 +25,9 @@ export function createConfigurationBridge(
         );
       },
       subscribe(listener) {
-        const handler = (_event: Electron.IpcRendererEvent, raw: unknown) => {
-          const parsed = ConfigurationEventSchema.safeParse(raw);
-          if (parsed.success) listener(parsed.data);
-        };
-        ipcRenderer.on("configuration:state", handler);
+        const release = subscribe(listener);
         ipcRenderer.send("configuration:subscribe");
-        return () => ipcRenderer.removeListener("configuration:state", handler);
+        return release;
       },
     },
   };

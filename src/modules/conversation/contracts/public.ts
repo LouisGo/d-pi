@@ -99,13 +99,31 @@ export const ConversationUpdateSchema = z.strictObject({
   item: ConversationItemSchema,
   droppedBefore: z.number().int().nonnegative(),
   gap: z.boolean(),
+  bodyMode: z.enum(["replace", "snapshot", "final"]).optional(),
 });
 export type ConversationUpdate = z.infer<typeof ConversationUpdateSchema>;
+export const ConversationAppendSchema = z.strictObject({
+  kind: z.literal("append"),
+  connectionGeneration: z.uuid(),
+  seq: z.number().int().nonnegative(),
+  item: ConversationItemSchema.omit({ text: true, thinking: true }),
+  text: z.string().max(8 * 1024 * 1024),
+  thinking: z.string().max(8 * 1024 * 1024),
+  droppedBefore: z.number().int().nonnegative(),
+  gap: z.boolean(),
+});
+export type ConversationAppend = z.infer<typeof ConversationAppendSchema>;
 export const ConversationEventSchema = z.discriminatedUnion("kind", [
   ConversationSnapshotSchema,
   ConversationUpdateSchema,
+  ConversationAppendSchema,
 ]);
 export type ConversationEvent = z.infer<typeof ConversationEventSchema>;
+/** The authenticated Thread port scopes demand; changing demand never changes execution. */
+export const ConversationReadCommandSchema = z.strictObject({
+  kind: z.literal("timeline-demand"),
+  active: z.boolean(),
+});
 
 export interface ConversationPort {
   watchTool?: ToolDetailPort["watchTool"];
@@ -113,4 +131,17 @@ export interface ConversationPort {
     threadId: string,
     listener: (event: ConversationEvent) => void,
   ): () => void;
+}
+/** Wire body codec after generation/sequence admission. Missing append bases require resync. */
+export function applyConversationUpdate(
+  prior: ConversationItem | undefined,
+  event: ConversationUpdate | ConversationAppend,
+): ConversationItem | null {
+  if (event.kind === "update") return event.item;
+  if (!prior) return null;
+  return {
+    ...event.item,
+    text: prior.text + event.text,
+    thinking: (prior.thinking ?? "") + event.thinking,
+  };
 }

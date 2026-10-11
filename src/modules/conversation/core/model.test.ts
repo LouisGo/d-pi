@@ -2,6 +2,37 @@ import { expect, it } from "vitest";
 import type { ConversationEvent } from "../contracts/public";
 import { ConversationModel } from "./model";
 
+it("releases timeline demand without erasing its view and ignores detached late events", () => {
+  const callbacks: ((event: ConversationEvent) => void)[] = [];
+  let releases = 0;
+  const model = new ConversationModel({
+    connect: (_thread, listener) => {
+      callbacks.push(listener);
+      return () => {
+        releases++;
+      };
+    },
+  });
+  model.connect("thread");
+  const snapshot = {
+    kind: "snapshot",
+    connectionGeneration: crypto.randomUUID(),
+    seq: 1,
+    gap: false,
+    items: [],
+  } as const;
+  callbacks[0]?.(snapshot);
+  model.disconnect();
+  expect(releases).toBe(1);
+  expect(model.getSnapshot()).toBe(snapshot);
+  callbacks[0]?.({ ...snapshot, seq: 2 });
+  expect(model.getSnapshot()?.seq).toBe(1);
+  model.connect("thread");
+  callbacks[1]?.({ ...snapshot, seq: 10 });
+  expect(model.getSnapshot()?.seq).toBe(10);
+  model.dispose();
+});
+
 it("clears the previous Thread projection while a new Thread awaits its snapshot", () => {
   const listeners: ((event: ConversationEvent) => void)[] = [];
   const model = new ConversationModel({

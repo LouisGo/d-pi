@@ -97,6 +97,15 @@
 
 第二轮固定 `00fa7fa..2c3ee74` 综合review新增两项P2，已以失败反例修正：仅冻结与选区/焦点关联的旧/新分组连通片段，无关prepend/append继续发布；Core与生产阅读窗口共用成功原生result路径计数，intent/progress/failed均不计为变化，专用Body同步标为计划路径。生产saved→live回归保留旧DOM、选区与键盘焦点并显示新回复；相关四文件47/47通过（含既有React act提示）。继续WB03/WB04，不将本次闭合作为完整WB02完成。
 
+### WB03 milestone：窗内广播、正文 demand 与真实 append（2026-10-11）
+
+- 前段修复提交 `c4a90b8` 经固定独立复核，两项P2闭合，无新增可行动高价值问题。当前保留其生产选区/焦点回归。
+- Preload runtime/submission/attention/locale/configuration 每类广播一处schema入口；runtime与submission按真实Thread身份路由，无Thread的failure不广播猜配到各Thread。RuntimeModel在bind时注册所属Thread，SubmissionModel沿用固定Thread注册；直接请求仍核对原trace/身份。
+- 每窗只有一个runtime:port入站listener，各Thread独立port承接timeline与资源reader。最后一个timeline消费者退出时发送typed demand=false并释放Preload正文镜像；固定Inspector reader独立保持。ThreadModel切后台释放ConversationModel订阅，保留Runtime/提交事实；返回或序列缺口请求当前generation/seq快照。Host保持有界事实投影，非需求期间不向timeline分发；恢复覆盖由真实snapshot/gap表达，不把暂停视为丢包。
+- native delta-only批次以append DTO输出，metadata不重复携带累计正文；同一schema合同codec供Preload/Core按generation/seq接入，缺少append base触发已有有界重同步。snapshot、replace与final分别标记；有message的累计快照和OMP partial不当append。预算对已证明append只计算新增JSON文本bytes，含JSON转义和跨批surrogate修正；超预算仍退为显式truncated/coverage。
+- OMP18.8.9 `pi-agent-core/src/agent-loop.ts` 的partial callback只声明opaque result，arg-stream emit也是opaque preview；`event-controller.ts`使用updateStreamPreview替换，不提供统一append保证。本段只对明确message text/thinking delta使用追加；累计来源的派生成本与工具replacement bytes仍需生产trace记录。
+- 14个相关文件128/128通过，包括100批delta的25,600字符传输及不反复stringify累计正文、JSON预算、缺失base/旧代次、后台事实/固定reader/返回快照和真实Workbench两条组合。该组合仍有既有React act提示。历史范围/cache/Worker、离屏轻展开、Viewer/native warm预算、生产Electron trace及WB04尚未完成，goal保持active。
+
 按行为逐段 TDD：独立回答/双击/重连/重挂载，详情更新与final，跨Thread草稿/Undo/来源定位/lease释放与晚到导航。只跑相关类型、行为、边界和文档门禁；必要的真实 SDK/生产链路验收有界执行，不重复 provider/系统 IME 或包矩阵。
 
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。

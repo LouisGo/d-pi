@@ -5,6 +5,7 @@ import type {
   ConversationPort,
   ConversationSnapshot,
 } from "../contracts/public";
+import { applyConversationUpdate } from "../contracts/public";
 import {
   type ActivityMember,
   ActivityReadModel,
@@ -136,6 +137,19 @@ export class ConversationModel {
     this.recoveryAttempts = 0;
     this.connectInternal(threadId);
   }
+  get connected(): boolean {
+    return this.remove !== null;
+  }
+  /** Release reading only; the cached projection and execution owner remain intact. */
+  disconnect(): void {
+    if (!this.remove) return;
+    this.store.setState({
+      epoch: this.store.getState().epoch + 1,
+      resyncing: false,
+    });
+    this.remove();
+    this.remove = null;
+  }
   private connectInternal(threadId: string): void {
     if (this.disposed) return;
     this.remove?.();
@@ -187,7 +201,11 @@ export class ConversationModel {
         event.seq <= view.seq
       )
         return;
-      if (event.seq !== view.seq + 1) {
+      const item = applyConversationUpdate(
+        this.index.get(event.item.id),
+        event,
+      );
+      if (event.seq !== view.seq + 1 || !item) {
         const previous = this.store.getState();
         this.store.setState({
           view: indexedSnapshot(
@@ -233,25 +251,23 @@ export class ConversationModel {
         itemIds = itemIds.slice(removed);
         nativeIdentities = nativeIdentities.slice(removed);
       }
-      const prior = this.index.get(event.item.id);
+      const prior = this.index.get(item.id);
       if (!prior) {
-        itemIds = [...itemIds, event.item.id];
+        itemIds = [...itemIds, item.id];
         nativeIdentities = [
           ...nativeIdentities,
-          event.item.nativeRecordId ?? event.item.id,
+          item.nativeRecordId ?? item.id,
         ];
-      } else if (prior.nativeRecordId !== event.item.nativeRecordId) {
+      } else if (prior.nativeRecordId !== item.nativeRecordId) {
         const identities = [...nativeIdentities];
-        identities[itemIds.indexOf(event.item.id)] =
-          event.item.nativeRecordId ?? event.item.id;
+        identities[itemIds.indexOf(item.id)] = item.nativeRecordId ?? item.id;
         nativeIdentities = identities;
       }
       messageCount +=
-        (isMessage(event.item) ? 1 : 0) - (prior && isMessage(prior) ? 1 : 0);
-      truncatedCount +=
-        (event.item.truncated ? 1 : 0) - (prior?.truncated ? 1 : 0);
-      this.index = this.index.with(event.item);
-      this.updateActivity(event.item);
+        (isMessage(item) ? 1 : 0) - (prior && isMessage(prior) ? 1 : 0);
+      truncatedCount += (item.truncated ? 1 : 0) - (prior?.truncated ? 1 : 0);
+      this.index = this.index.with(item);
+      this.updateActivity(item);
       this.store.setState({
         view: indexedSnapshot(view, itemIds, this.index, event.seq, event.gap),
         itemIds,
@@ -260,7 +276,7 @@ export class ConversationModel {
         messageCount,
         truncatedCount,
         bodyRevision:
-          previous.bodyRevision + (bodyChanged(event.item, prior) ? 1 : 0),
+          previous.bodyRevision + (bodyChanged(item, prior) ? 1 : 0),
       });
     });
   }

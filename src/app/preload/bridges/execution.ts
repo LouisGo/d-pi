@@ -8,9 +8,27 @@ import {
 } from "../../../modules/execution/contracts/public";
 import type { DesktopBridge } from "../../contracts/desktop-bridge";
 import { createConversationPort } from "./conversation-port";
+import { createInboundBroadcast } from "./inbound-broadcast";
 export function createExecutionBridge(
   ipcRenderer: IpcRenderer,
 ): Pick<DesktopBridge, "submission" | "conversation" | "runtime"> {
+  const submission = createInboundBroadcast(
+    ipcRenderer,
+    "submission:state",
+    SubmissionReplySchema,
+    (reply) =>
+      reply.kind === "receipt"
+        ? [reply.receipt.threadId]
+        : reply.kind === "list"
+          ? reply.receipts.map((receipt) => receipt.threadId)
+          : [],
+  );
+  const runtime = createInboundBroadcast(
+    ipcRenderer,
+    "runtime:state",
+    RuntimeViewSchema,
+    (view) => [view.threadId],
+  );
   return {
     submission: {
       async request(command) {
@@ -21,14 +39,7 @@ export function createExecutionBridge(
           ),
         );
       },
-      subscribe(listener) {
-        const handler = (_event: Electron.IpcRendererEvent, raw: unknown) => {
-          const result = SubmissionReplySchema.safeParse(raw);
-          if (result.success) listener(result.data);
-        };
-        ipcRenderer.on("submission:state", handler);
-        return () => ipcRenderer.removeListener("submission:state", handler);
-      },
+      subscribe: submission,
     },
     conversation: createConversationPort(ipcRenderer),
     runtime: {
@@ -46,14 +57,7 @@ export function createExecutionBridge(
           throw Error("Foreign runtime reply");
         return reply;
       },
-      subscribe(listener) {
-        const handler = (_event: Electron.IpcRendererEvent, raw: unknown) => {
-          const parsed = RuntimeViewSchema.safeParse(raw);
-          if (parsed.success) listener(parsed.data);
-        };
-        ipcRenderer.on("runtime:state", handler);
-        return () => ipcRenderer.removeListener("runtime:state", handler);
-      },
+      subscribe: runtime,
     },
   };
 }

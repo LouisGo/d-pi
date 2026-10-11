@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
+import {
+  type ThreadId,
+  ThreadIdSchema,
+  TraceIdSchema,
+} from "../../../shared/identity";
 import { UiMessageSchema } from "../../../shared/messages/contracts";
 import {
   SubagentConfigurationCommandSchema,
@@ -102,5 +106,8 @@ export const RuntimeReplySchema = z.discriminatedUnion("kind", [
 export type RuntimeReply = z.infer<typeof RuntimeReplySchema>;
 export interface RuntimeBridge {
   request(command: RuntimeCommand): Promise<RuntimeReply>;
-  subscribe(listener: (view: RuntimeView) => void): () => void;
+  subscribe(
+    listener: (view: RuntimeView) => void,
+    threadId?: ThreadId,
+  ): () => void;
 }

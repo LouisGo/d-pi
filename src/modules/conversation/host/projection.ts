@@ -110,6 +110,10 @@ export class ConversationProjection {
       }
     | undefined;
   private pending = new Map<number, ConversationItem>();
+  private pendingAppend = new Map<number, { text: string; thinking: string }>();
+  private pendingModes = new Map<number, "replace" | "snapshot" | "final">();
+  private sent = new Set<number>();
+  private bodySizes = new Map<number, { text: number; thinking: number }>();
   private timer: ReturnType<typeof setTimeout> | undefined;
   private unknownTypes = new Set<string>();
   constructor(
@@ -715,6 +719,10 @@ export class ConversationProjection {
   private evict(id: number): void {
     this.items.delete(id);
     this.pending.delete(id);
+    this.pendingAppend.delete(id);
+    this.pendingModes.delete(id);
+    this.sent.delete(id);
+    this.bodySizes.delete(id);
     this.bytes -= this.sizes.get(id) ?? 0;
     this.sizes.delete(id);
     this.subagents.evict(id);
@@ -735,11 +743,40 @@ export class ConversationProjection {
         }
       : undefined;
   }
-  private put(item: ConversationItem): void {
+  private put(
+    item: ConversationItem,
+    append?: { text: string; thinking: string },
+    mode?: "snapshot",
+  ): void {
     if (this.budget < 1024) throw Error("Projection budget too small");
     const sizeOf = (value: ConversationItem) =>
       draftByteLength(JSON.stringify(value)) + 1;
-    let size = sizeOf(item);
+    const prior = this.items.get(item.id);
+    const previousSize = this.bodySizes.get(item.id);
+    const bodyBytes =
+      append && prior && previousSize
+        ? {
+            text:
+              previousSize.text + appendedJsonBytes(prior.text, append.text),
+            thinking:
+              previousSize.thinking +
+              appendedJsonBytes(prior.thinking ?? "", append.thinking),
+          }
+        : {
+            text: jsonBodyBytes(item.text),
+            thinking: jsonBodyBytes(item.thinking ?? ""),
+          };
+    const initialItem = item;
+    const metadata = {
+      ...item,
+      text: "",
+      ...(item.thinking !== undefined ? { thinking: "" } : {}),
+    };
+    let size =
+      draftByteLength(JSON.stringify(metadata)) +
+      1 +
+      bodyBytes.text +
+      bodyBytes.thinking;
     if (size + 1 > this.budget) {
       this.gap = true;
       this.coveragePending = true;
@@ -802,6 +839,15 @@ export class ConversationProjection {
     }
     this.bytes += size - (this.sizes.get(item.id) ?? 0);
     this.sizes.set(item.id, size);
+    this.bodySizes.set(
+      item.id,
+      item === initialItem
+        ? bodyBytes
+        : {
+            text: jsonBodyBytes(item.text),
+            thinking: jsonBodyBytes(item.thinking ?? ""),
+          },
+    );
     this.items.set(item.id, item);
     while (this.bytes > this.budget || this.items.size > 1000) {
       const id = this.items.keys().next().value;
@@ -810,7 +856,21 @@ export class ConversationProjection {
       this.gap = true;
       this.coveragePending = true;
     }
-    if (this.items.has(item.id)) this.pending.set(item.id, item);
+    if (this.items.has(item.id)) {
+      if (
+        append &&
+        this.sent.has(item.id) &&
+        !this.pending.has(item.id) &&
+        item === initialItem
+      )
+        this.pendingAppend.set(item.id, append);
+      else this.pendingAppend.delete(item.id);
+      this.pendingModes.set(
+        item.id,
+        mode ?? (item.state === "streaming" ? "replace" : "final"),
+      );
+      this.pending.set(item.id, item);
+    }
     if (!this.timer) this.timer = setTimeout(() => this.flush(), 32);
   }
   private materializeStream(): void {
@@ -824,21 +884,29 @@ export class ConversationProjection {
         stream.text.unshift(stream.snapshotDelta.delta);
       else stream.thinking.unshift(stream.snapshotDelta.delta);
     }
-    this.put({
-      ...prior,
-      id: stream.id,
-      role: "assistant",
-      label: { kind: "literal", text: "OMP" },
-      state: "streaming",
-      text:
-        (snapshot.success
-          ? textOf(snapshot.data.content)
-          : (prior?.text ?? "")) + stream.text.join(""),
-      thinking:
-        (snapshot.success
-          ? thinkingOf(snapshot.data.content)
-          : (prior?.thinking ?? "")) + stream.thinking.join(""),
-    });
+    const text = stream.text.join(""),
+      thinking = stream.thinking.join("");
+    this.put(
+      {
+        ...prior,
+        id: stream.id,
+        role: "assistant",
+        label: { kind: "literal", text: "OMP" },
+        state: "streaming",
+        text:
+          (snapshot.success
+            ? textOf(snapshot.data.content)
+            : (prior?.text ?? "")) + text,
+        thinking:
+          (snapshot.success
+            ? thinkingOf(snapshot.data.content)
+            : (prior?.thinking ?? "")) + thinking,
+      },
+      stream.snapshot === undefined && prior && !prior.truncated
+        ? { text, thinking }
+        : undefined,
+      snapshot.success ? "snapshot" : undefined,
+    );
   }
   flush(): void {
     this.materializeStream();
@@ -853,16 +921,30 @@ export class ConversationProjection {
         gap: this.gap,
       });
     }
-    for (const item of this.pending.values())
-      this.emit({
-        kind: "update",
+    for (const item of this.pending.values()) {
+      const append = this.pendingAppend.get(item.id);
+      const { text: _text, thinking: _thinking, ...metadata } = item;
+      const common = {
         connectionGeneration: this.connectionGeneration,
         seq: ++this.seq,
-        item,
         droppedBefore: this.items.keys().next().value ?? 0,
         gap: this.gap,
-      });
+      };
+      this.emit(
+        append
+          ? { ...common, kind: "append", item: metadata, ...append }
+          : {
+              kind: "update",
+              ...common,
+              item,
+              bodyMode: this.pendingModes.get(item.id) ?? "replace",
+            },
+      );
+      this.sent.add(item.id);
+    }
     this.pending.clear();
+    this.pendingAppend.clear();
+    this.pendingModes.clear();
     this.coveragePending = false;
   }
   snapshot(): ConversationSnapshot {
@@ -879,6 +961,19 @@ export class ConversationProjection {
     clearTimeout(this.timer);
     this.stream = undefined;
     this.pending.clear();
+    this.pendingAppend.clear();
+    this.pendingModes.clear();
     this.coveragePending = false;
   }
+}
+const jsonBodyBytes = (text: string): number =>
+  draftByteLength(JSON.stringify(text)) - 2;
+function appendedJsonBytes(previous: string, delta: string): number {
+  const a = previous.charCodeAt(previous.length - 1),
+    b = delta.charCodeAt(0);
+  // Separately encoded surrogate halves use 6 escaped bytes each; together they use 4 UTF-8 bytes.
+  return (
+    jsonBodyBytes(delta) -
+    (a >= 0xd800 && a <= 0xdbff && b >= 0xdc00 && b <= 0xdfff ? 8 : 0)
+  );
 }

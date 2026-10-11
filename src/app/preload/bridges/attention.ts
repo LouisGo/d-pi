@@ -5,6 +5,7 @@ import {
   AttentionReplySchema,
   AttentionSnapshotSchema,
 } from "../../contracts/attention";
+import { createInboundBroadcast } from "./inbound-broadcast";
 
 class AttentionRequestError extends Error {
   constructor(
@@ -20,6 +21,11 @@ class AttentionRequestError extends Error {
 export function createAttentionBridge(
   ipc: Pick<IpcRenderer, "invoke" | "on" | "removeListener">,
 ): { attention: AttentionBridge } {
+  const subscribe = createInboundBroadcast(
+    ipc,
+    "attention:state",
+    AttentionSnapshotSchema,
+  );
   return {
     attention: {
       async request(command) {
@@ -51,14 +57,7 @@ export function createAttentionBridge(
           throw new AttentionRequestError("invalid-reply", request.traceId);
         return reply;
       },
-      subscribe(listener) {
-        const handler = (_event: Electron.IpcRendererEvent, raw: unknown) => {
-          const parsed = AttentionSnapshotSchema.safeParse(raw);
-          if (parsed.success) listener(parsed.data);
-        };
-        ipc.on("attention:state", handler);
-        return () => ipc.removeListener("attention:state", handler);
-      },
+      subscribe,
     },
   };
 }

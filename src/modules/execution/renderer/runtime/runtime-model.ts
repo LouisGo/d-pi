@@ -55,17 +55,13 @@ export type RuntimeStateStore = Pick<
 export class RuntimeModel {
   private readonly store: RuntimeStore = createRuntimeStore();
   readonly stateStore: RuntimeStateStore = this.store;
-  private readonly unsubscribe: () => void;
+  private unsubscribe: (() => void) | undefined;
   private preparationActive = true;
   /** App-owned selection suppresses only new preparation, never active work. */
   setPreparationActive(active: boolean): void {
     this.preparationActive = active;
   }
-  constructor(private readonly bridge: RuntimeBridge) {
-    this.unsubscribe = bridge.subscribe((view) => {
-      if (view.threadId === this.store.getState().thread) this.publish(view);
-    });
-  }
+  constructor(private readonly bridge: RuntimeBridge) {}
   getSnapshot = (): RuntimeView | null => this.store.getState().view;
   subscribe = (listener: () => void): (() => void) =>
     this.store.subscribe(
@@ -117,6 +113,10 @@ export class RuntimeModel {
       requestGeneration: state.requestGeneration + 1,
       view: null,
     });
+    this.unsubscribe?.();
+    this.unsubscribe = this.bridge.subscribe((view) => {
+      if (view.threadId === this.store.getState().thread) this.publish(view);
+    }, thread);
     return this.act("inspect");
   }
   async act(
@@ -651,6 +651,6 @@ export class RuntimeModel {
       requestGeneration: state.requestGeneration + 1,
       disposed: true,
     });
-    this.unsubscribe();
+    this.unsubscribe?.();
   }
 }

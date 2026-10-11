@@ -1,6 +1,9 @@
 import type { NativeFrame } from "../../../platform/omp/protocol/public";
 import { ToolReadCommandSchema } from "../../resources/contracts/public";
-import type { ConversationEvent } from "../contracts/public";
+import {
+  type ConversationEvent,
+  ConversationReadCommandSchema,
+} from "../contracts/public";
 import { ConversationProjection } from "./projection";
 import { ToolDetails, type ToolScope } from "./tool-details";
 
@@ -26,6 +29,7 @@ export function createConversationHost(): ConversationHost {
   let port: ConversationHostPort | null = null;
   let details: ToolDetails | null = null;
   let identity: ToolScope | undefined;
+  let timelineActive = false;
   const readers = new Set<string>();
   const releaseReaders = () => {
     for (const id of readers) details?.release(id);
@@ -33,12 +37,20 @@ export function createConversationHost(): ConversationHost {
   };
 
   const post = (event: ConversationEvent): void => {
+    if (!timelineActive) return;
     try {
       port?.postMessage(event);
     } catch {
       port?.close();
       port = null;
     }
+  };
+  const snapshot = () => {
+    if (projection)
+      post({
+        ...projection.snapshot(),
+        ...(identity ? { nativeSessionKey: identity.nativeSessionKey } : {}),
+      });
   };
 
   return {
@@ -68,9 +80,16 @@ export function createConversationHost(): ConversationHost {
       }
       port?.close();
       port = next ?? null;
+      timelineActive = false;
       const attached = port;
       attached?.on?.("message", (message) => {
         if (port !== attached) return;
+        const demand = ConversationReadCommandSchema.safeParse(message.data);
+        if (demand.success) {
+          timelineActive = demand.data.active;
+          if (timelineActive) snapshot();
+          return;
+        }
         const parsed = ToolReadCommandSchema.safeParse(message.data);
         if (!parsed.success) return;
         const command = parsed.data;
@@ -87,20 +106,11 @@ export function createConversationHost(): ConversationHost {
       attached?.on?.("close", () => {
         if (port === attached) {
           releaseReaders();
+          timelineActive = false;
           port = null;
         }
       });
       port?.start();
-      if (!projection || !port) return;
-      try {
-        port.postMessage({
-          ...projection.snapshot(),
-          ...(identity ? { nativeSessionKey: identity.nativeSessionKey } : {}),
-        });
-      } catch {
-        port.close();
-        port = null;
-      }
     },
     dispose() {
       releaseReaders();
@@ -110,6 +120,7 @@ export function createConversationHost(): ConversationHost {
       projection = null;
       port?.close();
       port = null;
+      timelineActive = false;
     },
   };
 }

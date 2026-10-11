@@ -30,6 +30,73 @@ function connected(): {
   const connectionGeneration = crypto.randomUUID();
   return { model, deliver, connectionGeneration };
 }
+it("applies only ordered same-generation appends and replaces them with an exact final", async () => {
+  const { model, deliver, connectionGeneration } = connected();
+  deliver({
+    kind: "snapshot",
+    connectionGeneration,
+    seq: 0,
+    gap: false,
+    items: [item(1, "A", "streaming"), item(2, "B")],
+  });
+  const untouched = model.stateStore.getState().itemsById.get(2);
+  const metadata = {
+    id: 1,
+    role: "assistant",
+    state: "streaming",
+    label: { kind: "literal", text: "OMP" },
+  } as const;
+  deliver({
+    kind: "append",
+    connectionGeneration,
+    seq: 1,
+    gap: false,
+    droppedBefore: 0,
+    item: metadata,
+    text: "+new",
+    thinking: "thought",
+  });
+  expect(model.stateStore.getState().itemsById.get(1)).toMatchObject({
+    text: "A+new",
+    thinking: "thought",
+  });
+  expect(model.stateStore.getState().itemsById.get(2)).toBe(untouched);
+  deliver({
+    kind: "append",
+    connectionGeneration: crypto.randomUUID(),
+    seq: 2,
+    gap: false,
+    droppedBefore: 0,
+    item: metadata,
+    text: "foreign",
+    thinking: "",
+  });
+  expect(model.stateStore.getState().itemsById.get(1)?.text).toBe("A+new");
+  deliver({
+    kind: "update",
+    connectionGeneration,
+    seq: 2,
+    gap: false,
+    droppedBefore: 0,
+    item: item(1, "final"),
+    bodyMode: "final",
+  });
+  expect(model.stateStore.getState().itemsById.get(1)?.text).toBe("final");
+  deliver({
+    kind: "append",
+    connectionGeneration,
+    seq: 3,
+    gap: false,
+    droppedBefore: 0,
+    item: { ...metadata, id: 100 },
+    text: "no base",
+    thinking: "",
+  });
+  expect(model.getSnapshot()?.gap).toBe(true);
+  expect(model.stateStore.getState().itemsById.get(100)).toBeUndefined();
+  model.dispose();
+  await Promise.resolve();
+});
 
 it("notifies an entity subscriber only for the entity it selected", () => {
   const { model, deliver, connectionGeneration } = connected();

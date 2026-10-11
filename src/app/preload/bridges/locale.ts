@@ -5,9 +5,15 @@ import {
 } from "../../../shared/i18n/locale";
 import type { DesktopBridge } from "../../contracts/desktop-bridge";
 import { LocaleSetResultSchema } from "../../contracts/desktop-bridge";
+import { createInboundBroadcast } from "./inbound-broadcast";
 export function createLocaleBridge(
   ipcRenderer: IpcRenderer,
 ): Pick<DesktopBridge, "locale"> {
+  const subscribe = createInboundBroadcast(
+    ipcRenderer,
+    "locale:changed",
+    LocaleSnapshotSchema,
+  );
   return {
     locale: {
       async snapshot() {
@@ -15,14 +21,7 @@ export function createLocaleBridge(
           await ipcRenderer.invoke("locale:snapshot"),
         );
       },
-      subscribe(listener) {
-        const handler = (_event: Electron.IpcRendererEvent, raw: unknown) => {
-          const parsed = LocaleSnapshotSchema.safeParse(raw);
-          if (parsed.success) listener(parsed.data);
-        };
-        ipcRenderer.on("locale:changed", handler);
-        return () => ipcRenderer.removeListener("locale:changed", handler);
-      },
+      subscribe,
       async setPreference(preference) {
         return LocaleSetResultSchema.parse(
           await ipcRenderer.invoke(
