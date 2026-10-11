@@ -131,7 +131,7 @@ export function refreshGit(client: QueryClient, resource: ThreadContext): void {
   void client.invalidateQueries({ queryKey: gitKeys.all(resource) });
 }
 
-const localRead = { networkMode: "always" } as const;
+const localRead = { networkMode: "always", gcTime: 0 } as const;
 
 export const gitQueryOptions = {
   changes(git: GitBridge, resource: ThreadContext) {

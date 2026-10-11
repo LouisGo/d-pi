@@ -1,11 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  type ComponentType,
   Suspense,
+  useCallback,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import { match } from "ts-pattern";
 import type {
@@ -25,10 +26,14 @@ import type {
 } from "../../../modules/files/contracts/public";
 import {
   type CodeLocation,
+  type CodeReadingPosition,
   type FrozenSelection,
   isDiffViewTooLarge,
 } from "../../../modules/files/core/public";
-import type { CodeView } from "../../../modules/files/renderer/public";
+import type {
+  CodeView,
+  FileEditorComponent,
+} from "../../../modules/files/renderer/public";
 import {
   FileReadError,
   refreshFiles,
@@ -47,12 +52,6 @@ import { FileIcon, FolderIcon } from "../components/icons/common";
 import { PathLabel } from "../components/ui/path-label";
 import { readInFlight } from "./refresh-state";
 import type { WorkspaceSourceTarget } from "./source-target";
-
-type EditorComponent = ComponentType<{
-  view: CodeView;
-  onSelection: (value: FrozenSelection) => void;
-  location?: CodeLocation | undefined;
-}>;
 
 type UnavailableReason = Extract<
   FileReply | GitReply,
@@ -88,20 +87,11 @@ function statusLabel(
     .with("other", () => t("ui.files.status.other"))
     .exhaustive();
 }
-export function FilePanel({
-  resource,
-  files,
-  git,
-  editor: Editor,
-  onAttach,
-  active: panelActive = true,
-  navigation,
-  onNavigated,
-}: {
+type FilePanelProps = {
   resource: ThreadContext;
   files: FileBridge;
   git: GitBridge;
-  editor?: EditorComponent | undefined;
+  editor?: FileEditorComponent | undefined;
   onAttach: (
     selection: Extract<FrozenSelection, { kind: "selection" }>,
   ) => void;
@@ -112,12 +102,12 @@ export function FilePanel({
     phase: "selecting" | "ready";
   } | null;
   onNavigated?: (ticket: number) => void;
-}) {
-  const { t } = useI18n();
-  const client = useQueryClient();
+  isNavigationCurrent?: (ticket: number) => boolean;
+};
+
+function useFilePanelLocation() {
   const [directory, setDirectory] = useState("");
   const [browserOpen, setBrowserOpen] = useState(true);
-  const resultRef = useRef<HTMLElement>(null);
   const [filePath, setFilePath] = useState<string | undefined>(undefined);
   const [diffTarget, setDiffTarget] = useState<
     { scope: ChangeScope; path: string } | undefined
@@ -126,6 +116,84 @@ export function FilePanel({
   const [selected, setSelected] = useState<FrozenSelection | null>(null);
   const [capturedTarget, setCapturedTarget] =
     useState<WorkspaceSourceTarget | null>(null);
+  const appliedTicket = useRef<number | null>(null);
+  const [position, setPosition] = useState<CodeReadingPosition | undefined>(
+    undefined,
+  );
+  return {
+    directory,
+    setDirectory,
+    browserOpen,
+    setBrowserOpen,
+    filePath,
+    setFilePath,
+    diffTarget,
+    setDiffTarget,
+    active,
+    setActive,
+    selected,
+    setSelected,
+    capturedTarget,
+    setCapturedTarget,
+    appliedTicket,
+    position,
+    setPosition,
+  };
+}
+
+/** Hidden panels retain only a location; queries/models belong to the viewer. */
+export function FilePanel(props: FilePanelProps) {
+  const location = useFilePanelLocation();
+  const visible = useSyncExternalStore(subscribeVisibility, documentVisible);
+  return props.active === false || !visible ? null : (
+    <ActiveFilePanel {...props} locationState={location} />
+  );
+}
+
+function subscribeVisibility(listener: () => void) {
+  document.addEventListener("visibilitychange", listener);
+  return () => document.removeEventListener("visibilitychange", listener);
+}
+function documentVisible() {
+  return document.visibilityState !== "hidden";
+}
+
+function ActiveFilePanel({
+  resource,
+  files,
+  git,
+  editor: Editor,
+  onAttach,
+  active: panelActive = true,
+  navigation,
+  onNavigated,
+  isNavigationCurrent,
+  locationState,
+}: FilePanelProps & {
+  locationState: ReturnType<typeof useFilePanelLocation>;
+}) {
+  const { t } = useI18n();
+  const client = useQueryClient();
+  const resultRef = useRef<HTMLElement>(null);
+  const {
+    directory,
+    setDirectory,
+    browserOpen,
+    setBrowserOpen,
+    filePath,
+    setFilePath,
+    diffTarget,
+    setDiffTarget,
+    active,
+    setActive,
+    selected,
+    setSelected,
+    capturedTarget,
+    setCapturedTarget,
+    appliedTicket,
+    position,
+    setPosition,
+  } = locationState;
   const capturedRef =
     capturedTarget?.kind === "file"
       ? capturedTarget.file
@@ -136,7 +204,12 @@ export function FilePanel({
     if (!navigation || navigation.phase !== "ready" || !panelActive) return;
     const target = navigation.target;
     const ref = target.kind === "file" ? target.file : target.diff;
-    if (ref.threadId !== resource.threadId) return;
+    if (
+      ref.threadId !== resource.threadId ||
+      appliedTicket.current === navigation.ticket
+    )
+      return;
+    appliedTicket.current = navigation.ticket;
     setCapturedTarget(target);
     setBrowserOpen(false);
     setSelected(null);
@@ -147,20 +220,32 @@ export function FilePanel({
       setDiffTarget({ scope: target.diff.scope, path: target.diff.path });
       setActive("diff");
     }
-    onNavigated?.(navigation.ticket);
-  }, [navigation, panelActive, resource.threadId, onNavigated]);
+  }, [
+    navigation,
+    panelActive,
+    resource.threadId,
+    appliedTicket,
+    position,
+    setPosition,
+    setCapturedTarget,
+    setBrowserOpen,
+    setSelected,
+    setFilePath,
+    setActive,
+    setDiffTarget,
+  ]);
   const listing = useDirectoryListing({ files, resource, path: directory });
   const content = useFileContent({
     files,
     resource,
-    path: sameDirectory ? filePath : undefined,
+    path: sameDirectory && active === "file" ? filePath : undefined,
   });
   const changes = useChanges({ git, resource });
   const diff = useDiff({
     git,
     resource,
     scope: diffTarget?.scope ?? "index-worktree",
-    path: sameDirectory ? diffTarget?.path : undefined,
+    path: sameDirectory && active === "diff" ? diffTarget?.path : undefined,
   });
   const file = content.data;
   const changeList = changes.data;
@@ -275,7 +360,12 @@ export function FilePanel({
   const leftVersion = view?.kind === "diff" ? view.left.source.version : null;
   const rightVersion = view?.kind === "diff" ? view.right.source.version : null;
   const location = useMemo<CodeLocation | undefined>(() => {
-    if (!view || !capturedTarget) return undefined;
+    if (
+      !view ||
+      !capturedTarget ||
+      navigation?.ticket !== appliedTicket.current
+    )
+      return undefined;
     if (capturedTarget.kind === "file" && view.kind === "file") {
       const ref = capturedTarget.file;
       const range =
@@ -297,7 +387,68 @@ export function FilePanel({
     }
     return undefined;
     // Locale/source labels do not constitute a new navigation intent or version.
-  }, [capturedTarget, locationKind, fileVersion, leftVersion, rightVersion]);
+  }, [
+    capturedTarget,
+    navigation?.ticket,
+    appliedTicket,
+    position,
+    setPosition,
+    locationKind,
+    fileVersion,
+    leftVersion,
+    rightVersion,
+  ]);
+  const canLocate = useCallback(() => {
+    const ticket = appliedTicket.current;
+    return (
+      ticket !== null &&
+      navigation?.ticket === ticket &&
+      (isNavigationCurrent?.(ticket) ?? true)
+    );
+  }, [appliedTicket, navigation?.ticket, isNavigationCurrent]);
+  const onLocated = useCallback(() => {
+    const ticket = appliedTicket.current;
+    if (ticket !== null && canLocate()) onNavigated?.(ticket);
+  }, [appliedTicket, canLocate, onNavigated]);
+  useLayoutEffect(() => {
+    if (
+      !navigation ||
+      navigation.ticket !== appliedTicket.current ||
+      !capturedTarget
+    )
+      return;
+    const ref =
+      capturedTarget.kind === "file"
+        ? capturedTarget.file
+        : capturedTarget.diff;
+    const range =
+      capturedTarget.kind === "file"
+        ? capturedTarget.file.kind === "current-workspace"
+          ? capturedTarget.file.reportedRange
+          : capturedTarget.file.range
+        : capturedTarget.diff.range;
+    const reply = active === "file" ? file : diffReply;
+    if (
+      ref.directory !== resource.directory ||
+      versionChanged ||
+      reply?.kind === "unavailable" ||
+      (view && !range)
+    )
+      onLocated();
+  }, [
+    navigation,
+    appliedTicket,
+    position,
+    setPosition,
+    capturedTarget,
+    active,
+    file,
+    diffReply,
+    view,
+    resource.directory,
+    versionChanged,
+    onLocated,
+  ]);
   return (
     <section className="file-panel" aria-label={t("ui.files.section")}>
       <h2>{t("ui.files.section")}</h2>
@@ -494,6 +645,10 @@ export function FilePanel({
                   view={view}
                   onSelection={setSelected}
                   location={panelActive ? location : undefined}
+                  canLocate={canLocate}
+                  onLocated={onLocated}
+                  position={position}
+                  onPosition={setPosition}
                 />
               </Suspense>
             ) : (

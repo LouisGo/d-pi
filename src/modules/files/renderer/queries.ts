@@ -133,7 +133,8 @@ export function refreshFiles(
 }
 
 // Local reads must run even when Query reports the renderer offline.
-const localRead = { networkMode: "always" } as const;
+// No unused workspace bodies stay warm; active observers still share captures.
+const localRead = { networkMode: "always", gcTime: 0 } as const;
 
 export const fileQueryOptions = {
   listing(files: FileBridge, resource: ThreadContext, path: string) {

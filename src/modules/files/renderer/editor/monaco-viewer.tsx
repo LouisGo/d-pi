@@ -9,6 +9,8 @@ import { useEffect, useRef, useState } from "react";
 import { useI18n } from "../../../preferences/renderer/public";
 import type {
   CodeLocation,
+  CodePanePosition,
+  CodeReadingPosition,
   CodeViewModel,
   FrozenSelection,
   SelectionSource,
@@ -65,10 +67,18 @@ export function MonacoViewer({
   view,
   onSelection,
   location,
+  canLocate,
+  onLocated,
+  position,
+  onPosition,
 }: {
   view: CodeView;
   onSelection: (value: FrozenSelection) => void;
   location?: CodeLocation | undefined;
+  canLocate?: (() => boolean) | undefined;
+  onLocated?: ((located: boolean) => void) | undefined;
+  position?: CodeReadingPosition | undefined;
+  onPosition?: ((position: CodeReadingPosition) => void) | undefined;
 }) {
   const { t } = useI18n();
   const container = useRef<HTMLDivElement>(null);
@@ -76,6 +86,10 @@ export function MonacoViewer({
   selectionHandler.current = onSelection;
   const currentView = useRef(view);
   const locator = useRef<((location: CodeLocation) => void) | null>(null);
+  const callbacks = useRef({ canLocate, onLocated, onPosition });
+  callbacks.current = { canLocate, onLocated, onPosition };
+  const readingPosition = useRef(position);
+  readingPosition.current = position;
   currentView.current = view;
   // Locale display strings must not destroy the editor and its selection.
   const identity = codeViewIdentity(view);
@@ -184,6 +198,42 @@ export function MonacoViewer({
         "right",
       );
     }
+    const savePane = (
+      code: monaco.editor.IStandaloneCodeEditor,
+    ): CodePanePosition => {
+      const selection = code.getSelection();
+      return {
+        scrollTop: code.getScrollTop(),
+        scrollLeft: code.getScrollLeft(),
+        selection: selection
+          ? {
+              startLineNumber: selection.startLineNumber,
+              startColumn: selection.startColumn,
+              endLineNumber: selection.endLineNumber,
+              endColumn: selection.endColumn,
+            }
+          : null,
+      };
+    };
+    const restorePane = (
+      code: monaco.editor.IStandaloneCodeEditor,
+      pane: CodePanePosition,
+    ) => {
+      if (pane.selection) code.setSelection(pane.selection);
+      code.setScrollPosition({
+        scrollTop: pane.scrollTop,
+        scrollLeft: pane.scrollLeft,
+      });
+    };
+    const saved = readingPosition.current;
+    if (saved?.identity === identity) {
+      if (saved.kind === "file" && !("getOriginalEditor" in editor))
+        restorePane(editor, saved.pane);
+      else if (saved.kind === "diff" && "getOriginalEditor" in editor) {
+        restorePane(editor.getOriginalEditor(), saved.left);
+        restorePane(editor.getModifiedEditor(), saved.right);
+      }
+    }
     locator.current = (target) => {
       const current = currentView.current;
       if (!active || codeViewIdentity(current) !== identity) return;
@@ -244,6 +294,16 @@ export function MonacoViewer({
     resize.observe(element);
     return () => {
       if (!active) return;
+      callbacks.current.onPosition?.(
+        "getOriginalEditor" in editor
+          ? {
+              identity,
+              kind: "diff",
+              left: savePane(editor.getOriginalEditor()),
+              right: savePane(editor.getModifiedEditor()),
+            }
+          : { identity, kind: "file", pane: savePane(editor) },
+      );
       active = false;
       locator.current = null;
       observer.disconnect();
@@ -257,7 +317,11 @@ export function MonacoViewer({
     };
   }, [identity]);
   useEffect(() => {
-    if (location) locator.current?.(location);
+    const { canLocate, onLocated } = callbacks.current;
+    if (!location || (canLocate && !canLocate())) return;
+    const valid = codeLocationRange(currentView.current, location) !== null;
+    if (valid) locator.current?.(location);
+    onLocated?.(valid);
   }, [identity, location]);
   return (
     <>

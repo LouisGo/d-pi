@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "4de4dbe80e8089b19e02147aee1743a8afe8ec129fcdfc0347a32dea9880f148",
+  "inputsHash": "98d87ff142bde6a8f83d3a727323e01faebd0446dcebe1f17eb24e6a4dbbb605",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 647,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 287,
-      "lines": 56496,
+      "lines": 56887,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -166,7 +166,7 @@
       ],
       "materialized": true,
       "files": 20,
-      "lines": 3323,
+      "lines": 3496,
       "publicEntries": [
         {
           "path": "src/modules/files/contracts/public.ts",
@@ -22098,27 +22098,6 @@
       "to": "src/app/renderer/workbench/window-workbench.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
-    },
-    {
-      "from": "src/app/renderer/workbench/types.ts",
-      "sourceModule": "app",
-      "sourceEnvironment": "renderer",
-      "test": false,
-      "specifier": "react",
-      "kind": "import",
-      "resolution": "external"
-    },
-    {
-      "from": "src/app/renderer/workbench/types.ts",
-      "sourceModule": "app",
-      "sourceEnvironment": "renderer",
-      "test": false,
-      "specifier": "../../../modules/files/core/public",
-      "kind": "import",
-      "resolution": "module",
-      "to": "src/modules/files/core/public.ts",
-      "targetModule": "files",
-      "targetEnvironment": "core"
     },
     {
       "from": "src/app/renderer/workbench/types.ts",

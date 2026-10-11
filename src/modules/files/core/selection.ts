@@ -36,6 +36,16 @@ export interface CodePane {
 export type CodeViewModel =
   | { kind: "file"; text: string; source: SelectionSource }
   | { kind: "diff"; left: CodePane; right: CodePane };
+export interface CodePanePosition {
+  scrollTop: number;
+  scrollLeft: number;
+  selection: TextRange | null;
+}
+/** Presentation coordinates only: no editor/model, text or worker references. */
+export type CodeReadingPosition = { identity: string } & (
+  | { kind: "file"; pane: CodePanePosition }
+  | { kind: "diff"; left: CodePanePosition; right: CodePanePosition }
+);
 /** Stable editor identity: locale display strings must not recreate Monaco. */
 export function codeViewIdentity(view: CodeViewModel): string {
   if (view.kind === "file")

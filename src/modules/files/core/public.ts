@@ -1,5 +1,7 @@
 export { type CodeLocation, codeLocationRange } from "./location";
 export {
+  type CodePanePosition,
+  type CodeReadingPosition,
   type CodeViewModel,
   captureSelection,
   codeViewIdentity,

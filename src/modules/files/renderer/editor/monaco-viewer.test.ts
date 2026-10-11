@@ -1,5 +1,11 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import type { CodeLocation, CodeViewModel, TextRange } from "../../core/public";
+import {
+  type CodeLocation,
+  type CodeReadingPosition,
+  type CodeViewModel,
+  codeViewIdentity,
+  type TextRange,
+} from "../../core/public";
 import { MonacoViewer } from "./monaco-viewer";
 
 type Effect = () => undefined | (() => void);
@@ -13,6 +19,11 @@ interface Viewer {
   dispose(): void;
 }
 interface Code extends Viewer {
+  getScrollTop(): number;
+  getScrollLeft(): number;
+  getSelection(): TextRange | null;
+  setScrollPosition(position: { scrollTop: number; scrollLeft: number }): void;
+  setSelection(range: TextRange): void;
   revealRangeInCenter(range: TextRange): void;
   setPosition(position: { lineNumber: number; column: number }): void;
   focus(): void;
@@ -77,6 +88,16 @@ vi.mock("monaco-editor/languages/definitions/markdown/register", () => ({}));
 vi.mock("monaco-editor/editor/editor.api", () => {
   function code(model: Model | null): Code {
     const result: Code = {
+      getScrollTop: () => 120,
+      getScrollLeft: () => 16,
+      getSelection: () => ({
+        startLineNumber: 1,
+        startColumn: 1,
+        endLineNumber: 1,
+        endColumn: 2,
+      }),
+      setScrollPosition: vi.fn(),
+      setSelection: vi.fn(),
       model,
       revealRangeInCenter: vi.fn(),
       setPosition: vi.fn(),
@@ -191,10 +212,16 @@ function render(
   view: CodeViewModel,
   onSelection: (value: unknown) => void,
   location?: CodeLocation,
+  options: {
+    position?: CodeReadingPosition;
+    onPosition?: (position: CodeReadingPosition) => void;
+    canLocate?: () => boolean;
+    onLocated?: (located: boolean) => void;
+  } = {},
 ) {
   harness.refIndex = 0;
   harness.effects.length = 0;
-  MonacoViewer({ view, onSelection, location });
+  MonacoViewer({ view, onSelection, location, ...options });
 }
 function mount() {
   const cleanups = harness.effects.map((effect) => effect());
@@ -485,5 +512,66 @@ it("does not reveal a stale or nonexistent location in the current Monaco model"
   const cleanup = mount();
   expect(harness.codes[0]?.focus).not.toHaveBeenCalled();
   expect(harness.codes[0]?.revealRangeInCenter).not.toHaveBeenCalled();
+  cleanup();
+});
+
+it.each(["file", "diff"] as const)(
+  "captures and restores lightweight %s positions while disposing models",
+  (kind) => {
+    const view = appearanceView(kind);
+    const onPosition = vi.fn();
+    render(view, vi.fn(), undefined, { onPosition });
+    mount()();
+    const saved: CodeReadingPosition = onPosition.mock.calls[0]?.[0];
+    expect(saved).toMatchObject({ identity: codeViewIdentity(view), kind });
+    expect(JSON.stringify(saved)).not.toContain("working tree");
+    expect(
+      harness.models.every(
+        (model) => vi.mocked(model.dispose).mock.calls.length === 1,
+      ),
+    ).toBe(true);
+    harness.refs.length = 0;
+    harness.codes.length = 0;
+    render(view, vi.fn(), undefined, { position: saved });
+    const cleanup = mount();
+    for (const code of harness.codes) {
+      expect(code.setScrollPosition).toHaveBeenCalledWith({
+        scrollTop: 120,
+        scrollLeft: 16,
+      });
+      expect(code.setSelection).toHaveBeenCalledOnce();
+      expect(code.focus).not.toHaveBeenCalled();
+    }
+    cleanup();
+  },
+);
+
+it("checks the latest intent at the actual Monaco reveal, including a cancelled lazy mount", () => {
+  const onLocated = vi.fn();
+  const canLocate = vi.fn(() => true);
+  render(
+    appearanceView("file"),
+    vi.fn(),
+    { kind: "file", version: "raw:v1", startLine: 1, endLine: 1 },
+    { canLocate, onLocated },
+  );
+  canLocate.mockReturnValue(false);
+  const cleanup = mount();
+  expect(harness.codes[0]?.focus).not.toHaveBeenCalled();
+  expect(onLocated).not.toHaveBeenCalled();
+  cleanup();
+});
+
+it("rejects positions from a different content version", () => {
+  const view = appearanceView("file");
+  render(view, vi.fn(), undefined, {
+    position: {
+      kind: "file",
+      identity: "old",
+      pane: { scrollTop: 120, scrollLeft: 16, selection: null },
+    },
+  });
+  const cleanup = mount();
+  expect(harness.codes[0]?.setScrollPosition).not.toHaveBeenCalled();
   cleanup();
 });

@@ -162,6 +162,7 @@ const ThreadContent = memo(function ThreadContent({
   ) => void;
 }) {
   const { thread, directoryAvailable } = threadSelection;
+  const { visible } = useContext(ConversationVisibilityContext);
   const { submission } = thread;
   const releaseSourceAnchor = useRef<(() => void) | null>(null);
   const onSourceAnchorChange = useCallback(
@@ -382,10 +383,15 @@ const ThreadContent = memo(function ThreadContent({
               git={model.git}
               editor={editor}
               onAttach={onAttach}
-              active={readingView === "files"}
+              active={readingView === "files" && visible}
               navigation={workspaceNavigation}
               onNavigated={(ticket) =>
                 model.workbench.completeWorkspaceNavigation(ticket)
+              }
+              isNavigationCurrent={(ticket) =>
+                model.workbench.workspaceNavigationTicket(
+                  thread.context.threadId,
+                ) === ticket
               }
             />
           )}

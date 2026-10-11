@@ -1,11 +1,19 @@
 import { type ComponentType, lazy } from "react";
-import type { CodeLocation, FrozenSelection } from "../../core/public";
+import type {
+  CodeLocation,
+  CodeReadingPosition,
+  FrozenSelection,
+} from "../../core/public";
 import type { CodeView } from "./monaco-viewer";
 
 export type FileEditorComponent = ComponentType<{
   view: CodeView;
   onSelection: (value: FrozenSelection) => void;
   location?: CodeLocation | undefined;
+  canLocate?: (() => boolean) | undefined;
+  onLocated?: ((located: boolean) => void) | undefined;
+  position?: CodeReadingPosition | undefined;
+  onPosition?: ((position: CodeReadingPosition) => void) | undefined;
 }>;
 
 /**

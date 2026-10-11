@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import type { Editor } from "@tiptap/core";
 import type { IpcRenderer } from "electron";
-import { act, createElement } from "react";
+import { act, createElement, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import { expect, it, vi } from "vitest";
 import {
@@ -14,7 +14,9 @@ import { createConversationPort } from "../../src/app/preload/bridges/conversati
 import { readingWindow } from "../../src/app/renderer/reading/reading-window";
 import { createAppRouting } from "../../src/app/renderer/routing/router";
 import { AppModel } from "../../src/app/renderer/wiring/model";
+import { EditorAdapterContext } from "../../src/app/renderer/workbench/editor-context";
 import { createConversationHost } from "../../src/modules/conversation/host/public";
+import type { FileEditorComponent } from "../../src/modules/files/renderer/public";
 import { DraftSchema } from "../../src/modules/input/contracts/public";
 import { parseDraftBlocks } from "../../src/modules/input/core/public";
 import { I18nProvider } from "../../src/modules/preferences/renderer/public";
@@ -24,9 +26,34 @@ it.each([
   { grouped: false, artifact: false, fileNavigation: false },
   { grouped: true, artifact: false, fileNavigation: true },
   { grouped: true, artifact: true, fileNavigation: false },
+  { grouped: true, artifact: false, fileNavigation: true, superseded: true },
 ])(
   "runs the production card → inspector → pin → B editor reference → A virtual source chain (%j)",
-  async ({ grouped, artifact, fileNavigation }) => {
+  async (scenario) => {
+    const { grouped, artifact, fileNavigation } = scenario;
+    const superseded = "superseded" in scenario && scenario.superseded;
+    let finishFile: (() => void) | undefined;
+    const fileGate = new Promise<void>((resolve) => {
+      finishFile = resolve;
+    });
+    const FileEditor: FileEditorComponent = ({
+      location,
+      canLocate,
+      onLocated,
+    }) => {
+      const ref = useRef<HTMLPreElement>(null);
+      useEffect(() => {
+        if (location && (canLocate?.() ?? true)) {
+          ref.current?.focus();
+          onLocated?.(true);
+        }
+      }, [location, canLocate, onLocated]);
+      return createElement(
+        "pre",
+        { ref, tabIndex: -1, "data-file-viewer": true },
+        "sampled file",
+      );
+    };
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     // Substitute only native IPC and physical geometry. All application/router,
     // Host projection/raw reader, preload broker, inspector and Tiptap are real.
@@ -142,23 +169,26 @@ it.each([
     const bridge: DesktopBridge = {
       conversation,
       files: {
-        request: async (command) => ({
-          kind: "completed",
-          operationId: command.operationId,
-          traceId: command.traceId,
-          reply:
-            command.kind === "list"
-              ? { kind: "entries", path: "", entries: [], truncated: false }
-              : {
-                  kind: "text",
-                  path: command.path,
-                  text: "current file body",
-                  bytes: 17,
-                  version: "current-v1",
-                  capturedAt: "fixture",
-                  coverage: "complete",
-                },
-        }),
+        request: async (command) => {
+          if (command.kind === "read" && superseded) await fileGate;
+          return {
+            kind: "completed",
+            operationId: command.operationId,
+            traceId: command.traceId,
+            reply:
+              command.kind === "list"
+                ? { kind: "entries", path: "", entries: [], truncated: false }
+                : {
+                    kind: "text",
+                    path: command.path,
+                    text: "current file body",
+                    bytes: 17,
+                    version: "current-v1",
+                    capturedAt: "fixture",
+                    coverage: "complete",
+                  },
+          };
+        },
         cancel: async (command) => ({ kind: "acknowledged", ...command }),
       },
       git: {
@@ -299,9 +329,13 @@ it.each([
             { client },
             createElement(I18nProvider, {
               initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
-              children: createElement(RouterProvider, {
-                router: routing.router,
-              }),
+              children: createElement(
+                EditorAdapterContext,
+                { value: FileEditor },
+                createElement(RouterProvider, {
+                  router: routing.router,
+                }),
+              ),
             }),
           ),
         );
@@ -347,7 +381,16 @@ it.each([
             type: "tool_execution_end",
             toolCallId: "read-sibling",
             toolName: "read",
-            result: { content: [{ type: "text", text: "source read" }] },
+            result: {
+              content: [{ type: "text", text: "source read" }],
+              ...(superseded
+                ? {
+                    details: {
+                      displayContent: { text: "source read", startLine: 1 },
+                    },
+                  }
+                : {}),
+            },
             isError: false,
           } as NativeFrame);
         }
@@ -562,6 +605,21 @@ it.each([
         expect(filesPane.querySelector(".file-result")?.textContent).toContain(
           "a.ts",
         );
+        if (superseded) {
+          expect(
+            model.workbench.stateStore.getState().workspaceNavigation,
+          ).not.toBeNull();
+          await act(() => model.workbench.select(surface.id));
+          await settle();
+          const focused = document.activeElement;
+          expect(
+            container.querySelector("[data-tool-inspector]")?.contains(focused),
+          ).toBe(true);
+          await act(() => finishFile?.());
+          await settle();
+          expect(filesPane.querySelector("[data-file-viewer]")).not.toBeNull();
+          expect(document.activeElement).toBe(focused);
+        }
         expect(filesPane.querySelector(".file-result")?.textContent).toContain(
           "current-v1",
         );
@@ -585,6 +643,7 @@ it.each([
         expect.objectContaining({ kind: "abort" }),
       );
     } finally {
+      finishFile?.();
       await act(() => root.unmount());
       disconnect();
       routing.dispose();

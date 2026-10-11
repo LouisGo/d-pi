@@ -1,19 +1,8 @@
-import type { ComponentType } from "react";
-import type {
-  CodeLocation,
-  FrozenSelection,
-} from "../../../modules/files/core/public";
-import type { CodeView } from "../../../modules/files/renderer/public";
+import type { FileEditorComponent } from "../../../modules/files/renderer/public";
 import type { AppModel } from "../wiring/model";
 
 export type WorkbenchProps = {
   model: AppModel;
   /** Renderer bootstrap supplies the lazily loaded editor adapter. */
-  editor?:
-    | ComponentType<{
-        view: CodeView;
-        onSelection: (value: FrozenSelection) => void;
-        location?: CodeLocation | undefined;
-      }>
-    | undefined;
+  editor?: FileEditorComponent | undefined;
 };

@@ -157,6 +157,15 @@
 
 来源导航收尾：实际TanStack Router同地址快捷路径跳过history准入，新增反例复现旧文件意图残留并修正；后到conversation/developer意图会取消旧文件导航，返回工具也取消旧定位。Router/窗口/正式Workbench三文件21/21与FilePanel6/6通过；定位对象只跟随明确新意图和内容版本，不因语言标签重绘再次抢焦点。40项架构测试、最终build及快速门禁通过；Renderer复核仅既有composer-tag类型问题。
 
+### WB03 milestone：可见文件 Viewer 与定位提交（2026-10-11）
+
+- 固定 `a900272..d4dfa42` 独立review发现P2：路径登记后提前结束ticket，延迟文件/lazy Monaco在Inspector新意图后仍抢焦点。已以FilePanel失败反例复现；ticket现覆盖实际定位提交，Monaco执行前复核最新窗口意图，实际定位/版本不可用等有确定结论后才结束。正式App Router→工具路径→延迟文件→选择固定Inspector→晚到正文回归保留Inspector焦点；原有三条引用/Undo/返回组合继续通过。
+- 文件面板保留路径、browser状态、受限冻结选区和纯版本/坐标/滚动位置；阅读页、shell或document隐藏时卸载资源拥有者，取消最后一个只读Query reader并销毁Monaco/editor/models/Observers。重开重新采样，仅同一内容身份恢复坐标，不聚焦；file/diff仅当前模式保持正文读取。Query共享活动采样，含刷新失败的旧采样；无observer缓存warm预算明确为0（gcTime=0），没有活动工作执行abort。
+- 对照T3 `DiffWorkerPoolProvider.tsx` 和 `StyledDiffCodeView.test.tsx` 的按需consumer/最终关闭释放；沿用自有只读Monaco。固定Monaco0.57.0 `editorWorkerService.js` 在最后一个model删除后关闭Editor Worker；未手动终止它仍持有的Worker promise，未复制Pierre池/策略。
+- 七文件74/74通过；新增正式延迟导航组合后该组合4/4通过，与矩阵重叠不相加。FilePanel10/10涵盖隐藏页/隐藏窗口零读、取消/晚到、重开路径和焦点；Monaco20/20含轻坐标恢复、旧版本拒绝及lazy挂载前意图失效。Core类型通过，Renderer仅既有composer-tag基线；build/design/i18n通过，保留既有React act和大chunk提示。
+- `pnpm exec vite validation/m2/viewer --config validation/m2/viewer/vite.config.ts --host 127.0.0.1 --port 5179 --strictPort` 配合 `pnpm exec electron validation/m2/viewer.cjs`：Electron44.4.5真实Monaco文件1 model、Diff2 models；关闭/原生window.hide后models/queries/Worker归零，重开目标恢复；Diff共启动并关闭3个真实Worker，最终0。fixture只替代文件/Git IPC，无原生Agent/provider；独立临时数据和窗口已关闭，不触及现有Dev。该证据不是全工作台生产trace/输入延迟/用户验收。
+- WB02变化汇总、WB03折叠浏览器细化/原生warm/子会话/其余可见性和生产trace、WB04完整交互仍待完成，继续goal active，不推送或发布。
+
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。
 
 ### WB00 milestone（2026-10-11）
