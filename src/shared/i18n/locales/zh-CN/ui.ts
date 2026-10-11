@@ -888,6 +888,8 @@ export const ui = {
   "ui.interaction.questionProgress": "第 {current} / {total} 题",
   "ui.interaction.selectNone": "不选择任何项",
   "ui.interaction.unanswered": "尚未回答",
+  "ui.interaction.answerTooLarge":
+    "整组回答过长，请减少选项或缩短自填内容。草稿已保留。",
   "ui.interaction.editQuestion": "修改：{question}",
   "ui.interaction.previewOption": "预览：{option}",
   "ui.interaction.previousQuestion": "上一题",

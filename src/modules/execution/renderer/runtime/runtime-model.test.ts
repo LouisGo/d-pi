@@ -570,7 +570,7 @@ it("owns rich drafts across presentation changes and freezes one complete respon
       formVersion: 1,
       questionId: "q1",
     });
-    expect(model.askAnswer("A")).toBeNull();
+    expect(model.askAnswerResult("A")).toEqual({ kind: "incomplete" });
     model.editAsk("A", { kind: "select", questionId: "q1", label: "B" });
     model.editAsk("A", { kind: "none", questionId: "q2" });
     model.editAsk("A", { kind: "question", questionId: "q2" });
@@ -629,7 +629,9 @@ it("owns rich drafts across presentation changes and freezes one complete respon
       requestId: "A",
     });
     expect(model.interactionDraft("A")?.ask?.questionId).toBe("q2");
-    const answer = model.askAnswer("A");
+    const result = model.askAnswerResult("A");
+    if (result.kind !== "ready") throw Error("Incomplete form");
+    const answer = result.answer;
     expect(answer).toEqual({
       kind: "ask",
       answers: [

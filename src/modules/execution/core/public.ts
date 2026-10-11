@@ -1,4 +1,5 @@
 export {
+  type AskAnswerResult,
   buildAskAnswer,
   reduceAskForm,
   seedAskForm,

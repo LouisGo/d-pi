@@ -255,7 +255,7 @@ export function NativeInteraction({
               item={item}
               draft={draft.ask}
               disabled={!enabled || !trusted}
-              complete={model.askAnswer(item.id) !== null}
+              answerStatus={model.askAnswerResult(item.id).kind}
               edit={(action) =>
                 model.editAsk(item.id, action, surface, editorHandle)
               }

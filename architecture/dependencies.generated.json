@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "27d7bc886352ae5b3435221558abe7259c628e649e12e5aa1be44a89ddf91bc2",
+  "inputsHash": "30cca2cbebc5c3fc1b3d525098918462cd6c9ea2eb9d1164ac46413f84ec4542",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 678,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 306,
-      "lines": 62171,
+      "lines": 62226,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -118,7 +118,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 4001,
+      "lines": 4005,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -352,7 +352,7 @@
       ],
       "materialized": true,
       "files": 69,
-      "lines": 18341,
+      "lines": 18414,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -2248,6 +2248,13 @@
     {
       "module": "execution",
       "environment": "core",
+      "dependency": "shared",
+      "targetEnvironment": "shared",
+      "testOnly": false
+    },
+    {
+      "module": "execution",
+      "environment": "core",
       "dependency": "input",
       "targetEnvironment": "contracts",
       "testOnly": true
@@ -2272,13 +2279,6 @@
       "dependency": "shared",
       "targetEnvironment": "shared",
       "testOnly": true
-    },
-    {
-      "module": "execution",
-      "environment": "core",
-      "dependency": "shared",
-      "targetEnvironment": "shared",
-      "testOnly": false
     },
     {
       "module": "execution",
@@ -22593,6 +22593,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../../modules/execution/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/core/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/workbench/rich-ask-form.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../../modules/preferences/renderer/public",
       "kind": "import",
       "resolution": "module",
@@ -33670,6 +33682,30 @@
       "specifier": "ts-pattern",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/core/interactions/ask-form.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../../../shared/text/utf8",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/shared/text/utf8.ts",
+      "targetModule": "shared",
+      "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/execution/core/interactions/ask-form.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../contracts/interactions",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/interactions.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/modules/execution/core/interactions/ask-form.ts",

@@ -3,6 +3,7 @@ import type {
   AskInteractionDraft,
   Interaction,
 } from "../../../modules/execution/contracts/public";
+import type { AskAnswerResult } from "../../../modules/execution/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import {
   ActionGroup,
@@ -18,14 +19,14 @@ export function RichAskForm({
   item,
   draft,
   disabled,
-  complete,
+  answerStatus,
   edit,
   submit,
 }: {
   item: Extract<Interaction, { method: "ask" }>;
   draft: AskInteractionDraft;
   disabled: boolean;
-  complete: boolean;
+  answerStatus: AskAnswerResult["kind"];
   edit: (action: AskFormAction) => void;
   submit: () => void;
 }) {
@@ -56,6 +57,9 @@ export function RichAskForm({
           total: item.questions.length,
         })}
       </p>
+      {answerStatus === "too-large" && (
+        <p role="alert">{t("ui.interaction.answerTooLarge")}</p>
+      )}
       {draft.reviewing ? (
         <div className="rich-ask-review">
           {item.questions.map((q) => {
@@ -240,7 +244,7 @@ export function RichAskForm({
           {draft.reviewing && (
             <Button
               variant="accent"
-              disabled={disabled || !complete}
+              disabled={disabled || answerStatus !== "ready"}
               onClick={submit}
             >
               {t("ui.interaction.submit")}

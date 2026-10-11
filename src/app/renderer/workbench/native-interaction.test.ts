@@ -655,3 +655,54 @@ it("switches the Dock's single processing form between independent requests, ret
     await view.cleanup();
   }
 });
+
+it("keeps an oversized grouped answer editable and sends nothing until the user shortens it", async () => {
+  const questions = Array.from({ length: 8 }, (_, i) => ({
+    id: `q${i}`,
+    question: `问题${i}`,
+    options: [{ label: "A" }],
+  }));
+  const f = await setup({
+    id: "large",
+    method: "ask",
+    title: "整组回答",
+    questions,
+    status: "pending",
+    expiresAt: null,
+  });
+  try {
+    await act(() => {
+      for (const question of questions)
+        f.model.editAsk("large", {
+          kind: "custom",
+          questionId: question.id,
+          value: "中".repeat(16384),
+        });
+      f.model.editAsk("large", { kind: "review", value: true });
+    });
+    expect(f.host.querySelector('[role="alert"]')?.textContent).toContain(
+      "整组回答过长",
+    );
+    expect(f.button("发送回答").disabled).toBe(true);
+    expect(await f.model.submitAsk("large", "timeline")).toBeNull();
+    expect(f.answer).not.toHaveBeenCalled();
+    expect(
+      f.model.interactionDraft("large")?.ask?.answers.q0?.customInput,
+    ).toHaveLength(16384);
+    await act(() => {
+      for (const question of questions)
+        f.model.editAsk("large", {
+          kind: "custom",
+          questionId: question.id,
+          value: "中".repeat(5000),
+        });
+    });
+    expect(f.host.querySelector('[role="alert"]')).toBeNull();
+    expect(f.button("发送回答").disabled).toBe(false);
+    await act(() => f.button("发送回答").click());
+    expect(f.answer).toHaveBeenCalledOnce();
+    expect(f.answer.mock.calls[0]?.[1].answers).toHaveLength(8);
+  } finally {
+    await f.cleanup();
+  }
+});

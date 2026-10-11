@@ -1,10 +1,12 @@
 import { match } from "ts-pattern";
+import { utf8ByteLength } from "../../../../shared/text/utf8";
 import type {
   Answer,
   AskFormAction,
   AskInteractionDraft,
   AskQuestion,
 } from "../../contracts/interactions";
+import { ASK_ANSWER_BYTE_BUDGET } from "../../contracts/interactions";
 
 export function seedAskForm(questions: AskQuestion[]): AskInteractionDraft {
   return {
@@ -94,14 +96,19 @@ export function reduceAskForm(
     ? draft
     : { ...draft, answers: { ...draft.answers, [question.id]: next } };
 }
+export type AskAnswerResult =
+  | { kind: "ready"; answer: Extract<Answer, { kind: "ask" }> }
+  | { kind: "incomplete" }
+  | { kind: "too-large" };
 export function buildAskAnswer(
   questions: AskQuestion[],
   draft: AskInteractionDraft,
-): Extract<Answer, { kind: "ask" }> | null {
+): AskAnswerResult {
+  if (questions.length === 0) return { kind: "incomplete" };
   const answers: Extract<Answer, { kind: "ask" }>["answers"] = [];
   for (const question of questions) {
     const value = draft.answers[question.id];
-    if (!value) return null;
+    if (!value) return { kind: "incomplete" };
     const selectedOptions = value.selectedOptions.filter((label) =>
       question.options.some((option) => option.label === label),
     );
@@ -112,12 +119,14 @@ export function buildAskAnswer(
       customInput === undefined &&
       !(question.multi && value.explicitNone)
     )
-      return null;
+      return { kind: "incomplete" };
     answers.push({
       id: question.id,
       selectedOptions,
       ...(customInput !== undefined ? { customInput } : {}),
     });
   }
-  return { kind: "ask", answers };
+  return utf8ByteLength(JSON.stringify(answers)) > ASK_ANSWER_BYTE_BUDGET
+    ? { kind: "too-large" }
+    : { kind: "ready", answer: { kind: "ask", answers } };
 }

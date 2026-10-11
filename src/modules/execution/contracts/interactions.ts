@@ -2,6 +2,7 @@ import { z } from "zod";
 import { ThreadIdSchema, TraceIdSchema } from "../../../shared/identity";
 import type { UiMessage } from "../../../shared/messages/contracts";
 import { utf8ByteLength } from "../../../shared/text/utf8";
+export const ASK_ANSWER_BYTE_BUDGET = 262144;
 export const AskQuestionSchema = z.strictObject({
   id: z.string().min(1).max(256),
   question: z.string().max(8192),
@@ -77,7 +78,8 @@ export const AnswerSchema = z.discriminatedUnion("kind", [
       .min(1)
       .max(64)
       .refine(
-        (answers) => utf8ByteLength(JSON.stringify(answers)) <= 262144,
+        (answers) =>
+          utf8ByteLength(JSON.stringify(answers)) <= ASK_ANSWER_BYTE_BUDGET,
         "Answer exceeds byte budget",
       ),
   }),

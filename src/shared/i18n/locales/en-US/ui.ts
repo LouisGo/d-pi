@@ -988,6 +988,8 @@ export const ui = {
   "ui.interaction.questionProgress": "Question {current} of {total}",
   "ui.interaction.selectNone": "Select none",
   "ui.interaction.unanswered": "Not answered",
+  "ui.interaction.answerTooLarge":
+    "The combined answers are too long. Choose fewer options or shorten your written answers; your drafts are kept.",
   "ui.interaction.editQuestion": "Edit: {question}",
   "ui.interaction.previewOption": "Preview: {option}",
   "ui.interaction.previousQuestion": "Previous question",

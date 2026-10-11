@@ -25,7 +25,12 @@ import type {
 } from "../../contracts/public";
 import type { QueueAction } from "../../contracts/queue";
 import { RuntimeCommandSchema } from "../../contracts/runtime";
-import { buildAskAnswer, reduceAskForm, seedAskForm } from "../../core/public";
+import {
+  type AskAnswerResult,
+  buildAskAnswer,
+  reduceAskForm,
+  seedAskForm,
+} from "../../core/public";
 
 export interface RuntimeState {
   view: RuntimeView | null;
@@ -553,23 +558,23 @@ export class RuntimeModel {
       ask: reduceAskForm(item.questions, draft.ask, action),
     });
   }
-  askAnswer(id: string): Extract<Answer, { kind: "ask" }> | null {
+  askAnswerResult(id: string): AskAnswerResult {
     const item = this.getSnapshot()?.interactions?.items.find(
       (item) => item.id === id,
     );
     const draft = this.interactionDraft(id);
     return item?.method === "ask" && draft?.ask
       ? buildAskAnswer(item.questions, draft.ask)
-      : null;
+      : { kind: "incomplete" };
   }
   submitAsk(
     id: string,
     surface: InteractionEditorSurface,
     handle?: InteractionEditorHandle,
   ): Promise<InteractionOperation | null> {
-    const answer = this.askAnswer(id);
-    return answer
-      ? this.answerFromEditor(id, answer, surface, handle)
+    const result = this.askAnswerResult(id);
+    return result.kind === "ready"
+      ? this.answerFromEditor(id, result.answer, surface, handle)
       : Promise.resolve(null);
   }
   answerFromEditor(
