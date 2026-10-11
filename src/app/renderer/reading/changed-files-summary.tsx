@@ -17,6 +17,7 @@ import { PathLabel } from "../components/ui/path-label";
 import { fileReadReason } from "../workbench/file-read-reason";
 import { projectRelativePath } from "../workbench/source-target";
 import { ToolWorkbenchContext } from "../workbench/tool-inspector";
+import type { SourceCapture } from "../workbench/window-workbench";
 import {
   summarizeReportedChanges,
   type ToolChangeEvidence,
@@ -154,7 +155,7 @@ function CurrentGitSample({
     path: string;
     scope: ChangeScope;
     intent: number;
-    current: () => boolean;
+    capture: SourceCapture;
   } | null>(null);
   const data = sample.data;
   return (
@@ -185,7 +186,10 @@ function CurrentGitSample({
                       path: entry.path,
                       scope: entry.scope,
                       intent: (target?.intent ?? 0) + 1,
-                      current: workbench?.beginSourceCapture() ?? (() => false),
+                      capture: workbench?.beginSourceCapture() ?? {
+                        current: () => false,
+                        release: () => {},
+                      },
                     })
                   }
                 >
@@ -221,11 +225,16 @@ function CaptureDiff({
 }: {
   git: GitBridge;
   resource: ThreadContext;
-  target: { path: string; scope: ChangeScope; current: () => boolean };
+  target: { path: string; scope: ChangeScope; capture: SourceCapture };
 }) {
   const { t } = useI18n();
   const workbench = useContext(ToolWorkbenchContext);
   const sample = useDiff({ git, resource, ...target });
+  useEffect(() => () => target.capture.release(), [target.capture]);
+  useEffect(() => {
+    if (sample.isError || sample.data?.kind === "unavailable")
+      target.capture.release();
+  }, [sample.isError, sample.data, target.capture]);
   const sent = useRef(false);
   const [blocked, setBlocked] = useState(false);
   useEffect(() => {
@@ -239,7 +248,7 @@ function CaptureDiff({
     )
       return;
     sent.current = true;
-    if (!target.current()) {
+    if (!target.capture.current()) {
       setBlocked(true);
       return;
     }

@@ -174,6 +174,13 @@
 - 跨Thread路径回归先失败后通过；七文件组合62/62通过，随后增加冻结保存来源回归，保存/汇总两文件33/33通过（与矩阵重叠）。Core类型、design/i18n及快速门禁通过；Renderer仅既有composer-tag.tsx:134 TS7053，React act提示仍存在。未将这些检查当作原生provider、完整生产Electron性能trace或用户验收。
 - 固定 `d4dfa42..bbb9cc4` 独立review确认延迟定位P2已闭合，Viewer释放与轻位置恢复未发现新增可行动高价值问题。其余WB03原生warm/子会话/可见性/生产trace及WB04继续本轮goal，不推送或发布。
 
+### WB02/WB03 milestone：采样意图与折叠浏览器读取（2026-10-11）
+
+- 固定 `bbb9cc4..f897650` 独立review发现P2：Diff版本尚未捕获时没有登记可取消的workspace意图，同地址conversation快捷路径可让晚到Diff覆盖侧栏新意图。真实Router同地址回归复现capture仍有效，再纳入窗口hasWorkspaceIntent；capture有独立current/release，关闭/失败释放，旧capture清理不会取消后来的文件定位。未借此取消原生执行。
+- 展开的FileBrowser独立拥有目录/Git列表Query与错误/刷新状态；折叠卸载observer、取消待读、释放正文/列表缓存。文件或Diff正文可继续由当前Viewer拥有。直接来源导航不先启动无需求的浏览器读取。重开保留轻directory状态后重新采样，不用禁用query或hidden DOM冒称释放。
+- 折叠浏览器取消反例先复现0次取消，修正后11项FilePanel通过；既有导航测试的“hidden列表DOM常驻”断言按本次目标改成重开后真实重新采样，版本/焦点/晚到检查保留。Router/Summary/窗口/FilePanel/正式Workbench五文件39/39，补capture释放后窗口10/10（重叠）；Renderer仍仅原有composer-tag基线，design与快速门禁通过。
+- WB03原生warm、子会话operation、会话/媒体其余可见性及生产trace，WB04完整交互仍待完成；goal保持active，未推送或发布。
+
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。
 
 ### WB00 milestone（2026-10-11）

@@ -25,6 +25,10 @@ import type {
 } from "./source-target";
 
 export type { ToolTarget } from "./source-target";
+export interface SourceCapture {
+  current: () => boolean;
+  release: () => void;
+}
 export interface ToolSurface {
   id: string;
   target: ToolTarget;
@@ -108,6 +112,7 @@ export class WindowWorkbench {
     }
   >();
   private navigation = 0;
+  private sourceCaptureTicket: number | null = null;
   private pageTicket = 0;
   private pageCount = 0;
   private loadingTicket: number | null = null;
@@ -173,10 +178,25 @@ export class WindowWorkbench {
     return identity.threadId === threadId ? intent.ticket : undefined;
   }
   /** Own a source intent before a read can obtain the versions needed to reveal it. */
-  beginSourceCapture(): () => boolean {
+  get hasWorkspaceIntent(): boolean {
+    return (
+      !!this.store.getState().workspaceNavigation ||
+      (this.sourceCaptureTicket !== null &&
+        this.isNavigation(this.sourceCaptureTicket))
+    );
+  }
+  beginSourceCapture(): SourceCapture {
     this.cancelReturn();
     const ticket = this.navigation;
-    return () => this.isNavigation(ticket);
+    this.sourceCaptureTicket = ticket;
+    return {
+      current: () =>
+        this.sourceCaptureTicket === ticket && this.isNavigation(ticket),
+      release: () => {
+        if (this.sourceCaptureTicket === ticket)
+          this.sourceCaptureTicket = null;
+      },
+    };
   }
   completeWorkspaceNavigation(ticket: number): void {
     if (this.store.getState().workspaceNavigation?.ticket === ticket)
@@ -477,6 +497,7 @@ export class WindowWorkbench {
   }
   cancelReturn(): void {
     this.navigation++;
+    this.sourceCaptureTicket = null;
     this.store.setState({ returning: null, workspaceNavigation: null });
   }
   isNavigation(ticket: number): boolean {

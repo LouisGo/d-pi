@@ -34,7 +34,7 @@ export function createAppRouting(model: AppModel) {
     // conversation/developer intent must still supersede a pending file reveal.
     if (
       !("view" in args[0].search && args[0].search.view === "files") &&
-      model.workbench.stateStore.getState().workspaceNavigation
+      model.workbench.hasWorkspaceIntent
     )
       model.workbench.cancelReturn();
     committing = true;

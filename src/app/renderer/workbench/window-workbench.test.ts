@@ -5,6 +5,31 @@ import type { ToolDetailReply } from "../../../modules/resources/contracts/publi
 import { WindowWorkbench } from "./window-workbench";
 
 afterEach(() => vi.useRealTimers());
+it("releases a source capture without cancelling a newer reveal", async () => {
+  const work = new WindowWorkbench({
+    insert: vi.fn(),
+    select: async () => true,
+  });
+  const first = work.beginSourceCapture();
+  expect(work.hasWorkspaceIntent).toBe(true);
+  first.release();
+  expect(first.current()).toBe(false);
+  expect(work.hasWorkspaceIntent).toBe(false);
+  const next = work.beginSourceCapture();
+  await work.reveal({
+    kind: "file",
+    file: {
+      kind: "current-workspace",
+      threadId: "A",
+      directory: "/project",
+      path: "a.ts",
+    },
+  });
+  next.release();
+  expect(next.current()).toBe(false);
+  expect(work.hasWorkspaceIntent).toBe(true);
+  work.dispose();
+});
 it("opens an artifact as a separate source, freezes its version and returns to the original tool member", async () => {
   const threadId = crypto.randomUUID();
   const source = {

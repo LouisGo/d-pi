@@ -14,6 +14,51 @@ afterEach(() => {
   for (const dispose of cleanup.splice(0)) dispose();
 });
 
+it("supersedes a delayed source capture through a same-address conversation navigation", async () => {
+  const f = await fixture();
+  await f.router.navigate({
+    to: "/threads/$threadId",
+    params: { threadId: f.first.threadId },
+    search: { view: "conversation" },
+  });
+  const capture = f.model.workbench.beginSourceCapture();
+  let finish: (() => void) | undefined;
+  const pending = new Promise<void>((resolve) => {
+    finish = resolve;
+  });
+  const completed = pending.then(
+    () =>
+      capture.current() &&
+      f.model.workbench.reveal({
+        kind: "diff",
+        diff: {
+          threadId: f.first.threadId,
+          directory: f.first.directory,
+          path: "a.ts",
+          scope: "index-worktree",
+          leftVersion: "left",
+          rightVersion: "right",
+          side: "right",
+        },
+      }),
+  );
+  expect(capture.current()).toBe(true);
+  expect(
+    f.model.workbench.stateStore.getState().workspaceNavigation,
+  ).toBeNull();
+  await f.router.navigate({
+    to: "/threads/$threadId",
+    params: { threadId: f.first.threadId },
+    search: { view: "conversation" },
+  });
+  expect(capture.current()).toBe(false);
+  finish?.();
+  expect(await completed).toBe(false);
+  expect(
+    f.model.workbench.stateStore.getState().workspaceNavigation,
+  ).toBeNull();
+});
+
 async function fixture() {
   const first = DraftSchema.parse({
     schemaVersion: 1,

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "18634be8131546a705e1b91bdf713d227e1dd0696e28e288ffc5c46983b02f46",
+  "inputsHash": "9bf89365dd65b12a8d5c8ea1c367a455eaf679dde46e7cd4162b3af9aa113887",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 652,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 292,
-      "lines": 57869,
+      "lines": 58142,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -10440,6 +10440,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/workbench/tool-inspector.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../workbench/window-workbench",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/window-workbench.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },

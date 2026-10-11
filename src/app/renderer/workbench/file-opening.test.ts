@@ -20,6 +20,125 @@ import { ThreadContextSchema } from "../../../modules/threads/contracts/public";
 import { FilePanel } from "./file-panel";
 import type { WorkspaceSourceTarget } from "./source-target";
 
+it("retires collapsed browser requests and list payloads, and resamples only when reopened", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const resource = ThreadContextSchema.parse({
+    threadId: crypto.randomUUID(),
+    workingDirectoryId: crypto.randomUUID(),
+    directory: "/fixture",
+  });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  const cancel = vi.fn(async (identity) => ({
+    kind: "acknowledged" as const,
+    ...identity,
+  }));
+  const requests: (FileRequest | GitRequest)[] = [];
+  let finish: (() => void) | undefined;
+  const gate = new Promise<void>((resolve) => {
+    finish = resolve;
+  });
+  let ready = false;
+  const files: FileBridge = {
+    cancel,
+    request: async (request) => {
+      requests.push(request);
+      if (!ready) await gate;
+      return {
+        kind: "completed",
+        operationId: request.operationId,
+        traceId: request.traceId,
+        reply: {
+          kind: "entries",
+          path: "",
+          entries: [{ path: "a.ts", name: "a.ts", kind: "file" }],
+          truncated: false,
+        },
+      };
+    },
+  };
+  const git: GitBridge = {
+    cancel,
+    request: async (request) => {
+      requests.push(request);
+      if (!ready) await gate;
+      return {
+        kind: "completed",
+        operationId: request.operationId,
+        traceId: request.traceId,
+        reply: {
+          kind: "changes",
+          repository: "/fixture",
+          head: "head",
+          capturedAt: "now",
+          coverage: "project-paths-current-sample",
+          entries: [],
+          truncated: false,
+        },
+      };
+    },
+  };
+  try {
+    await act(() =>
+      root.render(
+        createElement(
+          QueryClientProvider,
+          { client },
+          createElement(I18nProvider, {
+            initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+            children: createElement(FilePanel, {
+              resource,
+              files,
+              git,
+              onAttach: () => {},
+            }),
+          }),
+        ),
+      ),
+    );
+    expect(requests).toHaveLength(2);
+    const details = container.querySelector("details");
+    if (!details) throw Error("missing browser");
+    await act(() => {
+      details.open = false;
+      details.dispatchEvent(new Event("toggle", { bubbles: true }));
+    });
+    expect(cancel).toHaveBeenCalledTimes(2);
+    ready = true;
+    await act(async () => {
+      finish?.();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    expect(container.querySelector(".file-list")).toBeNull();
+    expect(
+      client
+        .getQueryCache()
+        .getAll()
+        .filter((query) => query.state.data !== undefined),
+    ).toHaveLength(0);
+    await act(() => {
+      details.open = true;
+      details.dispatchEvent(new Event("toggle", { bubbles: true }));
+    });
+    await act(async () => {
+      await vi.waitFor(() =>
+        expect(container.querySelector(".file-list button")).not.toBeNull(),
+      );
+    });
+    expect(requests).toHaveLength(4);
+  } finally {
+    finish?.();
+    await act(() => root.unmount());
+    client.clear();
+    container.remove();
+    vi.unstubAllGlobals();
+  }
+});
+
 it.each(["file", "diff", "hidden-window"] as const)(
   "releases a hidden %s reader and viewer, retains the target, and resamples on return",
   async (scenario) => {
@@ -423,17 +542,20 @@ it.each([
       );
     try {
       await act(renderPanel);
-      await vi.waitFor(async () => {
-        await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
-        expect(container.querySelector(".file-list button")).not.toBeNull();
-      });
-      const browserList = container.querySelector(".file-list");
-      const target = container.querySelector<HTMLButtonElement>(
-        kind === "file" ? ".file-list button" : ".change-list button",
-      );
-      if (!target) throw Error("missing file/diff target");
-      if (!navigation) await act(() => target.click());
-      else if (!superseded) expect(onNavigated).not.toHaveBeenCalled();
+      if (!navigation) {
+        await vi.waitFor(async () => {
+          await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+          expect(container.querySelector(".file-list button")).not.toBeNull();
+        });
+        const target = container.querySelector<HTMLButtonElement>(
+          kind === "file" ? ".file-list button" : ".change-list button",
+        );
+        if (!target) throw Error("missing file/diff target");
+        await act(() => target.click());
+      } else {
+        expect(container.querySelector(".file-list")).toBeNull();
+        if (!superseded) expect(onNavigated).not.toHaveBeenCalled();
+      }
       expect(
         container.querySelector<HTMLDetailsElement>(
           ".file-navigation > [data-slot=disclosure]",
@@ -485,7 +607,10 @@ it.each([
         details.open = true;
         details.dispatchEvent(new Event("toggle"));
       });
-      expect(container.querySelector(".file-list")).toBe(browserList);
+      await vi.waitFor(async () => {
+        await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
+        expect(container.querySelector(".file-list button")).not.toBeNull();
+      });
       if (!changed)
         expect(result?.querySelector("[data-result]")).not.toBeNull();
     } finally {

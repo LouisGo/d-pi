@@ -153,7 +153,6 @@ function ActiveFilePanel({
   locationState: ReturnType<typeof useFilePanelLocation>;
 }) {
   const { t } = useI18n();
-  const client = useQueryClient();
   const resultRef = useRef<HTMLElement>(null);
   const {
     directory,
@@ -214,13 +213,11 @@ function ActiveFilePanel({
     setActive,
     setDiffTarget,
   ]);
-  const listing = useDirectoryListing({ files, resource, path: directory });
   const content = useFileContent({
     files,
     resource,
     path: sameDirectory && active === "file" ? filePath : undefined,
   });
-  const changes = useChanges({ git, resource });
   const diff = useDiff({
     git,
     resource,
@@ -228,30 +225,15 @@ function ActiveFilePanel({
     path: sameDirectory && active === "diff" ? diffTarget?.path : undefined,
   });
   const file = content.data;
-  const changeList = changes.data;
   const diffReply = diff.data;
-  const transportError =
-    listing.isError || content.isError || changes.isError || diff.isError;
-  const failedSamples = [
-    listing.error,
-    content.error,
-    changes.error,
-    diff.error,
-  ].filter(
+  const transportError = content.isError || diff.isError;
+  const failedSamples = [content.error, diff.error].filter(
     (error) => error instanceof FileReadError || error instanceof GitReadError,
   );
   // A re-sample stays pending through Query's retry window, so `isError` alone
   // would leave the previous capture on screen with no sign that a read is in
   // flight. See `readInFlight` for why a disabled query must not count.
-  const refreshing =
-    readInFlight(listing) ||
-    readInFlight(content) ||
-    readInFlight(changes) ||
-    readInFlight(diff);
-  const refresh = () => {
-    refreshFiles(client, resource);
-    refreshGit(client, resource);
-  };
+  const refreshing = readInFlight(content) || readInFlight(diff);
   const listDirectory = (path: string) => {
     setCapturedTarget(null);
     setDirectory(path);
@@ -439,98 +421,24 @@ function ActiveFilePanel({
           onToggle={(event) => setBrowserOpen(event.currentTarget.open)}
         >
           <DisclosureTrigger>{t("ui.files.choose")}</DisclosureTrigger>
-          <div className="file-browser">
-            <ActionGroup>
-              <strong>{t("ui.files.tree")}</strong>
-              <Button variant="ghost" disabled={refreshing} onClick={refresh}>
-                {t("ui.files.refresh")}
-              </Button>
-              {directory && (
-                <Button
-                  variant="ghost"
-                  onClick={() =>
-                    listDirectory(directory.split("/").slice(0, -1).join("/"))
-                  }
-                >
-                  {t("ui.files.up")}
-                </Button>
-              )}
-            </ActionGroup>
-            <p className="file-meta">/{directory}</p>
-            {listing.data?.kind === "unavailable" && (
-              <p role="status">{reason(listing.data.reason, t)}</p>
+          {browserOpen &&
+            !(
+              navigation?.phase === "ready" &&
+              navigation.ticket !== appliedTicket.current &&
+              (navigation.target.kind === "file"
+                ? navigation.target.file.threadId
+                : navigation.target.diff.threadId) === resource.threadId
+            ) && (
+              <FileBrowser
+                resource={resource}
+                files={files}
+                git={git}
+                directory={directory}
+                listDirectory={listDirectory}
+                openFile={openFile}
+                openDiff={openDiff}
+              />
             )}
-            {listing.data?.kind === "entries" && (
-              <div className="file-list">
-                {listing.data.entries.map((entry) => (
-                  <Button
-                    key={entry.path}
-                    variant="navigation"
-                    className="w-full justify-start text-left"
-                    title={entry.path}
-                    aria-label={entry.path}
-                    onClick={() =>
-                      entry.kind === "directory"
-                        ? listDirectory(entry.path)
-                        : openFile(entry.path)
-                    }
-                  >
-                    {entry.kind === "directory" ? <FolderIcon /> : <FileIcon />}
-                    <PathLabel path={entry.name} />
-                  </Button>
-                ))}
-              </div>
-            )}
-            {listing.data?.kind === "entries" && listing.data.truncated && (
-              <p role="status">{t("ui.files.truncatedTree")}</p>
-            )}
-          </div>
-          <div className="git-panel">
-            <ActionGroup>
-              <strong>{t("ui.files.gitHeading")}</strong>
-              <Button variant="ghost" disabled={refreshing} onClick={refresh}>
-                {t("ui.files.refresh")}
-              </Button>
-            </ActionGroup>
-            <p className="file-meta">{t("ui.files.gitDisclaimer")}</p>
-            {changeList?.kind === "unavailable" && (
-              <p role="status">{reason(changeList.reason, t)}</p>
-            )}
-            {changeList?.kind === "changes" && (
-              <>
-                <p className="file-meta">
-                  {changeList.repository} · HEAD{" "}
-                  {changeList.head ?? t("ui.files.unborn")} ·{" "}
-                  {changeList.capturedAt} · {t("ui.files.projectSample")}
-                </p>
-                <div className="change-list">
-                  {changeList.entries.map((entry) => (
-                    <Button
-                      key={`${entry.scope}:${entry.path}`}
-                      variant="navigation"
-                      className="w-full justify-start text-left"
-                      title={entry.path}
-                      onClick={() => openDiff(entry.scope, entry.path)}
-                    >
-                      {entry.scope === "head-index"
-                        ? t("ui.files.headIndex")
-                        : entry.scope === "index-worktree"
-                          ? t("ui.files.indexWorktree")
-                          : t("ui.files.untracked")}{" "}
-                      · {statusLabel(entry.status, t)} ·{" "}
-                      <PathLabel path={entry.path} />
-                    </Button>
-                  ))}
-                </div>
-                {changeList.truncated && (
-                  <p role="status">{t("ui.files.truncatedChanges")}</p>
-                )}
-                {!changeList.entries.length && (
-                  <p className="muted">{t("ui.files.noChanges")}</p>
-                )}
-              </>
-            )}
-          </div>
         </Disclosure>
       </div>
       <section
@@ -671,5 +579,145 @@ function ActiveFilePanel({
         </div>
       )}
     </section>
+  );
+}
+
+/** Lists own their observers only while the browser is expanded. */
+function FileBrowser({
+  resource,
+  files,
+  git,
+  directory,
+  listDirectory,
+  openFile,
+  openDiff,
+}: {
+  resource: ThreadContext;
+  files: FileBridge;
+  git: GitBridge;
+  directory: string;
+  listDirectory: (path: string) => void;
+  openFile: (path: string) => void;
+  openDiff: (scope: ChangeScope, path: string) => void;
+}) {
+  const { t } = useI18n();
+  const client = useQueryClient();
+  const listing = useDirectoryListing({ files, resource, path: directory });
+  const changes = useChanges({ git, resource });
+  const changeList = changes.data;
+  const refreshing = readInFlight(listing) || readInFlight(changes);
+  const refresh = () => {
+    refreshFiles(client, resource);
+    refreshGit(client, resource);
+  };
+  const failedSamples = [listing.error, changes.error].filter(
+    (error) => error instanceof FileReadError || error instanceof GitReadError,
+  );
+  return (
+    <>
+      <div className="file-browser">
+        <ActionGroup>
+          <strong>{t("ui.files.tree")}</strong>
+          <Button variant="ghost" disabled={refreshing} onClick={refresh}>
+            {t("ui.files.refresh")}
+          </Button>
+          {directory && (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                listDirectory(directory.split("/").slice(0, -1).join("/"))
+              }
+            >
+              {t("ui.files.up")}
+            </Button>
+          )}
+        </ActionGroup>
+        <p className="file-meta">/{directory}</p>
+        {listing.data?.kind === "unavailable" && (
+          <p role="status">{reason(listing.data.reason, t)}</p>
+        )}
+        {listing.data?.kind === "entries" && (
+          <div className="file-list">
+            {listing.data.entries.map((entry) => (
+              <Button
+                key={entry.path}
+                variant="navigation"
+                className="w-full justify-start text-left"
+                title={entry.path}
+                aria-label={entry.path}
+                onClick={() =>
+                  entry.kind === "directory"
+                    ? listDirectory(entry.path)
+                    : openFile(entry.path)
+                }
+              >
+                {entry.kind === "directory" ? <FolderIcon /> : <FileIcon />}
+                <PathLabel path={entry.name} />
+              </Button>
+            ))}
+          </div>
+        )}
+        {listing.data?.kind === "entries" && listing.data.truncated && (
+          <p role="status">{t("ui.files.truncatedTree")}</p>
+        )}
+      </div>
+      <div className="git-panel">
+        <ActionGroup>
+          <strong>{t("ui.files.gitHeading")}</strong>
+          <Button variant="ghost" disabled={refreshing} onClick={refresh}>
+            {t("ui.files.refresh")}
+          </Button>
+        </ActionGroup>
+        <p className="file-meta">{t("ui.files.gitDisclaimer")}</p>
+        {changeList?.kind === "unavailable" && (
+          <p role="status">{reason(changeList.reason, t)}</p>
+        )}
+        {changeList?.kind === "changes" && (
+          <>
+            <p className="file-meta">
+              {changeList.repository} · HEAD{" "}
+              {changeList.head ?? t("ui.files.unborn")} ·{" "}
+              {changeList.capturedAt} · {t("ui.files.projectSample")}
+            </p>
+            <div className="change-list">
+              {changeList.entries.map((entry) => (
+                <Button
+                  key={`${entry.scope}:${entry.path}`}
+                  variant="navigation"
+                  className="w-full justify-start text-left"
+                  title={entry.path}
+                  onClick={() => openDiff(entry.scope, entry.path)}
+                >
+                  {entry.scope === "head-index"
+                    ? t("ui.files.headIndex")
+                    : entry.scope === "index-worktree"
+                      ? t("ui.files.indexWorktree")
+                      : t("ui.files.untracked")}{" "}
+                  · {statusLabel(entry.status, t)} ·{" "}
+                  <PathLabel path={entry.path} />
+                </Button>
+              ))}
+            </div>
+            {changeList.truncated && (
+              <p role="status">{t("ui.files.truncatedChanges")}</p>
+            )}
+            {!changeList.entries.length && (
+              <p className="muted">{t("ui.files.noChanges")}</p>
+            )}
+          </>
+        )}
+      </div>
+      {refreshing && <p role="status">{t("ui.files.refreshing")}</p>}
+      {(listing.isError || changes.isError) && (
+        <div role="alert">
+          <p>{t("ui.files.transportFailed")}</p>
+          {failedSamples.map((error) => (
+            <p key={error.traceId} className="trace">
+              {t("app.trace", { traceId: error.traceId })}
+            </p>
+          ))}
+        </div>
+      )}
+    </>
   );
 }
