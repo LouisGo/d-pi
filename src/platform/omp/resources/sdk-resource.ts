@@ -7,13 +7,13 @@ import { RuntimeResourceError } from "./runtime-resource";
 import { holdSdkResources } from "./sdk-resource-guard";
 
 const ManifestSchema = z.object({
-  sdkVersion: z.literal("18.8.7"),
+  sdkVersion: z.literal("18.8.9"),
   bunVersion: z.literal("1.3.14"),
   sdkImportFix: z.never().optional(),
   sdkSource: z.object({
     file: z.literal("node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts"),
     sha256: z.literal(
-      "d693c1b71e70f61c38c2cf564c608750401179509e8c6c414d1e124baa96e69a",
+      "4b9f9aa2a62deacfbe36fa0ea0e262b2c4d753fb724de0dea8a0e379bf60f8c8",
     ),
   }),
   platform: z.string(),
@@ -70,7 +70,7 @@ export async function managedSdkRuntime(
       const metadata = z
         .object({
           name: z.literal(`@oh-my-pi/${name}`),
-          version: z.literal("18.8.7"),
+          version: z.literal("18.8.9"),
           exports: z.object({
             ".": z.object({ import: z.literal("./src/index.ts") }),
             ...(name === "pi-coding-agent"

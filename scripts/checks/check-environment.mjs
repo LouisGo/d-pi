@@ -183,7 +183,7 @@ export function inspectSdk(root, sdkRoot, declared) {
     issues.push("Retired SDK import correction is not permitted");
   const sdkSourcePath = "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts";
   const officialSdkSha256 =
-    "d693c1b71e70f61c38c2cf564c608750401179509e8c6c414d1e124baa96e69a";
+    "4b9f9aa2a62deacfbe36fa0ea0e262b2c4d753fb724de0dea8a0e379bf60f8c8";
   const sourcePath = join(sdkRoot, sdkSourcePath);
   if (
     manifest.sdkSource?.file !== sdkSourcePath ||

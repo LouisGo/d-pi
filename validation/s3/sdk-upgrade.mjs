@@ -12,7 +12,7 @@ import { createTestEnvironment } from "../../scripts/testing/test-environment.mj
 const sdk = resolve(process.env.SDK_ROOT ?? "resources/sdk");
 const sandbox = createTestEnvironment({ prefix: "d-pi-sdk-upgrade-" });
 const manifest = JSON.parse(await readFile(join(sdk, "manifest.json"), "utf8"));
-assert.equal(manifest.sdkVersion, "18.8.7");
+assert.equal(manifest.sdkVersion, "18.8.9");
 assert.equal(manifest.bunVersion, "1.3.14");
 assert.equal(manifest.platform, "darwin-arm64");
 const coding = join(sdk, "node_modules/@oh-my-pi/pi-coding-agent/src");

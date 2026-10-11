@@ -44,7 +44,7 @@ describe("private immutable input preparation", () => {
   it("prepares XLSX through the fixed native document converter and retains its derived content for preview and clipboard", async () => {
     const convertDocument = vi.fn(async () => ({
       text: "## Sheet1\n| Name | Count |\n| --- | --- |\n| Alice | 7 |",
-      converterVersion: "omp18.8.7-markit-xlsx-coordinates-v1",
+      converterVersion: "omp18.8.9-markit-xlsx-coordinates-v1",
     }));
     const s = store({ convertDocument });
     const item = await s.importBytes(thread, {
@@ -855,7 +855,7 @@ it("repairs restored legacy XLSX originals without rewriting copied frozen conte
   await legacy.close();
   const convertDocument = vi.fn(async () => ({
     text: "| Alpha |  | 123 | 7 |",
-    converterVersion: "omp18.8.7-markit-xlsx-coordinates-v1",
+    converterVersion: "omp18.8.9-markit-xlsx-coordinates-v1",
   }));
   const restored = store({ convertDocument });
   expect(await restored.preview(thread, item.id)).toMatchObject({
@@ -887,7 +887,7 @@ it("repairs restored legacy XLSX originals without rewriting copied frozen conte
   expect(copied?.converterVersion).toBe("omp18.8.7-markit-xlsx");
   expect(await restored.retry(otherThread, copy.items[0].id)).toMatchObject({
     status: "ready",
-    converterVersion: "omp18.8.7-markit-xlsx-coordinates-v1",
+    converterVersion: "omp18.8.9-markit-xlsx-coordinates-v1",
   });
   await restored.close();
 });

@@ -31,8 +31,8 @@ try {
     text: result.markdown,
     converterVersion:
       extension === ".xlsx"
-        ? "omp18.8.7-markit-xlsx-coordinates-v1"
-        : `omp18.8.7-${extension === ".ipynb" ? "notebookToEditableText" : `markit-${extension.slice(1)}`}`,
+        ? "omp18.8.9-markit-xlsx-coordinates-v1"
+        : `omp18.8.9-${extension === ".ipynb" ? "notebookToEditableText" : `markit-${extension.slice(1)}`}`,
   });
   if (Buffer.byteLength(output) > 1048576) throw Error("transport-too-large");
   process.stdout.write(output);

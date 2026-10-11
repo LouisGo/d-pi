@@ -55,20 +55,20 @@ try {
     "node_modules/.pnpm",
     root,
   );
-  // Reviewed npm 18.8.7 SDK entry with the pnpm-versioned XLSX patch.
+  // Reviewed npm 18.8.9 SDK entry with the pnpm-versioned XLSX patch.
   // Copy the installed graph byte-for-byte; never patch staged resources.
   const sdkSourcePath = join(
     root,
     "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
   );
   const officialSdkSha256 =
-    "d693c1b71e70f61c38c2cf564c608750401179509e8c6c414d1e124baa96e69a";
+    "4b9f9aa2a62deacfbe36fa0ea0e262b2c4d753fb724de0dea8a0e379bf60f8c8";
   const sdkSha256 = createHash("sha256")
     .update(await readFile(sdkSourcePath))
     .digest("hex");
   if (
-    versions["@oh-my-pi/pi-coding-agent"] !== "18.8.7" ||
-    versions["@oh-my-pi/pi-utils"] !== "18.8.7" ||
+    versions["@oh-my-pi/pi-coding-agent"] !== "18.8.9" ||
+    versions["@oh-my-pi/pi-utils"] !== "18.8.9" ||
     sdkSha256 !== officialSdkSha256
   )
     throw Error("Official SDK source changed; refusing unreviewed resources");

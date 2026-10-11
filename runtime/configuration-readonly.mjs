@@ -1,4 +1,4 @@
-// Versioned, read-only boundary for OMP 18.8.7. No OAuth/key resolution or refresh.
+// Versioned, read-only boundary for OMP 18.8.9. No OAuth/key resolution or refresh.
 
 import { Database } from "bun:sqlite";
 import { createHash } from "node:crypto";
@@ -604,7 +604,7 @@ export async function readConfigurationSnapshot(frame) {
         thinking: thinkingCapabilities(model),
       };
     });
-    // 18.8.7 may retain incompatible rows while rejecting their materialized
+    // 18.8.9 may retain incompatible rows while rejecting their materialized
     // value. Ask the official exported reader; row deletion is not its receipt.
     // Its writes/migrations remain confined to the same disposable copy.
     if (

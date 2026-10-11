@@ -7,19 +7,19 @@
 | 内容 | 使用者与事实来源 | 维护边界 |
 | --- | --- | --- |
 | 仓库 `AGENTS.md`、`.agents/skills/` | 开发 d-pi 的 Agent；[项目路由](../../AGENTS.md)选择适用的源码、测试和合同约定 | 是开发方法，不是 App 的内置功能、原生插件清单或运行配置。修改不表示用户已认可产品行为。 |
-| 随包 OMP SDK、Bun 与依赖闭包 | 原生 OMP 进程；[package.json](../../package.json)、锁文件与 [资源准备](../../scripts/runtime/prepare-sdk.mjs) | 固定版本、未修改的官方源码；App 只拥有 [薄宿主](../../runtime/host.mjs) 和 [消费门控](../../src/platform/omp/consumption-gate.ts)，不复制原生执行、队列或历史。 |
+| 随包 OMP SDK、Bun 与依赖闭包 | 原生 OMP 进程；[package.json](../../package.json)、锁文件与 [资源准备](../../scripts/runtime/prepare-sdk.mjs) | 固定版本、官方 SDK 入口保持未修改；XLSX 使用锁内版本化补丁，其他原生源码不改写。App 只拥有 [薄宿主](../../runtime/host.mjs) 和 [消费门控](../../src/platform/omp/consumption-gate.ts)，不复制原生执行、队列或历史。 |
 | OMP 原生配置、凭据、skills 与扩展 | OMP 按 profile、环境及实际工作目录发现；薄宿主先设置原生 profile 再导入 SDK | 默认复用已有原生配置。App 偏好和数据目录独立；`D_PI_DATA_DIR` 只隔离 App 数据，不隔离 OMP。 |
 | App 原生会话目录与绑定 | Main 管持久关联和会话目录，SessionHost 管连接；[宿主合同](../architecture/modules/runtime-host.md) | 原生历史仍由 OMP 写入。窗口重连与冷恢复不同；缺执行全周期单写证据时冷恢复只读。 |
 
-开发 skill 与 OMP skill 可以采用相同的 Markdown 格式，目录用途不产生运行时隔离。固定 OMP 18.8.7 的 `src/discovery/agents.ts` 会发现项目 `.agent/skills`、`.agents/skills`，`src/extensibility/skills.ts` 默认启用 project agents 来源；薄宿主没有禁用原生发现。因此把 d-pi 仓库本身作为受信任项目运行时，OMP 也可能发现这些开发文件。是否加载以原生配置和发现规则为准，不能宣称“仓库 skill 永不进入产品会话”，也不把开发 skill 安装当作产品扩展安装。
+开发 skill 与 OMP skill 可以采用相同的 Markdown 格式，目录用途不产生运行时隔离。固定 OMP 18.8.9 的 `src/discovery/agents.ts` 会发现项目 `.agent/skills`、`.agents/skills`，`src/extensibility/skills.ts` 默认启用 project agents 来源；薄宿主没有禁用原生发现。因此把 d-pi 仓库本身作为受信任项目运行时，OMP 也可能发现这些开发文件。是否加载以原生配置和发现规则为准，不能宣称“仓库 skill 永不进入产品会话”，也不把开发 skill 安装当作产品扩展安装。
 
 新目录默认仅浏览，不为探测配置或 skills 启动项目 OMP/扩展。允许项目执行之后才进入原生加载路径；这项信任和 App 文件读取授权分开，均不构成工具沙箱。原生配置/扩展损坏时保留原配置并如实报告，不删除配置、改用全局 OMP 或新建替代原生会话掩盖失败。
 
 ## 固定 SDK 的证据入口
 
-当前固定基线为 OMP 18.8.7 / Bun 1.3.14，声明和安装结果以 `package.json`、锁文件及 `pnpm check:environment` 为准。以下层次各自证明不同问题，不互相替代：
+当前固定基线为 OMP 18.8.9 / Bun 1.3.14，声明和安装结果以 `package.json`、锁文件及 `pnpm check:environment` 为准。以下层次各自证明不同问题，不互相替代：
 
-历史例外：2026-10-01 用户认可[专属规格](../../.scratch/runtime-hardening-omp1845/spec.md)与[升级顺序](../../.scratch/runtime-hardening-omp1845/upgrade.md)，核实官方 18.4.5/18.4.6 原包导入失败后，授权固定 **18.4.6** 并仅在随包 staging 把 SDK 的 `./ratchet/prelude` 改为 `./ratchet/prelude.ts`。已安装官方包保持原样；准备脚本核对原文件 SHA-256 后修正一次，manifest 记录原文件/补丁哈希及授权日期。2026-10-10 固定升级到 **18.8.7** 后，官方包已使用 `./ratchet/prelude-definition`，旧 staging 补丁及强制 `sdkImportFix` 合同退役。准备、运行与包后检查改为强制 `sdkSource` 的固定路径及未修改官方文件 SHA-256，并拒绝旧补丁记录。任何新增原生源码变更仍需另行决定。
+历史例外：2026-10-01 用户认可[专属规格](../../.scratch/runtime-hardening-omp1845/spec.md)与[升级顺序](../../.scratch/runtime-hardening-omp1845/upgrade.md)，核实官方 18.4.5/18.4.6 原包导入失败后，授权固定 **18.4.6** 并仅在随包 staging 把 SDK 的 `./ratchet/prelude` 改为 `./ratchet/prelude.ts`。已安装官方包保持原样；准备脚本核对原文件 SHA-256 后修正一次，manifest 记录原文件/补丁哈希及授权日期。2026-10-10 固定升级到 **18.8.7** 后，官方包已使用 `./ratchet/prelude-definition`，旧 staging 补丁及强制 `sdkImportFix` 合同退役。准备、运行与包后检查改为强制 `sdkSource` 的固定路径及未修改官方文件 SHA-256，并拒绝旧补丁记录。2026-10-11 附件修复加入锁内版本化 XLSX 补丁，修复 XML namespace 与稀疏单元格坐标；18.8.9 整合保留其字节与 SHA-256，未恢复 staging 补丁。准备时必须核对该文件的固定哈希并写入 manifest，运行与包后检查校验该哈希。补丁见 [固定 XLSX 补丁](../../patches/@oh-my-pi__pi-coding-agent@18.8.9.patch)；新增原生源码变更仍需另行决定。
 
 | 层次 | 入口 | 覆盖与限制 |
 | --- | --- | --- |
@@ -48,7 +48,7 @@ manifest 校验 Bun 与受管启动文件（含 managed-session.mjs）的完整�
 
 ## SDK 升级入口
 
-当前固定 18.8.7，升级证据、首次 grammar 联网边界与数据回滚约束见[本切片](../../.scratch/omp-sdk-1887/spec.md)。后续升级在自己的规格中先写候选版本和兼容问题，并按以下顺序复核；不为升级引入通用 AgentRuntime、Run 或检查点系统：
+当前固定 18.8.9，升级与回滚证据见[本切片](../../.scratch/omp-sdk-1889/spec.md)；首次 grammar 联网边界沿用 [18.8.7 记录](../../.scratch/omp-sdk-1887/spec.md)。后续升级在自己的规格中先写候选版本和兼容问题，并按以下顺序复核；不为升级引入通用 AgentRuntime、Run 或检查点系统：
 
 1. 核对候选官方源码、exports、Bun 要求、原生 profile/配置发现、历史格式和消费前 hook。协调 SDK 包声明、锁文件、SDK manifest 与启动兼容校验；CLI artifact manifest 仅属独立历史/opt-in CLI 入口，不能只改一个版本号或自动迁移外部 CLI。
 2. 运行已有协议、收据、Host 和录制回放。旧录制只证明 App 能解析旧事件；另运行候选 SDK 的实际控制与 ACK 后失败检查，必要时新增带版本说明的录制。

@@ -1,0 +1,20 @@
+{
+  "scenario": "sdk-upgrade",
+  "build": {
+    "version": "0.1.0-workbench.3",
+    "commit": "1e73213ea81966e1979c58cad1b0342f34487381",
+    "dirty": true,
+    "id": "1e73213e-dirty-7e9f06fd"
+  },
+  "checks": [
+    "macOS arm64 packaged Main/Host cold resume preserves same Thread/native file-ID, readable real 18.8.9 JSONL and unsent draft without replay",
+    "missing saved model fails visibly while retaining history/draft/binding; explicit replacement recovers same identity without provider traffic or replacement session"
+  ],
+  "providerCalls": 1,
+  "sourceAsarSha256": "5064e087907704cc0361e458bbcc6cb836bdacb310b70facb07fbd8b7341d571",
+  "limitations": [
+    "localhost deterministic supplier, no real credentials/billing",
+    "native inspection evidence recorded separately",
+    "M2 V1-04 and queue/subagent/read-performance increments remain open"
+  ]
+}

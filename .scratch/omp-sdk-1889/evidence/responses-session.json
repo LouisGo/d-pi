@@ -1,0 +1,11 @@
+{
+  "sdkVersion": "18.8.9",
+  "emptyTerminalToolExecuted": true,
+  "sameNativeFileAndId": true,
+  "coldEncryptedReasoningReplayed": true,
+  "thresholdTokens": 12000,
+  "automaticHandoffPersisted": true,
+  "continuedWithSummary": true,
+  "localhostCalls": 5,
+  "realSupplierRequests": 0
+}

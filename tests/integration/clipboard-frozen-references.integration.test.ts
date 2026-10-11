@@ -529,7 +529,7 @@ it("freezes a real SDK PDF only with existing text-only consent, preserves its d
       representation: "pdf-text",
       textOnly: true,
       coverageGaps: expect.arrayContaining(["ocr-pages:1"]),
-      converterVersion: "omp18.8.7-pdfToMarkdown",
+      converterVersion: "omp18.8.9-pdfToMarkdown",
     });
     expect(sourceRecord?.derivedDigest).toMatch(/^[a-f0-9]{64}$/);
     rmSync(join(sourceRoot, "document.pdf"));
