@@ -188,10 +188,21 @@ const ThreadContent = memo(function ThreadContent({
       ? state.returning
       : null,
   );
+  const workspaceNavigation = useStore(model.workbench.stateStore, (state) => {
+    const intent = state.workspaceNavigation;
+    if (!intent) return null;
+    const ref =
+      intent.target.kind === "file" ? intent.target.file : intent.target.diff;
+    return ref.threadId === thread.context.threadId ? intent : null;
+  });
   useLayoutEffect(() => {
     if (returning && readingView !== "conversation")
       onReadingViewChange("conversation");
   }, [returning, readingView, onReadingViewChange]);
+  useLayoutEffect(() => {
+    if (workspaceNavigation && readingView !== "files")
+      onReadingViewChange("files");
+  }, [workspaceNavigation, readingView, onReadingViewChange]);
   const { t } = useI18n();
   const initializing = useSyncExternalStore(
     useCallback(
@@ -371,6 +382,11 @@ const ThreadContent = memo(function ThreadContent({
               git={model.git}
               editor={editor}
               onAttach={onAttach}
+              active={readingView === "files"}
+              navigation={workspaceNavigation}
+              onNavigated={(ticket) =>
+                model.workbench.completeWorkspaceNavigation(ticket)
+              }
             />
           )}
         </ReadingPane>

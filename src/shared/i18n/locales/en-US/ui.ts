@@ -42,6 +42,11 @@ export const ui = {
   "tool.semantic.matches": "{count} matches",
   "tool.semantic.filter": "Filter loaded results",
   "tool.semantic.noLoadedHits": "No matching loaded results.",
+  "tool.semantic.openCurrentFile": "Open current file",
+  "ui.files.sourceVersionChanged":
+    "The requested file or Diff version has changed. The current content cannot represent that source.",
+  "ui.files.reportedLocation":
+    "The original result reported line {line}. This is a current file sample; the content and position may differ.",
 
   "workbench.tool.surfaceLimit":
     "Close a pinned detail before opening another (8 maximum).",

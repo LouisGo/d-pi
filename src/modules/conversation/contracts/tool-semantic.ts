@@ -48,6 +48,7 @@ export const ToolSemanticSchema = z.discriminatedUnion("kind", [
     kind: z.literal("search"),
     query: text,
     scope: path,
+    cwd: path.optional(),
     hits: z.array(ToolSearchHitSchema).max(8),
     excerpt: text,
     matchCount: z.number().int().nonnegative().optional(),

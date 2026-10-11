@@ -154,6 +154,11 @@ export class AppModel {
     this.workbench = new WindowWorkbench({
       conversation: bridge.conversation,
       history: bridge.history,
+      projectDirectory: (threadId) =>
+        this.threads.get(threadId)?.context.directory ??
+        this.threadListStore
+          .getState()
+          .threads.find((thread) => thread.threadId === threadId)?.directory,
       insert: (key, controller, intent) =>
         this.draftEditors.insertContext(key, controller, intent),
       select: async (threadId, ticket) => {
@@ -655,6 +660,11 @@ export class AppModel {
     sourceTicket?: number,
   ): Promise<ThreadTransitionResult> {
     const returning = this.workbench.stateStore.getState().returning;
+    if (
+      sourceTicket === undefined &&
+      this.activeThread?.context.threadId === threadId
+    )
+      sourceTicket = this.workbench.workspaceNavigationTicket(threadId);
     if (
       sourceTicket === undefined &&
       returning?.target.source.threadId === threadId &&

@@ -524,3 +524,39 @@ it("stops source membership loading after 16 pages", async () => {
   });
   work.dispose();
 });
+
+it("navigates a captured file source through the owning Thread and rejects a late navigation", async () => {
+  const threadId = crypto.randomUUID();
+  let finish: (value: boolean) => void = () => {};
+  const select = vi.fn(
+    () =>
+      new Promise<boolean>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const workbench = new WindowWorkbench({ select, insert: vi.fn() });
+  const target = {
+    kind: "file" as const,
+    file: {
+      kind: "current-workspace" as const,
+      threadId,
+      directory: "/project",
+      path: "src/a.ts",
+      reportedRange: { startLine: 7, endLine: 9 },
+    },
+  };
+  const first = workbench.reveal(target);
+  workbench.cancelReturn();
+  finish(true);
+  expect(await first).toBe(false);
+  expect(workbench.stateStore.getState().workspaceNavigation).toBeNull();
+  const second = workbench.reveal(target);
+  finish(true);
+  expect(await second).toBe(true);
+  const intent = workbench.stateStore.getState().workspaceNavigation!;
+  expect(intent.target).toEqual(target);
+  expect(workbench.workspaceNavigationTicket(threadId)).toBe(intent.ticket);
+  workbench.completeWorkspaceNavigation(intent.ticket);
+  expect(workbench.stateStore.getState().workspaceNavigation).toBeNull();
+  workbench.dispose();
+});

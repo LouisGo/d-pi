@@ -38,6 +38,11 @@ export const ui = {
   "tool.semantic.matches": "{count} 处命中",
   "tool.semantic.filter": "筛选已加载结果",
   "tool.semantic.noLoadedHits": "已加载结果中没有匹配项。",
+  "tool.semantic.openCurrentFile": "打开当前文件",
+  "ui.files.sourceVersionChanged":
+    "请求的文件或 Diff 版本已变化，当前内容无法代表该来源。",
+  "ui.files.reportedLocation":
+    "原结果报告了第 {line} 行。这里是当前文件采样，内容与位置可能已变化。",
 
   "workbench.tool.surfaceLimit": "最多保留8个详情，请先关闭一个固定详情。",
   "workbench.tool.open": "打开工具详情",

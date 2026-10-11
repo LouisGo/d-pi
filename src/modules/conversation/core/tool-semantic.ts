@@ -249,6 +249,7 @@ export function decodeToolSemantic(
         kind: "search" as const,
         query,
         scope,
+        ...(d.cwd !== undefined && d.cwd.length <= 4096 ? { cwd: d.cwd } : {}),
         hits,
         excerpt,
         ...(d.matchCount !== undefined ? { matchCount: d.matchCount } : {}),

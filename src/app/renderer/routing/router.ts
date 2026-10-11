@@ -30,6 +30,13 @@ export function createAppRouting(model: AppModel) {
   const commitLocation = router.commitLocation;
   router.commitLocation = async (...args) => {
     if (committing || selecting) return;
+    // The SDK's same-location shortcut bypasses history/admit. An explicit
+    // conversation/developer intent must still supersede a pending file reveal.
+    if (
+      !("view" in args[0].search && args[0].search.view === "files") &&
+      model.workbench.stateStore.getState().workspaceNavigation
+    )
+      model.workbench.cancelReturn();
     committing = true;
     try {
       await commitLocation(...args);
@@ -69,11 +76,16 @@ export function createAppRouting(model: AppModel) {
     if (foundRoute?.id !== "/threads/$threadId") return false;
     const parsed = ThreadIdSchema.safeParse(rawParams.threadId);
     if (!parsed.success) return false;
-    if (new URLSearchParams(next.search).get("view") !== "conversation")
+    const view = new URLSearchParams(next.search).get("view");
+    const sourceTicket =
+      view === "files"
+        ? model.workbench.workspaceNavigationTicket(parsed.data)
+        : undefined;
+    if (view !== "conversation" && sourceTicket === undefined)
       model.workbench.cancelReturn();
     selecting = true;
     try {
-      const result = await model.selectThread(parsed.data);
+      const result = await model.selectThread(parsed.data, sourceTicket);
       return (
         result.kind === "applied" &&
         result.selection.kind === "thread" &&
@@ -110,7 +122,12 @@ export function createAppRouting(model: AppModel) {
         void router.navigate({
           to: "/threads/$threadId",
           params: { threadId },
-          search: { view: "conversation" },
+          search: {
+            view:
+              model.workbench.workspaceNavigationTicket(threadId) !== undefined
+                ? "files"
+                : "conversation",
+          },
           replace,
         });
     } else if (history.location.pathname !== "/")

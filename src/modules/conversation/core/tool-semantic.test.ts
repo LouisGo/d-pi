@@ -153,6 +153,7 @@ describe("fixed OMP semantic evidence before generic clipping", () => {
               { rel: "a.ts", ranges: [{ start: 5, end: 8, snippet: "real" }] },
             ],
             scopePath: "/src",
+            cwd: "/project",
           },
         },
         "result",
@@ -161,6 +162,7 @@ describe("fixed OMP semantic evidence before generic clipping", () => {
       kind: "search",
       query: "test",
       scope: "/src",
+      cwd: "/project",
       hits: [{ path: "a.ts", ranges: [{ start: 5, end: 8, snippet: "real" }] }],
     });
     expect(

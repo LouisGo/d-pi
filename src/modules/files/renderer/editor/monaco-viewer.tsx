@@ -8,11 +8,16 @@ import editorWorker from "monaco-editor/editor/editor.worker?worker";
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "../../../preferences/renderer/public";
 import type {
+  CodeLocation,
   CodeViewModel,
   FrozenSelection,
   SelectionSource,
 } from "../../core/public";
-import { captureSelection, codeViewIdentity } from "../../core/public";
+import {
+  captureSelection,
+  codeLocationRange,
+  codeViewIdentity,
+} from "../../core/public";
 import { MONACO_DIFF_OPTIONS } from "./monaco-diff-options";
 
 Object.assign(globalThis, {
@@ -59,15 +64,18 @@ function applyTheme() {
 export function MonacoViewer({
   view,
   onSelection,
+  location,
 }: {
   view: CodeView;
   onSelection: (value: FrozenSelection) => void;
+  location?: CodeLocation | undefined;
 }) {
   const { t } = useI18n();
   const container = useRef<HTMLDivElement>(null);
   const selectionHandler = useRef(onSelection);
   selectionHandler.current = onSelection;
   const currentView = useRef(view);
+  const locator = useRef<((location: CodeLocation) => void) | null>(null);
   currentView.current = view;
   // Locale display strings must not destroy the editor and its selection.
   const identity = codeViewIdentity(view);
@@ -176,6 +184,24 @@ export function MonacoViewer({
         "right",
       );
     }
+    locator.current = (target) => {
+      const current = currentView.current;
+      if (!active || codeViewIdentity(current) !== identity) return;
+      const range = codeLocationRange(current, target);
+      if (!range) return;
+      const code =
+        target.kind === "diff" && "getOriginalEditor" in editor
+          ? target.side === "left"
+            ? editor.getOriginalEditor()
+            : editor.getModifiedEditor()
+          : "getModel" in editor
+            ? editor
+            : null;
+      if (!code) return;
+      code.revealRangeInCenter(range);
+      code.setPosition({ lineNumber: range.startLineNumber, column: 1 });
+      code.focus();
+    };
     const observer = new MutationObserver(() => {
       const nextDarkTheme = document.documentElement.dataset.theme === "dark";
       if (!active || nextDarkTheme === darkTheme) return;
@@ -219,6 +245,7 @@ export function MonacoViewer({
     return () => {
       if (!active) return;
       active = false;
+      locator.current = null;
       observer.disconnect();
       resize.disconnect();
       if (layoutFrame !== undefined) cancelAnimationFrame(layoutFrame);
@@ -229,6 +256,9 @@ export function MonacoViewer({
       for (const item of models) item.dispose();
     };
   }, [identity]);
+  useEffect(() => {
+    if (location) locator.current?.(location);
+  }, [identity, location]);
   return (
     <>
       <div className="monaco-readonly" ref={container} />

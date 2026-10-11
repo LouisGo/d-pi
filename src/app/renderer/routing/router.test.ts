@@ -341,3 +341,24 @@ it("developer navigation cancels a return waiting for source membership, includi
   });
   expect(located).toBe(0);
 });
+
+it("lets a later conversation intent supersede a pending workspace reveal on the same route", async () => {
+  const input = await fixture();
+  const work = input.model.workbench;
+  await work.reveal({
+    kind: "file",
+    file: {
+      kind: "current-workspace",
+      threadId: input.first.threadId,
+      directory: "/first",
+      path: "a.ts",
+    },
+  });
+  expect(work.stateStore.getState().workspaceNavigation).not.toBeNull();
+  await input.router.navigate({
+    to: "/threads/$threadId",
+    params: { threadId: input.first.threadId },
+    search: { view: "conversation" },
+  });
+  expect(work.stateStore.getState().workspaceNavigation).toBeNull();
+});

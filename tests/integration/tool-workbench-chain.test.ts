@@ -21,12 +21,12 @@ import { I18nProvider } from "../../src/modules/preferences/renderer/public";
 import type { NativeFrame } from "../../src/platform/omp/protocol/public";
 
 it.each([
-  { grouped: false, artifact: false },
-  { grouped: true, artifact: false },
-  { grouped: true, artifact: true },
+  { grouped: false, artifact: false, fileNavigation: false },
+  { grouped: true, artifact: false, fileNavigation: true },
+  { grouped: true, artifact: true, fileNavigation: false },
 ])(
   "runs the production card → inspector → pin → B editor reference → A virtual source chain (%j)",
-  async ({ grouped, artifact }) => {
+  async ({ grouped, artifact, fileNavigation }) => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     // Substitute only native IPC and physical geometry. All application/router,
     // Host projection/raw reader, preload broker, inspector and Tiptap are real.
@@ -141,6 +141,35 @@ it.each([
     const artifactText = "first saved output\n".repeat(40000);
     const bridge: DesktopBridge = {
       conversation,
+      files: {
+        request: async (command) => ({
+          kind: "completed",
+          operationId: command.operationId,
+          traceId: command.traceId,
+          reply:
+            command.kind === "list"
+              ? { kind: "entries", path: "", entries: [], truncated: false }
+              : {
+                  kind: "text",
+                  path: command.path,
+                  text: "current file body",
+                  bytes: 17,
+                  version: "current-v1",
+                  capturedAt: "fixture",
+                  coverage: "complete",
+                },
+        }),
+        cancel: async (command) => ({ kind: "acknowledged", ...command }),
+      },
+      git: {
+        request: async (command) => ({
+          kind: "completed",
+          operationId: command.operationId,
+          traceId: command.traceId,
+          reply: { kind: "unavailable", reason: "not-git" },
+        }),
+        cancel: async (command) => ({ kind: "acknowledged", ...command }),
+      },
       history: {
         projectList: vi.fn(),
         projectRead: vi.fn(),
@@ -297,7 +326,7 @@ it.each([
                   type: "toolCall",
                   id: "read-sibling",
                   name: "read",
-                  arguments: { path: "/a" },
+                  arguments: { path: "/A/a.ts" },
                 },
                 {
                   type: "toolCall",
@@ -312,7 +341,7 @@ it.each([
             type: "tool_execution_start",
             toolCallId: "read-sibling",
             toolName: "read",
-            args: { path: "/a" },
+            args: { path: "/A/a.ts" },
           } as NativeFrame);
           host.accept({
             type: "tool_execution_end",
@@ -500,6 +529,46 @@ it.each([
         container.querySelector("[data-reading-pane=conversation]"),
       );
       expect(drafts.get(second.threadId)?.text).toContain("[d-pi:context:v1");
+      if (fileNavigation) {
+        const state = model.reading!.stateStore.getState();
+        const id = state.itemIds.find(
+          (id) => state.itemsById.get(id)?.tool?.toolCallId === "read-sibling",
+        );
+        if (id === undefined) throw Error("missing observed read entity");
+        const key = `live:${JSON.stringify([generation, id])}`;
+        await act(() => {
+          model.reading!.activities.revealMember(key);
+        });
+        await act(() => {
+          const window = readingWindow(
+            container.querySelector<HTMLElement>(
+              "[data-reading-pane=conversation]",
+            )!,
+          );
+          expect(window?.mount(key)).toBe(true);
+        });
+        const current = container.querySelector<HTMLButtonElement>(
+          '[data-resource-current="/A/a.ts"]',
+        );
+        expect(current?.disabled).toBe(false);
+        await act(() => current?.click());
+        await settle();
+        await settle();
+        expect(routing.router.state.location.search.view).toBe("files");
+        const filesPane = container.querySelector<HTMLElement>(
+          "[data-reading-pane=files]",
+        )!;
+        expect(filesPane.hidden).toBe(false);
+        expect(filesPane.querySelector(".file-result")?.textContent).toContain(
+          "a.ts",
+        );
+        expect(filesPane.querySelector(".file-result")?.textContent).toContain(
+          "current-v1",
+        );
+        expect(
+          model.workbench.stateStore.getState().workspaceNavigation,
+        ).toBeNull();
+      }
       await act(() =>
         container
           .querySelector("[data-tool-inspector]")

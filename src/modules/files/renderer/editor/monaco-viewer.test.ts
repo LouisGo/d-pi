@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import type { CodeViewModel, TextRange } from "../../core/public";
+import type { CodeLocation, CodeViewModel, TextRange } from "../../core/public";
 import { MonacoViewer } from "./monaco-viewer";
 
 type Effect = () => undefined | (() => void);
@@ -13,6 +13,9 @@ interface Viewer {
   dispose(): void;
 }
 interface Code extends Viewer {
+  revealRangeInCenter(range: TextRange): void;
+  setPosition(position: { lineNumber: number; column: number }): void;
+  focus(): void;
   model: Model | null;
   listener: SelectionListener | undefined;
   getModel(): Model | null;
@@ -75,6 +78,9 @@ vi.mock("monaco-editor/editor/editor.api", () => {
   function code(model: Model | null): Code {
     const result: Code = {
       model,
+      revealRangeInCenter: vi.fn(),
+      setPosition: vi.fn(),
+      focus: vi.fn(),
       listener: undefined,
       getModel: () => result.model,
       onDidChangeCursorSelection(listener) {
@@ -181,10 +187,14 @@ beforeEach(() => {
   vi.stubGlobal("ResizeObserver", ResizeObserver);
 });
 
-function render(view: CodeViewModel, onSelection: (value: unknown) => void) {
+function render(
+  view: CodeViewModel,
+  onSelection: (value: unknown) => void,
+  location?: CodeLocation,
+) {
   harness.refIndex = 0;
   harness.effects.length = 0;
-  MonacoViewer({ view, onSelection });
+  MonacoViewer({ view, onSelection, location });
 }
 function mount() {
   const cleanups = harness.effects.map((effect) => effect());
@@ -439,3 +449,41 @@ it.each(["file", "diff"] as const)(
     cleanup();
   },
 );
+
+it.each(["file", "diff"] as const)(
+  "reveals the actual %s version and correct Diff side through Monaco",
+  (kind) => {
+    const location: CodeLocation =
+      kind === "file"
+        ? { kind, version: "raw:v1", startLine: 2, endLine: 2 }
+        : { kind, side: "left", version: "raw:v1", startLine: 2, endLine: 2 };
+    render(appearanceView(kind), vi.fn(), location);
+    const cleanup = mount();
+    expect(harness.codes[0]?.revealRangeInCenter).toHaveBeenCalledWith({
+      startLineNumber: 2,
+      endLineNumber: 2,
+      startColumn: 1,
+      endColumn: 2,
+    });
+    expect(harness.codes[0]?.setPosition).toHaveBeenCalledWith({
+      lineNumber: 2,
+      column: 1,
+    });
+    expect(harness.codes[0]?.focus).toHaveBeenCalledOnce();
+    if (kind === "diff") expect(harness.codes[1]?.focus).not.toHaveBeenCalled();
+    cleanup();
+  },
+);
+
+it("does not reveal a stale or nonexistent location in the current Monaco model", () => {
+  render(appearanceView("file"), vi.fn(), {
+    kind: "file",
+    version: "stale",
+    startLine: 1,
+    endLine: 1,
+  });
+  const cleanup = mount();
+  expect(harness.codes[0]?.focus).not.toHaveBeenCalled();
+  expect(harness.codes[0]?.revealRangeInCenter).not.toHaveBeenCalled();
+  cleanup();
+});

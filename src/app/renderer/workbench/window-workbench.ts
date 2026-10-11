@@ -18,16 +18,13 @@ import {
   type ToolDetailReply,
 } from "../../../modules/resources/contracts/public";
 import { requestReadOperation } from "../../../shared/read-operation";
+import type {
+  SourceTarget,
+  ToolTarget,
+  WorkspaceSourceTarget,
+} from "./source-target";
 
-export interface ToolTarget {
-  source: SourceRef;
-  title: string;
-  threadTitle: string;
-  rowId: string;
-  cursor?: HistoryCursor;
-  artifactKey?: string;
-  nativeRecordId?: string;
-}
+export type { ToolTarget } from "./source-target";
 export interface ToolSurface {
   id: string;
   target: ToolTarget;
@@ -45,6 +42,11 @@ type State = {
   revealToken: number;
   returning: ReturnIntent | null;
   returnIssue: "missing" | "blocked" | "limit" | null;
+  workspaceNavigation: {
+    ticket: number;
+    target: WorkspaceSourceTarget;
+    phase: "selecting" | "ready";
+  } | null;
 };
 type Reader = {
   users: Set<string>;
@@ -86,6 +88,7 @@ export class WindowWorkbench {
     revealToken: 0,
     returning: null,
     returnIssue: null,
+    workspaceNavigation: null,
   }));
   readonly stateStore: Pick<
     typeof this.store,
@@ -123,6 +126,7 @@ export class WindowWorkbench {
         intent: ContextInsertIntent,
       ) => ContextInsertResult;
       select: (threadId: string, ticket: number) => Promise<boolean>;
+      projectDirectory?: (threadId: string) => string | undefined;
     },
   ) {}
   private patch(id: string, fields: Partial<ToolSurface>) {
@@ -131,6 +135,46 @@ export class WindowWorkbench {
         surface.id === id ? { ...surface, ...fields } : surface,
       ),
     }));
+  }
+  projectDirectory(threadId: string): string | undefined {
+    return this.ports.projectDirectory?.(threadId);
+  }
+  async reveal(target: SourceTarget): Promise<boolean> {
+    if (target.kind === "activity") return this.open(target.activity) !== null;
+    if (target.kind === "artifact") return this.open(target.artifact) !== null;
+    if (this.disposed) return false;
+    this.cancelReturn();
+    const ticket = this.navigation;
+    const identity = target.kind === "file" ? target.file : target.diff;
+    this.store.setState({
+      workspaceNavigation: { ticket, target, phase: "selecting" },
+    });
+    let selected = false;
+    try {
+      selected = await this.ports.select(identity.threadId, ticket);
+    } catch {
+      selected = false;
+    }
+    if (!this.isNavigation(ticket)) return false;
+    if (!selected) {
+      this.completeWorkspaceNavigation(ticket);
+      return false;
+    }
+    this.store.setState({
+      workspaceNavigation: { ticket, target, phase: "ready" },
+    });
+    return true;
+  }
+  workspaceNavigationTicket(threadId: string): number | undefined {
+    const intent = this.store.getState().workspaceNavigation;
+    if (!intent || !this.isNavigation(intent.ticket)) return undefined;
+    const identity =
+      intent.target.kind === "file" ? intent.target.file : intent.target.diff;
+    return identity.threadId === threadId ? intent.ticket : undefined;
+  }
+  completeWorkspaceNavigation(ticket: number): void {
+    if (this.store.getState().workspaceNavigation?.ticket === ticket)
+      this.store.setState({ workspaceNavigation: null });
   }
   open(target: ToolTarget): string | null {
     if (this.disposed) return null;
@@ -427,7 +471,7 @@ export class WindowWorkbench {
   }
   cancelReturn(): void {
     this.navigation++;
-    this.store.setState({ returning: null });
+    this.store.setState({ returning: null, workspaceNavigation: null });
   }
   isNavigation(ticket: number): boolean {
     return !this.disposed && ticket === this.navigation;
@@ -441,6 +485,7 @@ export class WindowWorkbench {
     this.store.setState({
       returning: { surfaceId: id, target: surface.target, ticket },
       returnIssue: null,
+      workspaceNavigation: null,
     });
     const selected = await this.ports.select(
       surface.target.source.threadId,

@@ -1,5 +1,8 @@
 import type { ComponentType } from "react";
-import type { FrozenSelection } from "../../../modules/files/core/public";
+import type {
+  CodeLocation,
+  FrozenSelection,
+} from "../../../modules/files/core/public";
 import type { CodeView } from "../../../modules/files/renderer/public";
 import type { AppModel } from "../wiring/model";
 
@@ -10,6 +13,7 @@ export type WorkbenchProps = {
     | ComponentType<{
         view: CodeView;
         onSelection: (value: FrozenSelection) => void;
+        location?: CodeLocation | undefined;
       }>
     | undefined;
 };

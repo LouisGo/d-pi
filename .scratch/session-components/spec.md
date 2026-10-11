@@ -146,6 +146,17 @@
 - 8个相关文件61/61通过，包含真实Main绑定/文件读取、10MiB正文、同大小变更拒绝、17MiB超限、elision/error/短文件/符号链接/重名、普通预览schema额度和正式Router/Host/Inspector/Tiptap三条组合（artifact→固定→B引用→Undo/Redo→返回A成员）。组合仅替代IPC与几何，仍有既有React act提示。Core/Main/Host/Preload类型通过；Renderer只有既有composer-tag.tsx:134基线。
 - 构建Main Worker在Node24.21.0与Electron44.4.5实际读取10MiB artifact并返回独立版本，同时完成尾页/前页/追加、工具参数、图像和CLI历史，9次exit且active=0。该smoke无GUI窗口，不冒称完整Workbench trace、输入延迟或用户验收；`pnpm build`、快速门禁、design/i18n与40项架构测试通过；构建保留既有大chunk警告。WB02 SourceTarget/变化汇总、WB03 Viewer/native warm/可见性/子会话与生产trace、WB04完整交互仍待完成，goal保持active，不推送或发布。
 
+### WB02 milestone：工作区来源、文件版本和代码定位（2026-10-11）
+
+- 固定 `6b86e11..a900272` 独立Spec/Standards review已完成，artifact身份、权限、覆盖与取消/返回未发现可行动高价值问题；只读源码/测试审查，没有代跑验证。
+- 应用层增加discriminated SourceTarget，组合activity/artifact、当前或已捕获workspace文件、带左右内容版本及side的Diff；纯代码坐标留在files/core。工具详情与文件导航由窗口拥有者发起，导航ticket捕获所属Thread；切Thread/新导航/关闭使晚到选择失效，路由和FilePanel在真实Thread准备后接同一意图，不保存DOM。
+- read/search/edit正文提供“打开当前文件”。当前工作区采样与原工具输出/patch保留独立来源；原报告行号明确提示可能已随当前文件变化，不把采样冒称原生快照。只路由project-relative位置，拒绝越界、上级、scheme等，Main既有真实containment/读取operation仍拥有权限。核实OMP18.8.9 `grep.ts`、`glob.ts`、`file-recorder.ts`：结果展示路径相对native cwd；decoder保留实际cwd用于定位，不把search scope当cwd猜路径。
+- FilePanel核对捕获directory和文件/Diff两侧版本；不符就显示来源已变化，停止该版本的Monaco呈现。CodeLocation依据实际版本、side及行范围调用Monaco定位/聚焦；旧版本、错误side、越界坐标不定位。原工具返回、固定详情、草稿Undo/Redo和FilePanel当前采样保持原合同。
+- 新导航/坐标目标缺口先红后绿；正式Workbench组合3/3通过（新增工具路径→files路由→实际当前采样），FilePanel6/6覆盖普通打开、捕获版本匹配和file/diff版本冲突，Monaco16/16含3条真实adapter定位回归（边界替身，不是实机）。10文件矩阵62/66通过：navigation-continuity的4项失败已在修改前固定`a900272`隔离副本重跑，同样4失败/7通过，涉及旧Focus mode/Show controls/Thread tools入口；本段不改产品来迁就旧测试，也不冒称整套导航绿色。Core/Host/Main类型通过，Renderer只有既有composer-tag.tsx:134基线；build/快速门禁/design/i18n通过，保留既有React act及大chunk提示。
+- WB02还需完整ChangedFilesSummary与来源组合；WB03 Viewer/native warm/可见性/子会话/生产trace、WB04仍待完成。当前保持goal active，不推送或发布。
+
+来源导航收尾：实际TanStack Router同地址快捷路径跳过history准入，新增反例复现旧文件意图残留并修正；后到conversation/developer意图会取消旧文件导航，返回工具也取消旧定位。Router/窗口/正式Workbench三文件21/21与FilePanel6/6通过；定位对象只跟随明确新意图和内容版本，不因语言标签重绘再次抢焦点。40项架构测试、最终build及快速门禁通过；Renderer复核仅既有composer-tag类型问题。
+
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。
 
 ### WB00 milestone（2026-10-11）

@@ -13,14 +13,23 @@ import type {
   FileReply,
   FileRequest,
 } from "../../../modules/files/contracts/public";
+import type { CodeLocation } from "../../../modules/files/core/public";
 import type { CodeView } from "../../../modules/files/renderer/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { ThreadContextSchema } from "../../../modules/threads/contracts/public";
 import { FilePanel } from "./file-panel";
+import type { WorkspaceSourceTarget } from "./source-target";
 
-it.each(["file", "diff"] as const)(
-  "opens a %s into a focused, visible result while retaining the collapsed project browser",
-  async (kind) => {
+it.each([
+  { kind: "file", navigation: false, changed: false },
+  { kind: "diff", navigation: false, changed: false },
+  { kind: "file", navigation: true, changed: false },
+  { kind: "diff", navigation: true, changed: false },
+  { kind: "file", navigation: true, changed: true },
+  { kind: "diff", navigation: true, changed: true },
+] as const)(
+  "opens or rejects a versioned source in the focused result (%j)",
+  async ({ kind, navigation, changed }) => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     const client = new QueryClient({
       defaultOptions: { queries: { retry: false } },
@@ -123,10 +132,47 @@ it.each(["file", "diff"] as const)(
       }),
       cancel: async (command) => ({ kind: "acknowledged", ...command }),
     };
-    const Editor = ({ view }: { view: CodeView }) =>
+    const sourceTarget: WorkspaceSourceTarget =
+      kind === "file"
+        ? {
+            kind: "file",
+            file: {
+              kind: "captured-workspace",
+              threadId: resource.threadId,
+              directory: resource.directory,
+              path: "README.md",
+              version: changed ? "old" : "fixture",
+              range: { startLine: 1, endLine: 1 },
+            },
+          }
+        : {
+            kind: "diff",
+            diff: {
+              threadId: resource.threadId,
+              directory: resource.directory,
+              path: "README.md",
+              scope: "index-worktree",
+              leftVersion: "left",
+              rightVersion: changed ? "old" : "right",
+              side: "left",
+              range: { startLine: 1, endLine: 1 },
+            },
+          };
+    const intent = { ticket: 1, target: sourceTarget, phase: "ready" as const };
+    const onNavigated = vi.fn();
+    const Editor = ({
+      view,
+      location,
+    }: {
+      view: CodeView;
+      location?: CodeLocation | undefined;
+    }) =>
       createElement(
         "pre",
-        { "data-result": true },
+        {
+          "data-result": true,
+          "data-location": location ? JSON.stringify(location) : undefined,
+        },
         view.kind === "file" ? view.text : view.right.text,
       );
     try {
@@ -143,6 +189,8 @@ it.each(["file", "diff"] as const)(
                 git,
                 editor: Editor,
                 onAttach: () => {},
+                navigation: navigation ? intent : null,
+                onNavigated,
               }),
             }),
           ),
@@ -157,7 +205,8 @@ it.each(["file", "diff"] as const)(
         kind === "file" ? ".file-list button" : ".change-list button",
       );
       if (!target) throw Error("missing file/diff target");
-      await act(() => target.click());
+      if (!navigation) await act(() => target.click());
+      else expect(onNavigated).toHaveBeenCalledWith(1);
       expect(
         container.querySelector<HTMLDetailsElement>(
           ".file-navigation > [data-slot=disclosure]",
@@ -170,9 +219,22 @@ it.each(["file", "diff"] as const)(
       await act(async () => finish?.());
       await vi.waitFor(async () => {
         await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
-        expect(result?.querySelector("[data-result]")?.textContent).toBe(
-          kind === "file" ? "file result" : "diff result",
-        );
+        if (changed) {
+          expect(result?.textContent).toContain("version has changed");
+          expect(result?.querySelector("[data-result]")).toBeNull();
+        } else {
+          expect(result?.querySelector("[data-result]")?.textContent).toBe(
+            kind === "file" ? "file result" : "diff result",
+          );
+          if (navigation)
+            expect(
+              result
+                ?.querySelector("[data-result]")
+                ?.getAttribute("data-location"),
+            ).toContain(
+              kind === "file" ? '"version":"fixture"' : '"side":"left"',
+            );
+        }
       });
       const details = container.querySelector<HTMLDetailsElement>(
         ".file-navigation > [data-slot=disclosure]",
@@ -183,7 +245,8 @@ it.each(["file", "diff"] as const)(
         details.dispatchEvent(new Event("toggle"));
       });
       expect(container.querySelector(".file-list")).toBe(browserList);
-      expect(result?.querySelector("[data-result]")).not.toBeNull();
+      if (!changed)
+        expect(result?.querySelector("[data-result]")).not.toBeNull();
     } finally {
       finish?.();
       await act(() => root.unmount());

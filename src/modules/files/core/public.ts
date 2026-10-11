@@ -1,3 +1,4 @@
+export { type CodeLocation, codeLocationRange } from "./location";
 export {
   type CodeViewModel,
   captureSelection,

@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "222b97cfa8b4a88b5dccab787310417a57a5a46345d5d1924a44e934a893dbd8",
+  "inputsHash": "4de4dbe80e8089b19e02147aee1743a8afe8ec129fcdfc0347a32dea9880f148",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 643,
-    "scannedFiles": 643,
+    "sourceFiles": 647,
+    "scannedFiles": 647,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 285,
-      "lines": 55991,
+      "files": 287,
+      "lines": 56496,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -110,7 +110,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 3875,
+      "lines": 3885,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -165,8 +165,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 18,
-      "lines": 3173,
+      "files": 20,
+      "lines": 3323,
       "publicEntries": [
         {
           "path": "src/modules/files/contracts/public.ts",
@@ -311,7 +311,7 @@
       ],
       "materialized": true,
       "files": 45,
-      "lines": 11055,
+      "lines": 11059,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -12959,6 +12959,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../workbench/source-target",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/source-target.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/tool-semantic-body.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../workbench/tool-inspector",
       "kind": "import",
       "resolution": "module",
@@ -20322,6 +20334,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../../../modules/files/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/core/public.ts",
+      "targetModule": "files",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-opening.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "../../../modules/files/renderer/public",
       "kind": "import",
       "resolution": "module",
@@ -20362,6 +20386,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/workbench/file-panel.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-opening.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./source-target",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/source-target.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -20533,6 +20569,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/workbench/refresh-state.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-panel.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./source-target",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/source-target.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -21288,6 +21336,63 @@
       "to": "src/app/renderer/workbench/composer-execution-controls.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/source-target.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/source-target.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./source-target",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/source-target.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/source-target.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/changes/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/changes/contracts/public.ts",
+      "targetModule": "changes",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/source-target.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/conversation/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/source-target.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/resources/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/resources/contracts/public.ts",
+      "targetModule": "resources",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/renderer/workbench/subagent-controls.test.ts",
@@ -22233,6 +22338,30 @@
       "to": "src/shared/read-operation.ts",
       "targetModule": "shared",
       "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/app/renderer/workbench/window-workbench.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./source-target",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/source-target.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/window-workbench.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./source-target",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/source-target.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
     },
     {
       "from": "src/platform/main/diagnostics/diagnostics.test.ts",
@@ -23704,6 +23833,51 @@
       "to": "src/shared/read-operation.ts",
       "targetModule": "shared",
       "targetEnvironment": "shared"
+    },
+    {
+      "from": "src/modules/files/core/location.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/files/core/location.test.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./location",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/core/location.ts",
+      "targetModule": "files",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/files/core/location.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./selection",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/core/selection.ts",
+      "targetModule": "files",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/files/core/public.ts",
+      "sourceModule": "files",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./location",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/files/core/location.ts",
+      "targetModule": "files",
+      "targetEnvironment": "core"
     },
     {
       "from": "src/modules/files/core/public.ts",

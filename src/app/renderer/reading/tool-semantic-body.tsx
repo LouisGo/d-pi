@@ -1,4 +1,4 @@
-import { Component, type ReactNode, useState } from "react";
+import { Component, type ReactNode, useContext, useState } from "react";
 import { match } from "ts-pattern";
 import type {
   ToolExecutionObservation,
@@ -6,11 +6,19 @@ import type {
 } from "../../../modules/conversation/contracts/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import {
+  Button,
   Disclosure,
   DisclosureTrigger,
   TextInput,
 } from "../../../modules/ui/renderer/public";
-import { ToolDetailAction } from "../workbench/tool-inspector";
+import {
+  projectRelativePath,
+  type ReportedRange,
+} from "../workbench/source-target";
+import {
+  ToolDetailAction,
+  ToolWorkbenchContext,
+} from "../workbench/tool-inspector";
 import type { ToolTarget } from "../workbench/window-workbench";
 import { MessageActions } from "./message-parts";
 import { ReadingBody } from "./reading-body";
@@ -81,7 +89,7 @@ export function ToolSemanticBody({
         }
       >
         {semantic && semantic.kind !== "generic" ? (
-          <SemanticContent semantic={semantic} text={text} />
+          <SemanticContent semantic={semantic} text={text} target={target} />
         ) : (
           raw
         )}
@@ -108,15 +116,28 @@ export function ToolSemanticBody({
 function SemanticContent({
   semantic,
   text,
+  target,
 }: {
   semantic: ToolSemantic;
   text: string;
+  target?: ToolTarget | undefined;
 }) {
   const { t } = useI18n();
   return match(semantic)
     .with({ kind: "resource-read" }, (s) => (
       <>
         <code>{s.path}</code>
+        {s.resourceType === "file" && (
+          <CurrentFileAction
+            target={target}
+            path={s.path}
+            range={
+              s.startLine === undefined
+                ? undefined
+                : { startLine: s.startLine, endLine: s.startLine }
+            }
+          />
+        )}
         <small>{t(`tool.semantic.resource.${s.resourceType}`)}</small>
         <p>{t("tool.semantic.snapshot")}</p>
         {s.startLine !== undefined && (
@@ -142,7 +163,9 @@ function SemanticContent({
         />
       </>
     ))
-    .with({ kind: "search" }, (s) => <SearchResults semantic={s} />)
+    .with({ kind: "search" }, (s) => (
+      <SearchResults semantic={s} target={target} />
+    ))
     .with({ kind: "file-change" }, (s) => (
       <>
         <p>
@@ -165,6 +188,18 @@ function SemanticContent({
               </code>
               {change.failed && <span>{t("ui.conversation.failed")}</span>}
             </DisclosureTrigger>
+            <CurrentFileAction
+              target={target}
+              path={change.path}
+              range={
+                change.firstChangedLine === undefined
+                  ? undefined
+                  : {
+                      startLine: change.firstChangedLine,
+                      endLine: change.firstChangedLine,
+                    }
+              }
+            />
             {change.patch !== undefined ? (
               <ReadingBody text={change.patch} raw />
             ) : (
@@ -199,8 +234,10 @@ function SemanticContent({
 
 function SearchResults({
   semantic,
+  target,
 }: {
   semantic: Extract<ToolSemantic, { kind: "search" }>;
+  target?: ToolTarget | undefined;
 }) {
   const { t } = useI18n();
   const [filter, setFilter] = useState("");
@@ -227,6 +264,22 @@ function SearchResults({
         {hits.map((hit, index) => (
           <li key={JSON.stringify([hit.path, index])}>
             <code>{hit.path}</code>
+            <CurrentFileAction
+              target={target}
+              path={
+                hit.path.startsWith("/") || !semantic.cwd
+                  ? hit.path
+                  : `${semantic.cwd}/${hit.path}`
+              }
+              range={
+                hit.ranges[0]
+                  ? {
+                      startLine: hit.ranges[0].start,
+                      endLine: hit.ranges[0].end,
+                    }
+                  : undefined
+              }
+            />
             {hit.count !== undefined && (
               <small>{t("tool.semantic.matches", { count: hit.count })}</small>
             )}
@@ -243,6 +296,50 @@ function SearchResults({
       </ul>
       {semantic.excerpt && <ReadingBody text={semantic.excerpt} raw />}
       {!hits.length && <p>{t("tool.semantic.noLoadedHits")}</p>}
+    </>
+  );
+}
+
+function CurrentFileAction({
+  target,
+  path,
+  range,
+}: {
+  target?: ToolTarget | undefined;
+  path: string;
+  range?: ReportedRange | undefined;
+}) {
+  const workbench = useContext(ToolWorkbenchContext);
+  const { t } = useI18n();
+  const [blocked, setBlocked] = useState(false);
+  const directory =
+    target && workbench?.projectDirectory(target.source.threadId);
+  const relative = directory ? projectRelativePath(directory, path) : null;
+  return (
+    <>
+      <Button
+        variant="ghost"
+        data-resource-current={path}
+        disabled={!target || !directory || !relative || !workbench}
+        onClick={() => {
+          if (target && directory && relative && workbench)
+            void workbench
+              .reveal({
+                kind: "file",
+                file: {
+                  kind: "current-workspace",
+                  threadId: target.source.threadId,
+                  directory,
+                  path: relative,
+                  ...(range ? { reportedRange: range } : {}),
+                },
+              })
+              .then((opened) => setBlocked(!opened));
+        }}
+      >
+        {t("tool.semantic.openCurrentFile")}
+      </Button>
+      {blocked && <p role="status">{t("workbench.tool.return.blocked")}</p>}
     </>
   );
 }

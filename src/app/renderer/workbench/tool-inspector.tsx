@@ -74,7 +74,10 @@ export function ToolDetailAction({
         data-command-open={target ? sourceKey(target.source) : undefined}
         disabled={!target || !workbench}
         onClick={() => {
-          if (target && workbench) setAtLimit(workbench.open(target) === null);
+          if (target && workbench)
+            void workbench
+              .reveal({ kind: "activity", activity: target })
+              .then((opened) => setAtLimit(!opened));
         }}
       >
         {t("workbench.tool.open")}
