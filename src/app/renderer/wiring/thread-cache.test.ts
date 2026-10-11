@@ -108,6 +108,10 @@ it("releases background transcript demand while runtime facts continue, and reac
   try {
     const a = f.drafts[0];
     if (!a) throw Error("missing first draft");
+    const state = f.model.getSnapshot();
+    if (state.kind !== "ready" || state.threadSelection.kind !== "thread")
+      throw Error("missing selected thread");
+    const release = state.threadSelection.thread.retainReading();
     const runtime = f.model.runtime;
     expect(f.reading.get(a.threadId)).toBe(1);
     f.busy(0, true);
@@ -118,6 +122,53 @@ it("releases background transcript demand while runtime facts continue, and reac
     expect(runtime?.getSnapshot()?.busy).toBe(false);
     await f.select(0);
     expect(f.reading.get(a.threadId)).toBe(1);
+    release();
+  } finally {
+    f.model.dispose();
+  }
+});
+it("shares a selected transcript lease and keeps runtime facts after the last reader closes", async () => {
+  const f = await fixture();
+  try {
+    const a = f.drafts[0];
+    if (!a) throw Error("missing thread");
+    const state = f.model.getSnapshot();
+    if (state.kind !== "ready" || state.threadSelection.kind !== "thread")
+      throw Error("missing selected thread");
+    const thread = state.threadSelection.thread;
+    expect(f.reading.get(a.threadId) ?? 0).toBe(0);
+    const releaseFirst = thread.retainReading();
+    const releaseSecond = thread.retainReading();
+    expect(f.reading.get(a.threadId)).toBe(1);
+    releaseFirst();
+    expect(f.reading.get(a.threadId)).toBe(1);
+    releaseSecond();
+    releaseSecond();
+    expect(f.reading.get(a.threadId)).toBe(0);
+    f.busy(0, true);
+    expect(f.model.runtime?.getSnapshot()?.busy).toBe(true);
+    expect(f.reading.get(a.threadId)).toBe(0);
+    const releaseAgain = thread.retainReading();
+    expect(f.reading.get(a.threadId)).toBe(1);
+    releaseAgain();
+  } finally {
+    f.model.dispose();
+  }
+});
+it("rechecks the idle cache budget when a background reading lease is released", async () => {
+  const f = await fixture();
+  try {
+    const state = f.model.getSnapshot();
+    if (state.kind !== "ready" || state.threadSelection.kind !== "thread")
+      throw Error("missing selected thread");
+    const owner = state.threadSelection.thread;
+    const release = owner.retainReading();
+    await f.select(1);
+    await f.select(2);
+    expect(owner.runtime?.stateStore.getState().disposed).toBe(false);
+    release();
+    await Promise.resolve();
+    expect(owner.runtime?.stateStore.getState().disposed).toBe(true);
   } finally {
     f.model.dispose();
   }

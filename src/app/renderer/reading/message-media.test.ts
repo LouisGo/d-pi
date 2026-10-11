@@ -4,13 +4,122 @@ import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import type { HistoryBridge } from "../../../modules/conversation/contracts/public";
+import { ReadingPositions } from "../../../modules/conversation/core/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { MessageMedia } from "./message-media";
+import { ReadingPane } from "./reading-pane";
 
 const cleanup: (() => Promise<void>)[] = [];
 afterEach(async () => {
   for (const release of cleanup.splice(0)) await release();
   vi.unstubAllGlobals();
+});
+
+it("cancels hidden reading-pane media and rejects its late image before reacquiring", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  vi.stubGlobal("IntersectionObserver", undefined);
+  const threadId = crypto.randomUUID();
+  let finish: (() => void) | undefined;
+  const gate = new Promise<void>((resolve) => {
+    finish = resolve;
+  });
+  let ready = false;
+  const requestImage = vi.fn<NonNullable<HistoryBridge["requestImage"]>>(
+    async (command) => {
+      if (!ready) await gate;
+      return {
+        kind: "completed",
+        operationId: command.operationId,
+        traceId: command.traceId,
+        reply: {
+          kind: "image",
+          dataUrl: "data:image/png;base64,YQ==",
+        },
+      };
+    },
+  );
+  const cancelRead = vi.fn<NonNullable<HistoryBridge["cancelRead"]>>(
+    async (identity) => ({ kind: "acknowledged", ...identity }),
+  );
+  const bridge: HistoryBridge = {
+    requestImage,
+    cancelRead,
+    read: vi.fn(),
+    projectList: vi.fn(),
+    projectRead: vi.fn(),
+  };
+  const positions = new ReadingPositions();
+  const thread = {
+    readingSources: positions,
+    readingPositions: new Map(),
+    reading: null,
+  };
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  const client = new QueryClient();
+  const render = (active: boolean) =>
+    act(() =>
+      root.render(
+        createElement(
+          QueryClientProvider,
+          { client },
+          createElement(I18nProvider, {
+            initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+            children: createElement(ReadingPane, {
+              thread,
+              view: "conversation",
+              active,
+              children: createElement(MessageMedia, {
+                bridge,
+                threadId,
+                entry: {
+                  id: "image-record",
+                  parentId: null,
+                  role: "user",
+                  text: "",
+                  mediaCursor: { threadId, source: "frozen", offset: 1 },
+                  images: [
+                    {
+                      index: 0,
+                      mimeType: "image/png",
+                      digest: "a".repeat(64),
+                      name: "image.png",
+                    },
+                  ],
+                },
+              }),
+            }),
+          }),
+        ),
+      ),
+    );
+  try {
+    await render(true);
+    expect(requestImage).toHaveBeenCalledTimes(1);
+    await render(false);
+    expect(cancelRead).toHaveBeenCalledTimes(1);
+    ready = true;
+    await act(async () => {
+      finish?.();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    expect(container.querySelector("img")).toBeNull();
+    expect(client.getQueryCache().getAll()).toHaveLength(0);
+    await render(true);
+    await act(async () => {
+      await vi.waitFor(() =>
+        expect(container.querySelector("img")).not.toBeNull(),
+      );
+    });
+    expect(requestImage).toHaveBeenCalledTimes(2);
+  } finally {
+    finish?.();
+    await act(() => root.unmount());
+    client.clear();
+    positions.dispose();
+    container.remove();
+  }
 });
 
 async function mount(

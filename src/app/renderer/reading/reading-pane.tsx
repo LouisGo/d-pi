@@ -10,6 +10,7 @@ import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { ReadingView } from "../routing/search";
 import { ConversationVisibilityContext } from "../shell/layout/conversation-visibility";
 import type { ThreadModel } from "../wiring/thread-model";
+import { useDocumentVisible } from "../workbench/window-visibility";
 import { ConversationOutline } from "./conversation-outline";
 import { LiveReadingControls } from "./live-reading-controls";
 import { attachReadingAnchor } from "./reading-anchor";
@@ -22,7 +23,10 @@ export function ReadingPane({
   onAdapterChange,
   onTakeover,
 }: {
-  thread: Pick<ThreadModel, "readingSources" | "readingPositions" | "reading">;
+  thread: Pick<
+    ThreadModel,
+    "readingSources" | "readingPositions" | "reading"
+  > & { retainReading?: ThreadModel["retainReading"] };
   view: ReadingView;
   active: boolean;
   children: ReactNode;
@@ -32,6 +36,8 @@ export function ReadingPane({
     | undefined;
 }) {
   const { visible } = useContext(ConversationVisibilityContext);
+  const documentVisible = useDocumentVisible();
+  const presented = active && visible && documentVisible;
   const { t } = useI18n();
   const label = match(view)
     .with("conversation", () => t("ui.conversation.sectionLabel"))
@@ -47,8 +53,7 @@ export function ReadingPane({
   useLayoutEffect(() => {
     const pane = ref.current;
     const workspace = pane?.closest<HTMLElement>(".thread-workspace");
-    if (!pane || !workspace || view !== "conversation" || !active || !visible)
-      return;
+    if (!pane || !workspace || view !== "conversation" || !presented) return;
     let previous = -1;
     const syncGutter = () => {
       const width = pane.offsetWidth - pane.clientWidth;
@@ -63,14 +68,14 @@ export function ReadingPane({
         : new ResizeObserver(syncGutter);
     observer?.observe(pane);
     return () => observer?.disconnect();
-  }, [view, active, visible]);
+  }, [view, presented]);
   useLayoutEffect(() => {
     const pane = ref.current;
-    if (!pane || !active || !visible) return;
+    if (!pane || !presented) return;
     const adapter = attachReadingAnchor({
       pane,
       positions: thread.readingSources,
-      isVisible: () => active && visible,
+      isVisible: () => presented,
       pixel: () => thread.readingPositions.get(view) ?? 0,
       rememberPixel: (top) => thread.readingPositions.set(view, top),
       onTakeover,
@@ -83,7 +88,7 @@ export function ReadingPane({
       onAdapterChange?.(null);
       if (anchor.current === adapter) anchor.current = null;
     };
-  }, [thread, view, active, visible, onAdapterChange, onTakeover]);
+  }, [thread, view, presented, onAdapterChange, onTakeover]);
   return (
     <>
       <div
@@ -92,26 +97,52 @@ export function ReadingPane({
         data-reading-pane={view}
         role="region"
         aria-label={label}
-        hidden={!active}
+        hidden={!presented}
         tabIndex={0}
         onScroll={(event) => {
           if (event.target === event.currentTarget) anchor.current?.capture();
         }}
       >
-        {children}
-      </div>
-      {view === "conversation" &&
-        active &&
-        visible &&
-        thread.reading &&
-        liveAnchor && (
-          <>
-            {ref.current && (
-              <ConversationOutline pane={ref.current} anchor={liveAnchor} />
-            )}
-            <LiveReadingControls model={thread.reading} anchor={liveAnchor} />
-          </>
+        {presented && (
+          <ReadingConsumer
+            retain={view === "conversation" ? thread : undefined}
+            beforeDetach={() => anchor.current?.capture(false)}
+          >
+            {children}
+          </ReadingConsumer>
         )}
+      </div>
+      {view === "conversation" && presented && thread.reading && liveAnchor && (
+        <>
+          {ref.current && (
+            <ConversationOutline pane={ref.current} anchor={liveAnchor} />
+          )}
+          <LiveReadingControls model={thread.reading} anchor={liveAnchor} />
+        </>
+      )}
     </>
   );
+}
+
+function ReadingConsumer({
+  children,
+  beforeDetach,
+  retain,
+}: {
+  children: ReactNode;
+  beforeDetach: () => void;
+  retain?: { retainReading?: ThreadModel["retainReading"] } | undefined;
+}) {
+  const detach = useRef(beforeDetach);
+  detach.current = beforeDetach;
+  // A deleted child cleans up before its DOM is removed. Capture the old source
+  // before the persistent pane's later effect cleanup sees an empty subtree.
+  useLayoutEffect(() => {
+    const release = retain?.retainReading?.();
+    return () => {
+      detach.current();
+      release?.();
+    };
+  }, [retain]);
+  return children;
 }

@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { act, createElement } from "react";
+import { act, createElement, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { expect, it, vi } from "vitest";
 import type { ConversationEvent } from "../../../modules/conversation/contracts/public";
@@ -16,6 +16,89 @@ import { ReadingPane } from "./reading-pane";
 vi.mock("./markdown", () => ({
   Markdown: ({ text }: { text: string }) => createElement("p", null, text),
 }));
+
+it.each(["page", "shell", "window"])(
+  "unmounts hidden %s reading consumers while retaining the light pane",
+  async (hiddenBy) => {
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    const visibility = Object.getOwnPropertyDescriptor(
+      document,
+      "visibilityState",
+    );
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "visible",
+    });
+    const positions = new ReadingPositions();
+    const thread = {
+      readingSources: positions,
+      readingPositions: new Map(),
+      reading: null,
+    };
+    let mounted = 0;
+    const Consumer = () => {
+      useEffect(() => {
+        mounted++;
+        return () => {
+          mounted--;
+        };
+      }, []);
+      return createElement("p", { "data-reading-resource": true }, "body");
+    };
+    const host = document.createElement("div");
+    document.body.append(host);
+    const root = createRoot(host);
+    const render = (shown: boolean) =>
+      act(() => {
+        if (hiddenBy === "window") {
+          Object.defineProperty(document, "visibilityState", {
+            configurable: true,
+            value: shown ? "visible" : "hidden",
+          });
+          document.dispatchEvent(new Event("visibilitychange"));
+        }
+        root.render(
+          createElement(I18nProvider, {
+            initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+            children: createElement(
+              ConversationVisibilityContext,
+              {
+                value: {
+                  visible: hiddenBy === "shell" ? shown : true,
+                  reveal: () => {},
+                },
+              },
+              createElement(ReadingPane, {
+                thread,
+                view: "conversation",
+                active: hiddenBy === "page" ? shown : true,
+                children: createElement(Consumer),
+              }),
+            ),
+          }),
+        );
+      });
+    try {
+      await render(true);
+      expect(mounted).toBe(1);
+      const pane = host.querySelector(".reading-pane");
+      await render(false);
+      expect(mounted).toBe(0);
+      expect(host.querySelector("[data-reading-resource]")).toBeNull();
+      expect(host.querySelector(".reading-pane")).toBe(pane);
+      await render(true);
+      expect(mounted).toBe(1);
+    } finally {
+      await act(() => root.unmount());
+      positions.dispose();
+      host.remove();
+      if (visibility)
+        Object.defineProperty(document, "visibilityState", visibility);
+      else Reflect.deleteProperty(document, "visibilityState");
+      vi.unstubAllGlobals();
+    }
+  },
+);
 
 it("shows a reachable list-bottom action and a new-output prompt for same-entity appends with one continuous body", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);

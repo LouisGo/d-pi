@@ -328,6 +328,10 @@ it("keeps conversation projection lifecycle in the AppModel", async () => {
   const model = new AppModel(bridge);
   await model.start();
   expect(model.getSnapshot().kind).toBe("ready");
+  const selected = model.getSnapshot();
+  if (selected.kind !== "ready" || selected.threadSelection.kind !== "thread")
+    throw Error("missing selected thread");
+  selected.threadSelection.thread.retainReading();
   runtimeListeners[0]?.(view);
   expect(conversationConnections).toBe(1);
   runtimeListeners[0]?.(ready);

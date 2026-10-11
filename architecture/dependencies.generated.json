@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "9bf89365dd65b12a8d5c8ea1c367a455eaf679dde46e7cd4162b3af9aa113887",
+  "inputsHash": "e2ea3cfeb58d1396c9e465d58d7e43ba7695b25bb969340ca02f93a51cc00dc1",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 652,
-    "scannedFiles": 652,
+    "sourceFiles": 653,
+    "scannedFiles": 653,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 292,
-      "lines": 58142,
+      "files": 293,
+      "lines": 58495,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -11849,6 +11849,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../../../modules/conversation/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/reading/message-media.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "../../../modules/preferences/renderer/public",
       "kind": "import",
       "resolution": "module",
@@ -11865,6 +11877,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/reading/message-media.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/message-media.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./reading-pane",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/reading-pane.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -12393,6 +12417,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/wiring/thread-model.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/reading-pane.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../workbench/window-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/window-visibility.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -21080,6 +21116,18 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/workbench/file-panel.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./window-visibility",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/window-visibility.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/workbench/file-read-reason.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -22275,6 +22323,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "./window-workbench",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/window-workbench.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/thread-workbench.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "../reading/conversation",
       "kind": "dynamic-import",
       "resolution": "module",
@@ -22721,6 +22781,15 @@
       "test": false,
       "specifier": "@tiptap/pm/model",
       "kind": "dynamic-import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/workbench/window-visibility.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
       "resolution": "external"
     },
     {

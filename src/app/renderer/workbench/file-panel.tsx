@@ -6,7 +6,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
 import { match } from "ts-pattern";
 import type {
@@ -53,6 +52,7 @@ import { PathLabel } from "../components/ui/path-label";
 import { fileReadReason as reason } from "./file-read-reason";
 import { readInFlight } from "./refresh-state";
 import type { WorkspaceSourceTarget } from "./source-target";
+import { useDocumentVisible } from "./window-visibility";
 
 function statusLabel(
   status: Extract<GitReply, { kind: "changes" }>["entries"][number]["status"],
@@ -124,18 +124,10 @@ function useFilePanelLocation() {
 /** Hidden panels retain only a location; queries/models belong to the viewer. */
 export function FilePanel(props: FilePanelProps) {
   const location = useFilePanelLocation();
-  const visible = useSyncExternalStore(subscribeVisibility, documentVisible);
+  const visible = useDocumentVisible();
   return props.active === false || !visible ? null : (
     <ActiveFilePanel {...props} locationState={location} />
   );
-}
-
-function subscribeVisibility(listener: () => void) {
-  document.addEventListener("visibilitychange", listener);
-  return () => document.removeEventListener("visibilitychange", listener);
-}
-function documentVisible() {
-  return document.visibilityState !== "hidden";
 }
 
 function ActiveFilePanel({

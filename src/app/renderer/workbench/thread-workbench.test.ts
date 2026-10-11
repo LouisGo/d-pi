@@ -11,6 +11,7 @@ import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { ThreadIdSchema } from "../../../shared/identity";
 import type { AttentionEntry } from "../../contracts/attention";
 import { ThreadWorkbench } from "./thread-workbench";
+import { WindowWorkbench } from "./window-workbench";
 
 const trace = "test-trace";
 vi.mock("./composer", () => ({
@@ -117,8 +118,12 @@ function setup(target: boolean) {
     },
   });
   reading.connect(threadId);
+  const workbench = new WindowWorkbench({
+    insert: vi.fn(),
+    select: async () => true,
+  });
   const props = {
-    model: { attention: { locationStore }, history: {} },
+    model: { attention: { locationStore }, history: {}, workbench },
     editor: {},
     threadSelection: {
       kind: "thread",
@@ -155,6 +160,7 @@ function setup(target: boolean) {
   const cleanup = async () => {
     await act(() => root.unmount());
     reading.dispose();
+    workbench.dispose();
     positions.dispose();
     host.remove();
     vi.restoreAllMocks();

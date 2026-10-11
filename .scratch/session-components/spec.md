@@ -181,6 +181,14 @@
 - 折叠浏览器取消反例先复现0次取消，修正后11项FilePanel通过；既有导航测试的“hidden列表DOM常驻”断言按本次目标改成重开后真实重新采样，版本/焦点/晚到检查保留。Router/Summary/窗口/FilePanel/正式Workbench五文件39/39，补capture释放后窗口10/10（重叠）；Renderer仍仅原有composer-tag基线，design与快速门禁通过。
 - WB03原生warm、子会话operation、会话/媒体其余可见性及生产trace，WB04完整交互仍待完成；goal保持active，未推送或发布。
 
+### WB03 milestone：实际可见阅读消费者与全文需求（2026-10-11）
+
+- ReadingPane保留轻DOM容器及Thread坐标，只有当前页/shell/document实际可见时挂载正文/媒体Query消费者；隐藏时在旧DOM移除前捕获锚点并卸载资源拥有者，重开恢复同来源位置。FilePanel复用同一document可见性入口。没有以React卸载结束待答/后台工作。
+- ThreadModel的全文订阅由实际阅读lease控制，多个消费者共享一次连接，最后释放时disconnect；Runtime事实独立保留。lease获取只调用只读syncTranscript，不触发准备/恢复/执行。当前Thread保护与原有选择生命周期继续有效；背景reading占用保护缓存，最后释放通知AppModel重核idle预算，防止临时超预算在占用消失后残留。
+- 页/shell/window隐藏回归先复现资源仍挂载；最后reader缓存回归先复现不回收，再分别修正。正式媒体+Query取消晚到图像并重新采样，图片无observer warm缓存保持0。六文件（含正式Workbench）37/37通过；保存阅读28/28和FilePanel11/11在矩阵中通过。ThreadWorkbench旧fixture补实际WindowWorkbench；appearance按新目标只断言已挂载视图、通过真实More动作打开文件/历史/提交，五条隐藏常驻旧假设对齐后20/23，另外3个侧栏旧selector失败在固定efcaf40隔离副本同样20/23，未改生产代码迁就旧selector；副本已清理，日志保留。
+- Renderer仍仅既有composer-tag.tsx:134 TS7053；design/i18n通过。快速门禁曾因新增测试依赖使结构聚合过期，重新生成后通过，最终pnpm build通过。保留React act/构建chunk提示，不以边界替身冒称原生供应商或完整生产性能trace。
+- 固定f897650..efcaf40独立复核确认同地址capture P2闭合，FileBrowser释放无新增高价值问题。WB03原生warm/子会话/生产trace及WB04完整交互继续本轮goal，未推送或发布。
+
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。
 
 ### WB00 milestone（2026-10-11）

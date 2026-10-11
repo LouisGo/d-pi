@@ -39,6 +39,7 @@ export class ThreadModel {
   private runtimeReadingUnsubscribe: (() => void) | null = null;
   private disposed = false;
   private active = false;
+  private readingConsumers = 0;
   private activationGeneration = 0;
   private automaticStartAttempted = false;
   private hasPrepared = false;
@@ -50,6 +51,7 @@ export class ThreadModel {
     draft: Draft,
     bridge: DesktopBridge,
     transportFailure: (traceId: string) => Failure,
+    private readonly onResourcesSettled: () => void = () => {},
   ) {
     this.context = {
       threadId: draft.threadId,
@@ -233,6 +235,23 @@ export class ThreadModel {
     this.reading?.disconnect();
   }
 
+  /** A view owns transcript demand; native execution facts have their own port. */
+  retainReading(): () => void {
+    if (this.disposed) return () => {};
+    this.readingConsumers++;
+    this.syncTranscript();
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      this.readingConsumers--;
+      if (this.readingConsumers === 0) {
+        this.reading?.disconnect();
+        this.onResourcesSettled();
+      }
+    };
+  }
+
   /** New user intent may prepare the same session; it never replays an old receipt. */
   canSend(view = this.runtime?.getSnapshot() ?? null): boolean {
     return (
@@ -256,7 +275,11 @@ export class ThreadModel {
 
   /** Active or unresolved resources are work, not discardable cache entries. */
   canEvict(): boolean {
-    if (this.active || this.controller.getSnapshot().kind !== "saved")
+    if (
+      this.active ||
+      this.readingConsumers > 0 ||
+      this.controller.getSnapshot().kind !== "saved"
+    )
       return false;
     const runtime = this.runtime?.getSnapshot();
     if (
@@ -322,17 +345,26 @@ export class ThreadModel {
     }
     const previous = this.previousRuntimeView;
     this.previousRuntimeView = view;
+    this.syncTranscript(view, previous);
+    this.startAutomatically(view);
+  };
+
+  private syncTranscript(
+    view = this.runtime?.getSnapshot(),
+    previous = this.previousRuntimeView,
+  ): void {
+    if (this.disposed || !view) return;
     if (
       this.reading &&
       this.active &&
+      this.readingConsumers > 0 &&
       (!this.reading.connected ||
         !previous ||
         previous.threadId !== view.threadId ||
         (view.phase === "ready" && previous.phase !== "ready"))
     )
       this.reading.connect(view.threadId);
-    this.startAutomatically(view);
-  };
+  }
 
   dispose(): void {
     if (this.disposed) return;

@@ -318,6 +318,19 @@ async function setup({
     container,
     button,
     render,
+    openReading: async (view: "files" | "history" | "submissions") => {
+      const before = views[view].mock.calls.length;
+      const action = views.composer.mock.calls
+        .at(-1)?.[0]
+        .moreActions.find((item: { id: string }) => item.id === view);
+      if (!action) throw Error(`missing reading action: ${view}`);
+      await act(async () => {
+        action.onSelect();
+        await vi.waitFor(() =>
+          expect(views[view].mock.calls.length).toBeGreaterThan(before),
+        );
+      });
+    },
     emitRuntime: (patch: Partial<RuntimeView>) => {
       const current = model.runtime?.getSnapshot();
       if (!current) throw Error("missing runtime");
@@ -395,7 +408,14 @@ it("places Thread creation and project opening in the sidebar and settings in a 
 it("keeps normal controls and Thread views untouched while saving a theme", async () => {
   const fixture = await setup();
   const initial = renderCounts();
-  expect(Object.values(initial)).toEqual([1, 1, 1, 1, 1, 1]);
+  expect(initial).toEqual({
+    conversation: 1,
+    history: 0,
+    submissions: 0,
+    runtime: 1,
+    composer: 1,
+    files: 0,
+  });
   let saving: Promise<void> | undefined;
   await act(() => {
     saving = fixture.model.preference("theme");
@@ -488,7 +508,10 @@ it("translates controls with one locale repaint while preserving Thread resource
   // the owning Thread or re-run its business requests and subscriptions.
   expect(renderCounts()).toEqual(
     Object.fromEntries(
-      Object.entries(before).map(([name, count]) => [name, count + 1]),
+      Object.entries(before).map(([name, count]) => [
+        name,
+        count === 0 ? 0 : count + 1,
+      ]),
     ),
   );
   expect(fixture.model.getSnapshot()).toBe(state);
@@ -602,15 +625,21 @@ it("updates the owning Thread resources when the working directory identity chan
     views.composer.mock.calls.at(-1)?.[0].thread.context.directory,
   ).toContain("/fixture/second");
   expect(views.composer.mock.calls.at(-1)?.[0]).toMatchObject({ thread });
-  expect(views.files.mock.calls.at(-1)?.[0]).toMatchObject({
-    resource: thread.context,
-  });
+  expect(views.files).not.toHaveBeenCalled();
+  expect(views.submissions).not.toHaveBeenCalled();
+  expect(views.history).not.toHaveBeenCalled();
   expect(views.conversation.mock.calls.at(-1)?.[0]).toMatchObject({
     model: thread.reading,
   });
+  await fixture.openReading("files");
+  expect(views.files.mock.calls.at(-1)?.[0]).toMatchObject({
+    resource: thread.context,
+  });
+  await fixture.openReading("submissions");
   expect(views.submissions.mock.calls.at(-1)?.[0]).toMatchObject({
     model: thread.submission,
   });
+  await fixture.openReading("history");
   expect(views.history.mock.calls.at(-1)?.[0]).toMatchObject({
     threadId: thread.context.threadId,
   });
@@ -618,6 +647,7 @@ it("updates the owning Thread resources when the working directory identity chan
 
 it("consumes an attachment once and prevents old Thread callbacks from populating a replacement composer", async () => {
   const fixture = await setup();
+  await fixture.openReading("files");
   const selection = captureSelection(
     "exact source",
     { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 6 },
@@ -651,6 +681,7 @@ it("consumes an attachment once and prevents old Thread callbacks from populatin
 
 it("passes a newly loaded editor adapter through without replacing the Thread", async () => {
   const fixture = await setup();
+  await fixture.openReading("files");
   const controller = fixture.model.controller;
   const editor = () => null;
   await fixture.render(editor);

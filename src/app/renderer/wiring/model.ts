@@ -481,7 +481,9 @@ export class AppModel {
                 draft.revision &&
                 cached.controller.getTextSnapshot() === draft.text))
             ? cached
-            : new ThreadModel(draft, this.bridge, transportFailure)
+            : new ThreadModel(draft, this.bridge, transportFailure, () =>
+                this.scheduleCachePrune(),
+              )
           : null;
         if (thread) {
           // Presentation metadata refreshes without replacing the runtime owner.
