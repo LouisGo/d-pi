@@ -5,9 +5,26 @@ import { afterEach, expect, it, vi } from "vitest";
 import type { ConversationItem } from "../../../modules/conversation/contracts/public";
 import { decodeToolSemantic } from "../../../modules/conversation/core/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
+import { ToolWorkbenchContext } from "../workbench/tool-inspector";
+import {
+  type ToolTarget,
+  WindowWorkbench,
+} from "../workbench/window-workbench";
 import { ConversationItemView } from "./conversation";
 import { MessageMedia } from "./message-media";
 import { ToolBodyBoundary } from "./tool-semantic-body";
+
+vi.mock("./reading-body", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./reading-body")>();
+  return {
+    ...actual,
+    ReadingBody: (props: Parameters<typeof actual.ReadingBody>[0]) => {
+      if (props.text.includes("THROW_RENDERER_FIXTURE"))
+        throw Error("Injected semantic presenter failure");
+      return createElement(actual.ReadingBody, props);
+    },
+  };
+});
 
 const cleanups: (() => Promise<void>)[] = [];
 afterEach(async () => {
@@ -72,6 +89,36 @@ it("labels planned write paths as intent rather than reported changes", async ()
   expect(container.textContent).toContain("Planned file paths");
   expect(container.textContent).not.toContain("Tool-reported changes");
 });
+it("renders a published agent read as internal raw evidence without a current-file action", async () => {
+  const container = await mount({
+    ...base,
+    role: "tool",
+    text: "ACTUAL_PUBLISHED_CHILD_RESULT",
+    tool: {
+      name: "read",
+      toolCallId: "read-child",
+      lifecycle: "completed",
+      observed: ["start", "end"],
+      coverage: "observed",
+      truncated: false,
+      semantic: decodeToolSemantic(
+        "read",
+        { path: "agent://first-task" },
+        {
+          details: {
+            resolvedPath: "/native/first-task.md",
+            meta: { source: { type: "internal", value: "agent://first-task" } },
+          },
+        },
+        "result",
+      ),
+    },
+  });
+  expect(
+    container.querySelector('[data-tool-body="generic"]')?.textContent,
+  ).toContain("ACTUAL_PUBLISHED_CHILD_RESULT");
+  expect(container.querySelector("[data-resource-current]")).toBeNull();
+});
 it("isolates a presenter exception, preserves raw evidence and recovers on a new revision", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.spyOn(console, "error").mockImplementation(() => {});
@@ -113,6 +160,97 @@ it("isolates a presenter exception, preserves raw evidence and recovers on a new
   );
   await render(2, false);
   expect(container.textContent).toContain("recovered view");
+});
+it("isolates an exception in the formal semantic Body while another Body and its actual source action remain usable", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  vi.spyOn(console, "error").mockImplementation(() => {});
+  const workbench = new WindowWorkbench({
+    insert: vi.fn(),
+    select: async () => true,
+  });
+  const reveal = vi.spyOn(workbench, "reveal");
+  const target: ToolTarget = {
+    source: {
+      kind: "live-tool",
+      threadId: "A",
+      nativeSessionKey: "native",
+      connectionGeneration: crypto.randomUUID(),
+      toolCallId: "broken",
+    },
+    rowId: "live-broken",
+    title: "read",
+    threadTitle: "A",
+  };
+  const makeItem = (
+    id: number,
+    text: string,
+    excerpt: string,
+  ): ConversationItem => ({
+    ...base,
+    id,
+    role: "tool",
+    text,
+    tool: {
+      name: "read",
+      toolCallId: id === 1 ? "broken" : "healthy",
+      lifecycle: "completed",
+      observed: ["start", "end"],
+      coverage: "observed",
+      truncated: false,
+      semantic: decodeToolSemantic(
+        "read",
+        { path: "/a.ts" },
+        { details: { displayContent: { text: excerpt, startLine: 1 } } },
+        "result",
+      ),
+    },
+  });
+  const broken = makeItem(
+    1,
+    "AVAILABLE_ORIGINAL_RESULT",
+    "THROW_RENDERER_FIXTURE",
+  );
+  const healthy = makeItem(2, "HEALTHY_RAW_RESULT", "HEALTHY_SEMANTIC_RESULT");
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  cleanups.push(async () => {
+    await act(() => root.unmount());
+    workbench.dispose();
+    container.remove();
+  });
+  await act(() =>
+    root.render(
+      createElement(I18nProvider, {
+        initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+        children: createElement(
+          ToolWorkbenchContext,
+          { value: workbench },
+          createElement(ConversationItemView, {
+            item: broken,
+            rowId: "live-broken",
+            toolTarget: target,
+          }),
+          createElement(ConversationItemView, {
+            item: healthy,
+            rowId: "live-healthy",
+          }),
+        ),
+      }),
+    ),
+  );
+  const rows = container.querySelectorAll("article");
+  expect(rows).toHaveLength(2);
+  expect(rows[0]?.textContent).toContain("AVAILABLE_ORIGINAL_RESULT");
+  expect(rows[0]?.querySelector('[role="status"]')).not.toBeNull();
+  expect(rows[1]?.textContent).toContain("HEALTHY_SEMANTIC_RESULT");
+  expect(broken.tool?.lifecycle).toBe("completed");
+  const source = rows[0]?.querySelector<HTMLButtonElement>(
+    "[data-command-open]",
+  );
+  expect(source?.disabled).toBe(false);
+  await act(() => source?.click());
+  expect(reveal).toHaveBeenCalledWith({ kind: "activity", activity: target });
 });
 it.each(["grep", "edit"])(
   "retains native %s errors and post-operation warnings alongside semantic evidence",

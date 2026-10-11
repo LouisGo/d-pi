@@ -130,6 +130,52 @@ it("extracts wrapped edit semantics before clipping and keeps them on native fin
   p.dispose();
 });
 
+it("keeps a published native agent read internal through progress and persisted final", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "tool_execution_start",
+    toolCallId: "read-child",
+    toolName: "read",
+    args: { path: "agent://first-task" },
+  });
+  p.accept({
+    type: "tool_execution_update",
+    toolCallId: "read-child",
+    toolName: "read",
+    partialResult: { content: [{ type: "text", text: "waiting" }] },
+  });
+  p.accept({
+    type: "tool_execution_end",
+    toolCallId: "read-child",
+    toolName: "read",
+    isError: false,
+    result: {
+      content: [{ type: "text", text: "actual child result" }],
+      details: {
+        resolvedPath: "/native/first-task.md",
+        meta: { source: { type: "internal", value: "agent://first-task" } },
+      },
+    },
+  });
+  p.accept({
+    type: "message_end",
+    message: {
+      role: "toolResult",
+      toolCallId: "read-child",
+      content: "actual child result",
+      dPiRecordId: "persisted-child",
+    },
+  });
+  expect(p.snapshot().items[0]?.tool?.semantic).toMatchObject({
+    kind: "generic",
+    reason: "non-file",
+    internalSource: "agent://first-task",
+    phase: "result",
+  });
+  expect(p.snapshot().items[0]?.text).toBe("actual child result");
+  p.dispose();
+});
+
 it("transmits proven delta-only batches proportionally to new text and keeps cumulative snapshots authoritative", () => {
   const events: ConversationEvent[] = [];
   const p = new ConversationProjection(crypto.randomUUID(), (event) =>

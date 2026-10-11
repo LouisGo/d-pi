@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "b4348a08ac66b32a721a2aa68427d71e68f965502c6ef286c41d1f991e57f2e9",
+  "inputsHash": "e3fc2d1183dc8376c2228d7e78174c880855a6c72b296e7e5b2843509a254e03",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 678,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 306,
-      "lines": 62226,
+      "lines": 62531,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -319,7 +319,7 @@
       ],
       "materialized": true,
       "files": 45,
-      "lines": 11165,
+      "lines": 11305,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -11030,6 +11030,30 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../workbench/tool-inspector",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/tool-inspector.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/conversation-display.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../workbench/window-workbench",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/window-workbench.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/conversation-display.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "./conversation",
       "kind": "import",
       "resolution": "module",
@@ -11058,6 +11082,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/reading/tool-semantic-body.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/conversation-display.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./reading-body",
+      "kind": "dynamic-import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/reading-body.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },

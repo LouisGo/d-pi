@@ -28,6 +28,7 @@ const DetailsSchema = z.object({
   proc: z.unknown().optional(),
   cfg: z.unknown().optional(),
   xdev: z.unknown().optional(),
+  meta: z.unknown().optional(),
   diff: z.string().optional(),
   perFileResults: z.unknown().optional(),
   snapshotsPruned: z.boolean().optional(),
@@ -51,6 +52,9 @@ const DetailsSchema = z.object({
 const ResultSchema = z.object({
   details: z.unknown().optional(),
   isError: z.boolean().optional(),
+});
+const InternalMetaSchema = z.object({
+  source: z.object({ type: z.literal("internal"), value: z.string() }),
 });
 const XdevSchema = z.object({
   tool: z.string().max(120),
@@ -105,7 +109,13 @@ export function decodeToolSemantic(
   };
   const generic = (
     reason: Extract<ToolSemantic, { kind: "generic" }>["reason"],
-  ): ToolSemantic => ({ ...base, kind: "generic", reason });
+    internalSource?: string,
+  ): ToolSemantic => ({
+    ...base,
+    kind: "generic",
+    reason,
+    ...(internalSource ? { internalSource } : {}),
+  });
   const clip = (text: string | undefined, limit = 2048) => {
     if ((text?.length ?? 0) > limit) base.partial = base.truncated = true;
     return (text ?? "").slice(0, limit);
@@ -148,6 +158,15 @@ export function decodeToolSemantic(
   const target =
     d.resolvedPath ?? d.path ?? d.displayTarget ?? a.path ?? a.file_path ?? "";
   if (target.length > 4096) return generic("invalid");
+  const internal = InternalMetaSchema.safeParse(d.meta);
+  const operationTarget = internal.success
+    ? internal.data.source.value
+    : (a.path ?? a.file_path ?? target);
+  if (operationTarget.length > 4096) return generic("invalid");
+  // A native published agent result may have a backing .md path. Its actual
+  // internal operation remains the source; that file is not a user file read.
+  if (internal.success || /^(proc|cfg|agent|xd):\/\//.test(operationTarget))
+    return generic("non-file", operationTarget);
   if (d.proc !== undefined || d.cfg !== undefined) return generic("non-file");
   if (
     base.effectiveTool === "read" &&
@@ -309,6 +328,8 @@ export function toolSemanticArguments(
     .with({ kind: "web-research" }, (s) => ({ path: s.url }))
     .with({ kind: "search" }, (s) => ({ path: s.scope, query: s.query }))
     .with({ kind: "file-change" }, (s) => ({ path: s.changes[0]?.path }))
-    .with({ kind: "generic" }, () => ({}))
+    .with({ kind: "generic" }, (s) =>
+      s.internalSource ? { path: s.internalSource } : {},
+    )
     .exhaustive();
 }

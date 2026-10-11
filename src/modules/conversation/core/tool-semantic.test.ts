@@ -1,8 +1,80 @@
 import { describe, expect, it } from "vitest";
 import { ToolSemanticSchema } from "../contracts/public";
-import { decodeToolSemantic } from "./tool-semantic";
+import { decodeToolSemantic, toolSemanticArguments } from "./tool-semantic";
 
 describe("fixed OMP semantic evidence before generic clipping", () => {
+  it.each([true, false])(
+    "keeps published agent reads internal when final metadata is present: %s",
+    (withMetadata) => {
+      const result = decodeToolSemantic(
+        "read",
+        { path: "agent://first-task" },
+        {
+          details: {
+            resolvedPath: "/native/parent/first-task.md",
+            ...(withMetadata
+              ? {
+                  meta: {
+                    source: { type: "internal", value: "agent://first-task" },
+                  },
+                }
+              : {}),
+          },
+        },
+        "result",
+      );
+      expect(result).toMatchObject({
+        kind: "generic",
+        reason: "non-file",
+        internalSource: "agent://first-task",
+      });
+      expect(ToolSemanticSchema.safeParse(result).success).toBe(true);
+    },
+  );
+  it("retains bounded internal intent through progress and final without reparsing clipped arguments", () => {
+    const intent = decodeToolSemantic(
+      "read",
+      { path: "agent://first-task" },
+      undefined,
+      "intent",
+    );
+    const progress = decodeToolSemantic(
+      "read",
+      toolSemanticArguments(intent),
+      { content: [{ type: "text", text: "waiting" }] },
+      "progress",
+    );
+    const final = decodeToolSemantic(
+      "read",
+      toolSemanticArguments(progress),
+      { details: { resolvedPath: "/native/first-task.md" } },
+      "result",
+    );
+    expect(final).toMatchObject({
+      kind: "generic",
+      reason: "non-file",
+      internalSource: "agent://first-task",
+    });
+  });
+  it("uses actual internal result source when the original args are not observed", () => {
+    expect(
+      decodeToolSemantic(
+        "read",
+        {},
+        {
+          details: {
+            resolvedPath: "/native/first-task.md",
+            meta: { source: { type: "internal", value: "agent://first-task" } },
+          },
+        },
+        "result",
+      ),
+    ).toMatchObject({
+      kind: "generic",
+      reason: "non-file",
+      internalSource: "agent://first-task",
+    });
+  });
   it("does not turn a failed intent or unadapted AST preview into reported file changes", () => {
     expect(
       decodeToolSemantic(

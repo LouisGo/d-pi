@@ -344,3 +344,9 @@ Activation 独立复核（固定 `5a520bf..d17e3d5`）确认三项 P2，并逐�
 复用仓库subagent-lifecycle loopback supplier，并核对固定OMP task executor/session-loader与本地T3 usageTranscriptReader的记录边界。正式Main提交常规模型tool_call→OMP task/yield→Host原生生命周期→受监督Worker，实测暴露旧读取器把首行当session header；真实18.8.9父/子文件首行是可选title slot，结果被错误标transcript-unavailable。保留失败文件并核对真实header后，以父、子、两者都有title的三项反例先失败，再只接受一条title前导及紧随session header；不搜索任意后续身份。原路径、parentSession、文件身份、容量与取消后物理exit门禁保留。
 
 两文件17/17、Host类型通过，包含重复title/先message后header拒绝。隔离Electron44.4.5正式链路取得两个真实子任务的transcript结果与父toolResult.isError=false；再启动另一Thread两个真实子任务，Main stop后两者原生aborted且Worker仍读取实际终态文件，没有额外模型turn。总11次loopback模型请求（包括原生标题请求），两scope实际cold后进程返回0。证据 [subagent-native.json](evidence/subagent-native.json) 记录10cf25f dirty检查点与Host/Worker/参与源码SHA；不冒称GUI、真实provider、系统IME或完整生产性能trace。首次无报告的exit0不计通过；run2/3的transcript失败和修正后run4正常/run5停止组合分别保留日志。完整WB02–WB04继续。
+
+### WB02 综合验收复核与内部来源修正（2026-10-11，继续实施）
+
+固定10cf25f综合复核确认一项P2：OMP `read agent://<id>` 发布结果的resolvedPath是底层.md，实际内部URL保留于details.meta.source；旧decoder优先路径且Host丢失generic intent，使子任务误走文件Body。五项实际反例失败后，现保留有界internalSource，先按真实内部操作分类，Host intent→progress→final继续传递；内部结果用通用原始正文，不生成当前文件导航，不提前扩张WB07专用Body。
+
+补正式ConversationItemView→ToolSemanticBody异常注入组合，原生状态不变、原始正文与实际详情入口仍可用，另一Body正常。补生产SavedConversation工具组的实时→nativeRecordId确认／保存重读组合：组展开、失败摘要、同一DOM、选区与键盘焦点保持，实际来源动作仍指向A/native/g/first工具，重挂载恢复轻展开；该fixture证明来源入口传参，不冒称完整App返回导航或系统选区实机证据。初轮组fixture缺semantic因而未装配详情按钮，补真实内部语义后通过，未为此更改生产逻辑。四文件97/97、Core/Host/Renderer类型通过；日志 `/tmp/d-pi-agent-read-red.log` 与 `/tmp/d-pi-wb02-acceptance-green.log`。固定10cf25f..a5c931c原生title修正独立复核无新增问题。WB02复核闭合继续，WB03生产trace和WB04权限等仍开放。

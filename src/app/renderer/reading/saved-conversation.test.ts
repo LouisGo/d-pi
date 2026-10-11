@@ -5,11 +5,13 @@ import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import type {
   ConversationEvent,
+  ConversationItem,
   HistoryBridge,
   HistoryPage,
 } from "../../../modules/conversation/contracts/public";
 import {
   ConversationModel,
+  decodeToolSemantic,
   ReadingPositions,
 } from "../../../modules/conversation/core/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
@@ -346,6 +348,171 @@ it("groups verified call siblings, keeps failed counts visible, and remembers ex
   expect(
     f.container.querySelector('[data-reading-row="read-one"]'),
   ).not.toBeNull();
+});
+it("keeps expanded tool members, failed summary and selected DOM through live-to-native confirmation and source navigation", async () => {
+  const workbench = new WindowWorkbench({
+    insert: vi.fn(),
+    select: async () => true,
+  });
+  const reveal = vi.spyOn(workbench, "reveal");
+  cleanups.push(async () => workbench.dispose());
+  let committed = false;
+  const reader: HistoryBridge["read"] = vi.fn(async () => ({
+    kind: "page",
+    source: "saved",
+    nativeSessionKey: "native",
+    coverage: "append-order",
+    next: null,
+    incompleteTail: false,
+    omitted: 0,
+    entries: committed
+      ? [
+          { id: "owner", parentId: null, role: "assistant", text: "Owner" },
+          {
+            id: "read-one",
+            parentId: "owner",
+            activityParentId: "owner",
+            role: "toolResult",
+            state: "complete",
+            text: "stable tool result",
+            tool: {
+              toolCallId: "first",
+              name: "read",
+              lifecycle: "succeeded",
+              coverage: "complete",
+              truncated: false,
+              observed: { start: true, end: true, result: true },
+            },
+          },
+          {
+            id: "read-two",
+            parentId: "read-one",
+            activityParentId: "owner",
+            role: "toolResult",
+            state: "failed",
+            text: "permission denied",
+            tool: {
+              toolCallId: "second",
+              name: "read",
+              lifecycle: "failed",
+              coverage: "complete",
+              truncated: false,
+              observed: { start: true, end: true, result: true },
+            },
+          },
+        ]
+      : [],
+  }));
+  const f = await mount(true, undefined, reader, undefined, workbench);
+  const live = (confirmed: boolean): ConversationItem[] => [
+    {
+      id: 1,
+      nativeRecordId: "owner",
+      role: "assistant",
+      state: "complete",
+      label: { kind: "literal", text: "OMP" },
+      text: "Owner",
+    },
+    ...[false, true].map(
+      (failed, index): ConversationItem => ({
+        id: index + 2,
+        ...(confirmed
+          ? { nativeRecordId: index === 0 ? "read-one" : "read-two" }
+          : {}),
+        role: "tool",
+        state: failed ? "failed" : "complete",
+        label: { kind: "literal", text: "read" },
+        text: failed ? "permission denied" : "stable tool result",
+        activityParent: { itemId: 1, recordId: "owner" },
+        tool: {
+          name: "read",
+          toolCallId: failed ? "second" : "first",
+          lifecycle: failed ? "failed" : "completed",
+          observed: ["start", "end"],
+          coverage: "observed",
+          truncated: false,
+          semantic: decodeToolSemantic(
+            "read",
+            { path: `agent://${failed ? "second" : "first"}` },
+            undefined,
+            "result",
+          ),
+        },
+      }),
+    ),
+  ];
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      nativeSessionKey: "native",
+      connectionGeneration: "g",
+      seq: 1,
+      gap: false,
+      items: live(false),
+    }),
+  );
+  const group = f.container.querySelector<HTMLElement>("[data-activity-group]");
+  expect(group?.textContent).toContain("1 failed");
+  await act(() => group?.querySelector<HTMLButtonElement>("button")?.click());
+  const row = [...f.container.querySelectorAll<HTMLElement>("article")].find(
+    (el) => el.textContent?.includes("stable tool result"),
+  );
+  const text = row?.querySelector("[data-reading-text]")?.firstChild;
+  const button = row?.querySelector<HTMLButtonElement>("[data-command-open]");
+  if (!row || !text || !button) throw Error("missing expanded tool member");
+  button.focus();
+  const range = document.createRange();
+  range.setStart(text, 0);
+  range.setEnd(text, 6);
+  const selection = document.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+  const rowId = row.dataset.readingRow;
+  committed = true;
+  await act(() =>
+    f.emit({
+      kind: "snapshot",
+      nativeSessionKey: "native",
+      connectionGeneration: "g",
+      seq: 2,
+      gap: false,
+      items: live(true),
+    }),
+  );
+  await vi.waitFor(async () => {
+    await act(() => new Promise((r) => setTimeout(r, 20)));
+    expect(reader).toHaveBeenCalledTimes(2);
+  });
+  expect([...f.container.querySelectorAll("article")]).toContain(row);
+  expect(row.dataset.readingRow).toBe(rowId);
+  expect(document.activeElement).toBe(button);
+  expect(text.isConnected).toBe(true);
+  expect(selection?.toString()).toBe("stable");
+  expect(
+    f.container.querySelector("[data-activity-group]")?.textContent,
+  ).toContain("1 failed");
+  selection?.removeAllRanges();
+  await act(() => document.dispatchEvent(new Event("selectionchange")));
+  await act(() => button.click());
+  expect(reveal).toHaveBeenCalledWith(
+    expect.objectContaining({
+      kind: "activity",
+      activity: expect.objectContaining({
+        source: expect.objectContaining({
+          kind: "live-tool",
+          threadId: "A",
+          nativeSessionKey: "native",
+          connectionGeneration: "g",
+          toolCallId: "first",
+        }),
+      }),
+    }),
+  );
+  await f.remount();
+  expect(f.container.textContent).toContain("stable tool result");
+  expect(
+    f.container.querySelector("[data-activity-group]")?.textContent,
+  ).toContain("1 failed");
 });
 it("shows a new live reply while a saved row retains selection and keyboard focus", async () => {
   const f = await mount(true, {
