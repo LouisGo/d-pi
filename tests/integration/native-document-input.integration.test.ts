@@ -13,6 +13,10 @@ import { join } from "node:path";
 import { expect, it, vi } from "vitest";
 import { AppStorage } from "../../src/app/main/wiring/app-storage";
 import { createAttachmentService } from "../../src/app/main/wiring/attachment-service";
+import {
+  convertDocumentContent,
+  convertPdfContent,
+} from "../../src/app/main/wiring/pdf-content";
 
 vi.mock("electron", () => ({ utilityProcess: {} }));
 
@@ -94,6 +98,15 @@ it("imports all fixed OMP document formats and notebooks, prepares real contents
     writeFileSync(join(sdk, name), body);
     manifest.hashes[name] = createHash("sha256").update(body).digest("hex");
   }
+  const converterFile =
+    "node_modules/@oh-my-pi/pi-coding-agent/src/markit/converters/xlsx.ts";
+  const converterBody = readFileSync(
+    join(import.meta.dirname, "../../", converterFile),
+  );
+  writeFileSync(join(sdk, converterFile), converterBody);
+  manifest.hashes[converterFile] = createHash("sha256")
+    .update(converterBody)
+    .digest("hex");
   writeFileSync(join(sdk, "manifest.json"), JSON.stringify(manifest));
   const storage = AppStorage.open(join(root, "app.sqlite"));
   const service = createAttachmentService(
@@ -293,6 +306,85 @@ it("imports all fixed OMP document formats and notebooks, prepares real contents
   } finally {
     await service.close();
     storage.close();
+    rmSync(root, { recursive: true, force: true });
+  }
+}, 60000);
+
+it("preserves XLSX coordinates and namespace prefixes in the real fixed converter", async () => {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "dpi-xlsx-golden-")));
+  const sdk = join(root, "sdk");
+  cpSync(join(import.meta.dirname, "../../resources/sdk"), sdk, {
+    recursive: true,
+    verbatimSymlinks: true,
+    mode: constants.COPYFILE_FICLONE,
+  });
+  const manifest = JSON.parse(readFileSync(join(sdk, "manifest.json"), "utf8"));
+  for (const name of ["pdf-content.mjs", "document-content.mjs"]) {
+    const body = readFileSync(join(import.meta.dirname, "../../runtime", name));
+    writeFileSync(join(sdk, name), body);
+    manifest.hashes[name] = createHash("sha256").update(body).digest("hex");
+  }
+  const converterFile =
+    "node_modules/@oh-my-pi/pi-coding-agent/src/markit/converters/xlsx.ts";
+  const converterBody = readFileSync(
+    join(import.meta.dirname, "../../", converterFile),
+  );
+  writeFileSync(join(sdk, converterFile), converterBody);
+  manifest.hashes[converterFile] = createHash("sha256")
+    .update(converterBody)
+    .digest("hex");
+  writeFileSync(join(sdk, "manifest.json"), JSON.stringify(manifest));
+  try {
+    const convert = (name: string) =>
+      convertDocumentContent(
+        root,
+        readFileSync(
+          join(import.meta.dirname, "../fixtures/native-documents", name),
+        ),
+        ".xlsx",
+      );
+    await expect(
+      convertDocumentContent(
+        root,
+        Buffer.from(
+          JSON.stringify({
+            nbformat: 4,
+            nbformat_minor: 5,
+            metadata: {},
+            cells: [
+              {
+                cell_type: "markdown",
+                metadata: {},
+                source: ["x".repeat(1048576)],
+              },
+            ],
+          }),
+        ),
+        ".ipynb",
+      ),
+    ).rejects.toThrow("transport-too-large");
+    const scan = await convertPdfContent(
+      root,
+      readFileSync(
+        join(import.meta.dirname, "../fixtures/native-documents/scan.pdf"),
+      ),
+    );
+    expect(scan).toMatchObject({
+      text: "",
+      pageCount: 1,
+      pagesNeedingOcr: [1],
+    });
+    const ordinary = await convert("workbook.xlsx");
+    expect((await convert("workbook-prefixed.xlsx")).text).toEqual(
+      ordinary.text,
+    );
+    for (const name of ["sparse-two-sheet.xlsx", "sparse-unordered.xlsx"]) {
+      const result = await convert(name);
+      expect(result.text).toContain("| Alpha |  | 123 | 7 |  |");
+      expect(result.text).toContain("## Second");
+      expect(result.text).toContain("SECOND SHEET SENTINEL");
+    }
+  } finally {
     rmSync(root, { recursive: true, force: true });
   }
 }, 60000);

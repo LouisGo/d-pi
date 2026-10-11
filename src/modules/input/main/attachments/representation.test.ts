@@ -54,3 +54,16 @@ it("does not admit binary controls as readable text", () => {
     reason: "unsupported-format",
   });
 });
+
+it("rejects ZIP archives as archives instead of reporting text encoding corruption", () => {
+  expect(
+    identifyContent(new Uint8Array([80, 75, 3, 4, 255]), "", "bundle.zip"),
+  ).toEqual({ kind: "failed", reason: "archive-unsupported" });
+  expect(
+    identifyContent(
+      new Uint8Array([80, 75, 5, 6]),
+      "application/zip",
+      "opaque.bin",
+    ),
+  ).toEqual({ kind: "failed", reason: "archive-unsupported" });
+});

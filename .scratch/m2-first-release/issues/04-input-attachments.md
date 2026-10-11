@@ -26,3 +26,9 @@ Blocked by: none
 2026-10-06：04b的B4权威引用/七天自动回收/显式检查清理已工程完成；04仍保留PDF完整视觉/OCR与其余输入组合范围。用户认可pending，见[本段交接](../lifecycle.md)。
 
 2026-10-06：04c目录/文件typed @引用与有界搜索优化工程完成，clean m2.15交付待试用；直接清单语义/500条目限制与性能、正式GUI证据见[交接](../project-references.md)。PDF完整视觉/OCR及其余输入组合仍保留，用户认可pending。
+
+2026-10-11：复核用户提供的 2026-10-10 PDF 与原始附件证据（报告 source `1e73213ea81966e1979c58cad1b0342f34487381`，Linux/OMP 18.8.7）。29 个场景包含失败与未完成的 GUI Send，不能表述为 29 项完整 E2E 通过。已修复稀疏 XLSX 坐标错列/XML 前缀兼容、PDF/document 信封与发送后历史预览不一致、新建项目 @ PDF/XLSX 预览、扫描 PDF 的 OCR 原因与页码丢失、ZIP 被误导为 UTF-8，以及窗口销毁后的权限回调。转换器继续归 OMP：固定 18.8.7 的 pnpm patch 随 lockfile 分发，SDK 准备验证补丁 hash；未复制一份 App 转换器。普通旧 XLSX 草稿从原件重转，复制快照保留旧派生物并要求显式重试；已发送冻结内容不改写。未增加 OCR、公式重算或归档展开能力。
+
+本轮 102 个相关行为测试及 5 个 SDK tooling 测试通过；Main/Core/Preload/Host 类型检查、相关 Biome/i18n/架构/结构检查通过。Renderer/全局类型检查仍受基线已有 `composer-tag.tsx:134`（`data-file-icon` prop）与 `project-reads.test.ts:573`（SubmissionId brand）错误影响，未改无关文件。只读独立 Spec + Standards 复核发现的旧缓存与 Retry 入口两项均已修复并复核。隔离 macOS arm64 Electron 源码构建实测导入 PDF/稀疏与带前缀 XLSX/TXT → GUI Send → 固定 SDK → 本地 SSE 接收且只有一次请求 → 所有 sent chip 正文预览、新建 @ PDF/XLSX 只读预览、OCR/ZIP 提示；验证隔离 userData 后从真实 Main 调用 `app.quit()`，退出码 0，无 destroyed-object 异常。原生 Quit 菜单未验证；截图含瞬时过渡帧，不作为视觉定稿。见[实机结果与源码 hash](../evidence/attachment-qa-20261011/gui-result.json)、[行为结果](../evidence/attachment-qa-20261011/behavior.txt)、[SDK tooling](../evidence/attachment-qa-20261011/tooling.txt)、[稀疏 XLSX 预览](../evidence/attachment-qa-20261011/sent-sparse-two-sheet-xlsx.png)与[失败提示](../evidence/attachment-qa-20261011/attachment-errors.png)。这是 base 加 WIP 的隔离构建证据，不是 clean 固定包或用户认可。
+
+报告中的 Linux `permit-timeout` 仍未定位；macOS 真实 permit/SDK ready 不证明该 Linux 问题已修复，Linux 支持未据此承诺。25 MiB 批次留下部分私有对象是观察项，现有证据不足以判定孤儿泄漏。原用户实例仍占用 SDK 资源，准备器正确拒绝覆盖；其数据、实例和 SDK 未替换。试用需正常退出该实例后 `pnpm runtime:sdk`、`pnpm dev`。父票的 PDF 完整视觉/OCR及用户认可继续开放。

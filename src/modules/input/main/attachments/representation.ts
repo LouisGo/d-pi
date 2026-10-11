@@ -58,6 +58,13 @@ export function identifyContent(
     return extension === ".ipynb" || begins(bytes, [80, 75, 3, 4])
       ? { kind: "document", extension }
       : { kind: "failed", reason: "document-conversion-failed" };
+  if (
+    begins(bytes, [80, 75, 3, 4]) ||
+    begins(bytes, [80, 75, 5, 6]) ||
+    mimeType.toLowerCase().split(";")[0]?.trim() === "application/zip" ||
+    /\.zip$/i.test(name)
+  )
+    return { kind: "failed", reason: "archive-unsupported" };
   // OMP's ordinary file path accepts readable text independent of extension.
   // SVG follows its default source-text path; raster :img is a separate selector.
   if (mimeType.startsWith("image/") && mimeType !== "image/svg+xml")

@@ -1,0 +1,126 @@
+{
+  "integrationBase": "e3050f9a7218c90755d76b60bcc580b7aa5cfa7b",
+  "upgradeCommit": "c24c2e8324067846c0290419b3f33b8dc425c705",
+  "sdkVersion": "18.8.9",
+  "bunVersion": "1.3.14",
+  "xlsxPatchSha256": "28944cc074fbaa7212ccac8c9a496266d51ef8a8dbf3f16cebc55cb5f1d4ef53",
+  "xlsxSourceSha256": "c3530cc197cc4fb4e4fbd3509da50e6a789a07e0b14da3470523cf7b534ffad4",
+  "patchBytesEqualMain1887": true,
+  "checks": {
+    "frozenInstall": true,
+    "sdkPreparation": true,
+    "environment": true,
+    "validateSdk": true,
+    "tooling": {
+      "passed": 144,
+      "failed": 0
+    },
+    "attachmentRerun": {
+      "passed": 31,
+      "failed": 0
+    },
+    "build": true,
+    "lint": true,
+    "architecture": true,
+    "structure": true,
+    "documentation": true,
+    "designLint": true,
+    "i18nLint": true,
+    "interactionLint": true,
+    "mainHostCorePreloadTypechecks": true
+  },
+  "fullTests": {
+    "command": "pnpm test --maxWorkers=2",
+    "exitCode": 1,
+    "files": {
+      "passed": 243,
+      "failed": 8,
+      "skipped": 1
+    },
+    "tests": {
+      "passed": 1639,
+      "failed": 11,
+      "skipped": 2
+    },
+    "failures": [
+      "FAIL  tests/integration/app-runtime-service.integration.test.ts > uses the Runtime canonical file reference for frozen TXT+PNG presentation after storage restart",
+      "FAIL  tests/integration/attachment-migration.integration.test.ts > migrates attachment manifests after receipt recovery and reopens without losing them",
+      "FAIL  tests/integration/window-security.integration.test.ts > retains sandboxed isolation and refuses page-created windows, navigation and webviews",
+      "FAIL  src/app/main/wiring/native-session-index.test.ts > automatically restores CLI sessions into stable project Threads without changing native content or execution trust",
+      "FAIL  src/app/main/wiring/submission-storage.test.ts > persistent submission handoff > recovers interrupted receipts before all v4–v14 backups and returns a ready store",
+      "FAIL  src/app/main/wiring/submission-storage.test.ts > backfills the presentation index from schema 13 without changing frozen receipts",
+      "FAIL  src/app/renderer/shell/appearance-subscriptions.test.ts > places Thread creation and project opening in the sidebar and settings in a modal over mounted work",
+      "FAIL  src/app/renderer/shell/appearance-subscriptions.test.ts > does not execute sidebar Thread rows for theme or shortcut save busy updates",
+      "FAIL  src/app/renderer/shell/appearance-subscriptions.test.ts > Main attention samples update only the relevant badge and notice, preserving editor and reading resources",
+      "FAIL  src/app/renderer/shell/i18n-renderer.test.ts > renderer locale > updates visible app copy when the locale changes",
+      "FAIL  src/app/renderer/workbench/thread-workbench.test.ts > opens the existing Thread tools at native history from a live coverage gap and returns to the same live pane"
+    ],
+    "classification": {
+      "previousCleanBaseFailures": 10,
+      "currentMainFailureReproduced": [
+        "FAIL  tests/integration/window-security.integration.test.ts > retains sandboxed isolation and refuses page-created windows, navigation and webviews"
+      ]
+    }
+  },
+  "typecheck": {
+    "exitCode": 1,
+    "errors": [
+      "src/app/main/ipc/project-reads.test.ts(573,5): error TS2322: Type '`${string}-${string}-${string}-${string}-${string}`' is not assignable to type 'string & $brand<\"SubmissionId\">'.",
+      "src/modules/input/main/attachments/attachment-store.test.ts(879,46): error TS2532: Object is possibly 'undefined'.",
+      "src/modules/input/main/attachments/attachment-store.test.ts(888,44): error TS2532: Object is possibly 'undefined'.",
+      "src/modules/ui/renderer/composer-tag.tsx(134,44): error TS7053: Element implicitly has an 'any' type because expression of type '\"data-file-icon\"' can't be used to index type '{ key?: Key | null | undefined; ref?: Ref<HTMLButtonElement> | undefined; dangerouslySetInnerHTML?: { __html: string | TrustedHTML; } | undefined; ... 285 more ...; pending?: boolean; }'."
+    ],
+    "sameErrorsAsCleanMainArchive": true
+  },
+  "sourceBoundaries": "preexisting context-token.css raw color",
+  "reviewCorrection": "Preserved omp18.8.7-markit-xlsx historical fixture labels; new converter output uses 18.8.9 coordinates-v1. 31 attachment checks pass.",
+  "review": "Independent final review cleared the historical-fixture correction and 51-file snapshot; no remaining actionable findings. Reviewer read source/artifacts/logs and did not rerun tests.",
+  "oldPackageCoversThisCombination": false,
+  "realSupplierRequests": 0,
+  "logs": [
+    {
+      "path": "/tmp/dpi-omp1889-integration-prepare.log",
+      "sha256": "e9f2839347499b7f48e90fd976370b645e3b88789ec5a4b9001ea6b8e54ba378"
+    },
+    {
+      "path": "/tmp/dpi-omp1889-integrated-tests.log",
+      "sha256": "129a7749a497e2bd9c5e5a0de99a3b7295a81c49b392d3b6758a80f7a85a5269"
+    },
+    {
+      "path": "/tmp/dpi-omp1889-integrated-attachments.log",
+      "sha256": "d52f6241358e80745f061ffbac060cf69e9945c15163bb53e1d0e0d4f97df78e"
+    },
+    {
+      "path": "/tmp/dpi-omp1889-integrated-sdk.log",
+      "sha256": "7aaed4671aeb54e9a7012aa538d6734839a0e21a20553123b91f5a7d102d8953"
+    },
+    {
+      "path": "/tmp/dpi-omp1889-integrated-tooling.log",
+      "sha256": "eefcda5b389e9e8be572a4cd1d885684e7ba3f09aaacd72abfa3200e51509968"
+    },
+    {
+      "path": "/tmp/dpi-omp1889-integrated-environment.log",
+      "sha256": "6c2172fae6dcfa090431bae0a0bbe519358fe33447d6bdb3c3473a5e7e170020"
+    },
+    {
+      "path": "/tmp/dpi-omp1889-integrated-lint.log",
+      "sha256": "ff2b336f045053d970e48c487d48ea7de0016073bb6430914a902c8fc21e1e72"
+    },
+    {
+      "path": "/tmp/dpi-omp1889-integrated-build.log",
+      "sha256": "2d0231ff31604c6e543f9f65bb5853bb127828eb2df008f1663514b01d2aecd6"
+    },
+    {
+      "path": "/tmp/dpi-omp1889-integrated-typecheck.log",
+      "sha256": "54c9ddfb288713930ff88229dbab07064c5a5cd62c73fd85b1a3048c05c79e72"
+    },
+    {
+      "path": "/tmp/dpi-omp1889-main-typecheck.log",
+      "sha256": "aaddf20459a857cfd752d42d3a1306cd47507c6d535ccc42ea777077ce9402da"
+    },
+    {
+      "path": "/tmp/dpi-omp1889-main-window-security.log",
+      "sha256": "acc553fcc24d783a245bfb221078a0bdd9a5b6ecc58e9ef5c71e5eec8840935c"
+    }
+  ]
+}

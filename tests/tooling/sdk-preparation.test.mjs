@@ -59,8 +59,18 @@ function fixture(t) {
     );
     write(`${target}/index.js`, "export const fixture = true;\n");
     write(`${target}/src/index.ts`, "export const fixture = true;\n");
-    if (name === "pi-coding-agent")
+    if (name === "pi-coding-agent") {
       write(`${target}/src/sdk.ts`, officialSource);
+      write(
+        `${target}/src/markit/converters/xlsx.ts`,
+        readFileSync(
+          resolve(
+            import.meta.dirname,
+            "../../node_modules/@oh-my-pi/pi-coding-agent/src/markit/converters/xlsx.ts",
+          ),
+        ),
+      );
+    }
     mkdirSync(join(root, "node_modules/@oh-my-pi"), { recursive: true });
     symlinkSync(
       `../.pnpm/${name}@18.8.9/node_modules/@oh-my-pi/${name}`,
@@ -433,6 +443,20 @@ test("changed upstream source or active resource users cannot replace a complete
     manifest,
   );
   writeFileSync(source, officialSource);
+  const xlsxSource = join(
+    root,
+    "node_modules/@oh-my-pi/pi-coding-agent/src/markit/converters/xlsx.ts",
+  );
+  const reviewedXlsx = readFileSync(xlsxSource);
+  writeFileSync(xlsxSource, "export {}; // missing reviewed XLSX patch\n");
+  const unpatched = prepare(root);
+  assert.notEqual(unpatched.status, 0);
+  assert.match(unpatched.stderr, /Reviewed XLSX patch missing or changed/);
+  assert.equal(
+    readFileSync(join(root, "resources/sdk/manifest.json"), "utf8"),
+    manifest,
+  );
+  writeFileSync(xlsxSource, reviewedXlsx);
   const user = spawn(
     process.execPath,
     [

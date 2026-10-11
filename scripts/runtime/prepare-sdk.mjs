@@ -55,7 +55,8 @@ try {
     "node_modules/.pnpm",
     root,
   );
-  // Reviewed npm 18.8.9 source, copied byte-for-byte; no staging source patch.
+  // Reviewed npm 18.8.9 SDK entry with the pnpm-versioned XLSX patch.
+  // Copy the installed graph byte-for-byte; never patch staged resources.
   const sdkSourcePath = join(
     root,
     "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
@@ -71,6 +72,18 @@ try {
     sdkSha256 !== officialSdkSha256
   )
     throw Error("Official SDK source changed; refusing unreviewed resources");
+  const xlsxSourceFile =
+    "node_modules/@oh-my-pi/pi-coding-agent/src/markit/converters/xlsx.ts";
+  const xlsxSourceSha256 =
+    "c3530cc197cc4fb4e4fbd3509da50e6a789a07e0b14da3470523cf7b534ffad4";
+  if (
+    createHash("sha256")
+      .update(await readFile(join(root, xlsxSourceFile)))
+      .digest("hex") !== xlsxSourceSha256
+  )
+    throw Error(
+      "Reviewed XLSX patch missing or changed; refusing unreviewed resources",
+    );
   const sdkSource = {
     file: "node_modules/@oh-my-pi/pi-coding-agent/src/sdk.ts",
     sha256: sdkSha256,
@@ -108,7 +121,7 @@ try {
   ])
     await cp(join("runtime", name), join(root, name));
   await cp("runtime/BUN-LICENSE.md", join(root, "BUN-LICENSE.md"));
-  const hashes = {};
+  const hashes = { [xlsxSourceFile]: xlsxSourceSha256 };
   for (const name of [
     "bun",
     "host.mjs",

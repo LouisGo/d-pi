@@ -318,6 +318,8 @@ export const ui = {
     "附件撤销保护已失效，请重试恢复；草稿仍保留。",
   "attachment.reason.document-conversion-unavailable":
     "文档转换暂不可用，请重试。",
+  "attachment.reason.document-conversion-outdated":
+    "此表格使用旧版转换结果，请点击重试重新转换后发送",
   "attachment.reason.document-conversion-failed":
     "文档转换失败，请检查文件或重新添加。",
   "attachment.pdfConversionNotice":
@@ -354,6 +356,10 @@ export const ui = {
   "attachment.reason.storage-unavailable": "附件存储不可用，请重新准备。",
   "attachment.reason.content-corrupt": "附件损坏，请重新添加原件。",
   "attachment.reason.unsupported-format": "暂不支持此文件格式。",
+  "attachment.reason.archive-unsupported":
+    "暂不支持直接添加 ZIP 压缩包，请解压后添加所需文件。",
+  "attachment.reason.pdf-ocr-required":
+    "此 PDF 没有可提取的文字，需要 OCR。请添加可搜索的 PDF 或页面图片。",
   "attachment.reason.invalid-encoding":
     "文件不是 UTF-8 文本，请转换后重新添加。",
   "attachment.reason.image-too-large":

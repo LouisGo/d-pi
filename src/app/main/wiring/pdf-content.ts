@@ -86,12 +86,30 @@ async function convertContent<T>(
       else chunks.push(chunk);
     });
     child.on("close", (code) => {
-      if (code !== 0) return finish(Error(`${kind}-conversion-failed`));
       try {
-        finish(
-          undefined,
-          schema.parse(JSON.parse(Buffer.concat(chunks).toString("utf8"))),
+        const result: unknown = JSON.parse(
+          Buffer.concat(chunks).toString("utf8"),
         );
+        const failure = z
+          .strictObject({
+            error: z.enum([
+              "transport-too-large",
+              "invalid-encoding",
+              "source-too-large",
+              "pdf-conversion-failed",
+              "document-conversion-failed",
+            ]),
+          })
+          .safeParse(result);
+        if (code !== 0)
+          return finish(
+            Error(
+              failure.success
+                ? failure.data.error
+                : `${kind}-conversion-failed`,
+            ),
+          );
+        finish(undefined, schema.parse(result));
       } catch {
         finish(Error(`${kind}-conversion-failed`));
       }

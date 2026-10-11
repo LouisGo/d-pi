@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "d2f78b25a54901be14864f78cb60e2d975641e9e46860a91b9c26a2a9cdfd7d2",
+  "inputsHash": "b60a69c84ba777817f12bf69cc0c86286f65233a052dfc1005c7019f89b176bc",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 613,
-    "scannedFiles": 613,
+    "sourceFiles": 614,
+    "scannedFiles": 614,
     "unscanned": []
   },
   "modules": [
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 274,
-      "lines": 51893,
+      "lines": 52087,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -60,7 +60,7 @@
       ],
       "materialized": true,
       "files": 33,
-      "lines": 3724,
+      "lines": 3727,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -106,7 +106,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 3688,
+      "lines": 3703,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -193,8 +193,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 62,
-      "lines": 14123,
+      "files": 63,
+      "lines": 14506,
       "publicEntries": [
         {
           "path": "src/modules/input/contracts/public.ts",
@@ -374,7 +374,7 @@
       "defaultEnvironment": "omp",
       "materialized": true,
       "files": 17,
-      "lines": 3969,
+      "lines": 3996,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -423,7 +423,7 @@
       ],
       "materialized": true,
       "files": 34,
-      "lines": 5082,
+      "lines": 5084,
       "publicEntries": [
         {
           "path": "src/modules/ui/renderer/public.ts",
@@ -17411,6 +17411,18 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/workbench/attachment-controls.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./attachment-preview",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/attachment-preview.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/workbench/attachment-controls.tsx",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -23736,6 +23748,15 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/input/core/attachments/text-envelope.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "ts-pattern",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/modules/input/core/attachments/tokens.test.ts",
       "sourceModule": "input",
       "sourceEnvironment": "core",
@@ -23936,6 +23957,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/input/core/attachments/editor-history-model.ts",
+      "targetModule": "input",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/input/core/public.ts",
+      "sourceModule": "input",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./attachments/text-envelope",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/input/core/attachments/text-envelope.ts",
       "targetModule": "input",
       "targetEnvironment": "core"
     },

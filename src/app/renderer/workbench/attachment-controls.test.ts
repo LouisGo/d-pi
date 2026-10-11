@@ -25,6 +25,8 @@ import {
   AttachmentControls,
 } from "./attachment-controls";
 
+import { AttachmentPreviewDialog } from "./attachment-preview";
+
 // Fixture owns the Thread resources; views only receive the same instances.
 const resources = new WeakMap<
   object,
@@ -1495,4 +1497,52 @@ it("retains an unresolved required-source failure after replacing its view with 
     container.remove();
     vi.unstubAllGlobals();
   }
+});
+
+it("offers an explicit retry when a formerly ready frozen XLSX preview reports an outdated conversion", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  cleanups.push(async () => {
+    await act(() => root.unmount());
+    container.remove();
+  });
+  const onAction = vi.fn();
+  const item: Attachment = {
+    schemaVersion: 1,
+    id,
+    threadId: id,
+    token: `[[dpi-attachment:${id}]]`,
+    name: "sparse.xlsx",
+    mimeType: "",
+    byteLength: 4,
+    capturedAt: new Date().toISOString(),
+    source: "paste",
+    status: "ready",
+    representation: "document-text",
+    coverageGaps: [],
+    textOnly: false,
+  };
+  await act(() =>
+    root.render(
+      createElement(AttachmentPreviewDialog, {
+        item,
+        content: {
+          kind: "unavailable",
+          reason: "document-conversion-outdated",
+        },
+        close: () => {},
+        onAction,
+      }),
+    ),
+  );
+  const retry = [...container.querySelectorAll("button")].find(
+    (button) => button.textContent === "Retry preparation",
+  );
+  expect(retry).toBeDefined();
+  expect(onAction).not.toHaveBeenCalled();
+  await act(() => retry?.click());
+  expect(onAction).toHaveBeenCalledExactlyOnceWith({ kind: "retry", id });
+  expect(container.querySelector("dialog")?.open).toBe(false);
 });

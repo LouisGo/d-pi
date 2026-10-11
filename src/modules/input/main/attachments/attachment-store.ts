@@ -26,6 +26,7 @@ import {
   type PreparedContent,
 } from "../../contracts/public";
 import {
+  attachmentTextHeader,
   attachmentToken,
   parseDraftBlocks,
   readAttachmentTokens,
@@ -56,6 +57,36 @@ const DocumentConversionSchema = z.strictObject({
   text: z.string().min(1).max(1048576),
   converterVersion: z.string().min(1).max(128),
 });
+function pdfCoverageGaps(result: PdfConversion): string[] {
+  return [
+    ...(result.hasVisualContent ? ["visual-content"] : []),
+    ...Array.from(
+      { length: Math.ceil(result.pagesNeedingOcr.length / 20) },
+      (_, index) =>
+        `ocr-pages:${result.pagesNeedingOcr.slice(index * 20, index * 20 + 20).join(",")}`,
+    ),
+  ];
+}
+function conversionFailure(
+  error: unknown,
+  kind: "pdf" | "document",
+): AttachmentFailureReason {
+  return match(error instanceof Error ? error.message : "")
+    .with("storage-full", () => "storage-full" as const)
+    .with("transport-too-large", () => "transport-too-large" as const)
+    .with("invalid-encoding", () => "invalid-encoding" as const)
+    .with(
+      "pdf-conversion-unavailable",
+      () => "pdf-conversion-unavailable" as const,
+    )
+    .with(
+      "document-conversion-unavailable",
+      () => "document-conversion-unavailable" as const,
+    )
+    .otherwise(() =>
+      kind === "pdf" ? "pdf-conversion-failed" : "document-conversion-failed",
+    );
+}
 export interface AttachmentStoreOptions {
   directory: string;
   lifecycle?: AttachmentReferenceReader;
@@ -1028,6 +1059,54 @@ export class AttachmentStore {
   ): Promise<Attachment> {
     return this.save(await this.describe(record, bytes));
   }
+  private async refreshLegacyDocument(
+    record: StoredRecord,
+  ): Promise<StoredRecord> {
+    const attachment = record.attachment;
+    if (
+      attachment.status !== "ready" ||
+      attachment.representation !== "document-text" ||
+      attachment.converterVersion !== "omp18.8.7-markit-xlsx"
+    )
+      return record;
+    // Copies are frozen snapshots. A retry is the user's explicit choice to
+    // convert their preserved original with the corrected converter.
+    let updated: StoredRecord;
+    if (attachment.source === "paste") {
+      updated = {
+        ...record,
+        attachment: {
+          ...attachment,
+          status: "failed",
+          reason: "document-conversion-outdated",
+        },
+      };
+    } else {
+      try {
+        if (!attachment.inputDigest) throw Error("content-corrupt");
+        updated = await this.describe(
+          record,
+          await this.readObject(attachment.inputDigest),
+          false,
+        );
+      } catch (error) {
+        if (error instanceof EditorHistoryLimitError) throw error;
+        updated = {
+          ...record,
+          attachment: {
+            ...attachment,
+            status: "failed",
+            reason:
+              error instanceof Error && error.message === "content-missing"
+                ? "content-missing"
+                : "content-corrupt",
+          },
+        };
+      }
+    }
+    this.save(updated);
+    return updated;
+  }
   private identifyStoredContent(record: StoredRecord, bytes: Uint8Array) {
     return identifyContent(
       bytes,
@@ -1095,13 +1174,7 @@ export class AttachmentStore {
             error instanceof ClipboardSnapshotError
           )
             throw error;
-          const reason =
-            error instanceof Error && error.message === "storage-full"
-              ? "storage-full"
-              : error instanceof Error &&
-                  error.message === "document-conversion-unavailable"
-                ? "document-conversion-unavailable"
-                : "document-conversion-failed";
+          const reason = conversionFailure(error, "document");
           return {
             ...record,
             attachment: {
@@ -1231,14 +1304,7 @@ export class AttachmentStore {
           );
           if (current && !current())
             throw new ClipboardSnapshotError("expired");
-          const coverageGaps = [
-            ...(result.hasVisualContent ? ["visual-content"] : []),
-            ...Array.from(
-              { length: Math.ceil(result.pagesNeedingOcr.length / 20) },
-              (_, index) =>
-                `ocr-pages:${result.pagesNeedingOcr.slice(index * 20, index * 20 + 20).join(",")}`,
-            ),
-          ];
+          const coverageGaps = pdfCoverageGaps(result);
           if (result.pageCount > 100)
             return {
               ...record,
@@ -1250,12 +1316,20 @@ export class AttachmentStore {
                 coverageGaps,
               },
             };
-          if (
-            !Number.isInteger(result.pageCount) ||
-            result.pageCount < 1 ||
-            !result.text.trim()
-          )
-            throw new Error("invalid-pdf");
+          if (!result.text.trim())
+            return {
+              ...record,
+              attachment: {
+                ...attachment,
+                status: "failed",
+                reason: result.pagesNeedingOcr.length
+                  ? "pdf-ocr-required"
+                  : "pdf-conversion-failed",
+                representation: "pdf-text",
+                coverageGaps,
+                converterVersion: result.converterVersion,
+              },
+            };
           const derivedDigest = await this.put(
             new TextEncoder().encode(result.text),
             pinImport ? attachment : undefined,
@@ -1283,10 +1357,7 @@ export class AttachmentStore {
             attachment: {
               ...attachment,
               status: "failed",
-              reason:
-                error instanceof Error && error.message === "storage-full"
-                  ? "storage-full"
-                  : "pdf-conversion-failed",
+              reason: conversionFailure(error, "pdf"),
               representation: "pdf-text",
             },
           };
@@ -1373,9 +1444,18 @@ export class AttachmentStore {
     threadId: string,
     id: string,
   ): Promise<AttachmentPreview> {
-    const record = this.read(threadId, id);
+    let record = this.read(threadId, id);
     if (!record) return { kind: "unavailable", reason: "attachment-not-found" };
     try {
+      record = await this.refreshLegacyDocument(record);
+      if (
+        record.attachment.representation === "document-text" &&
+        record.attachment.status === "failed"
+      )
+        return {
+          kind: "unavailable",
+          reason: record.attachment.reason ?? "document-conversion-failed",
+        };
       if (record.derivedDigest && !record.attachment.imageTransformation)
         return this.textPreview(
           new TextDecoder().decode(await this.readObject(record.derivedDigest)),
@@ -1447,13 +1527,71 @@ export class AttachmentStore {
         directory ? "text/plain" : attachment.mimeType,
         directory ? "directory" : attachment.name,
       );
-      return content.kind === "text"
-        ? this.textPreview(content.text)
-        : {
-            kind: "unavailable",
-            reason:
-              content.kind === "failed" ? content.reason : "unsupported-format",
-          };
+      return await match(content)
+        .returnType<Promise<AttachmentPreview>>()
+        .with({ kind: "text" }, async ({ text }) => this.textPreview(text))
+        .with({ kind: "failed" }, async ({ reason }) => ({
+          kind: "unavailable",
+          reason,
+        }))
+        .with({ kind: "image" }, async () => ({
+          kind: "unavailable",
+          reason: "unsupported-format",
+        }))
+        .with({ kind: "pdf" }, async () => {
+          if (!this.options.convertPdf)
+            return {
+              kind: "unavailable",
+              reason: "pdf-conversion-unavailable",
+            };
+          try {
+            const result = PdfConversionSchema.parse(
+              await this.options.convertPdf(value.bytes),
+            );
+            if (value.current && !value.current())
+              return { kind: "unavailable", reason: "reference-denied" };
+            if (result.pageCount > 100)
+              return { kind: "unavailable", reason: "pdf-too-many-pages" };
+            if (!result.text.trim())
+              return {
+                kind: "unavailable",
+                reason: result.pagesNeedingOcr.length
+                  ? "pdf-ocr-required"
+                  : "pdf-conversion-failed",
+              };
+            if (pdfCoverageGaps(result).length && !attachment.textOnly)
+              return { kind: "unavailable", reason: "pdf-coverage-gap" };
+            return this.textPreview(result.text);
+          } catch (error) {
+            return {
+              kind: "unavailable",
+              reason: conversionFailure(error, "pdf"),
+            };
+          }
+        })
+        .with({ kind: "document" }, async ({ extension }) => {
+          if (!this.options.convertDocument)
+            return {
+              kind: "unavailable",
+              reason: "document-conversion-unavailable",
+            };
+          try {
+            const result = DocumentConversionSchema.parse(
+              await this.options.convertDocument(value.bytes, extension),
+            );
+            if (value.current && !value.current())
+              return { kind: "unavailable", reason: "reference-denied" };
+            return result.text.trim()
+              ? this.textPreview(result.text)
+              : { kind: "unavailable", reason: "document-conversion-failed" };
+          } catch (error) {
+            return {
+              kind: "unavailable",
+              reason: conversionFailure(error, "document"),
+            };
+          }
+        })
+        .exhaustive();
     } catch (error) {
       return {
         kind: "unavailable",
@@ -1502,17 +1640,15 @@ export class AttachmentStore {
       const result = PdfConversionSchema.parse(
         await this.options.convertPdf(bytes),
       );
-      if (result.pageCount > 100) return failed("pdf-too-many-pages");
-      if (!result.text.trim()) return failed("pdf-conversion-failed");
-      attachment.coverageGaps = [
-        ...(result.hasVisualContent ? ["visual-content"] : []),
-        ...Array.from(
-          { length: Math.ceil(result.pagesNeedingOcr.length / 20) },
-          (_, index) =>
-            `ocr-pages:${result.pagesNeedingOcr.slice(index * 20, index * 20 + 20).join(",")}`,
-        ),
-      ];
+      attachment.coverageGaps = pdfCoverageGaps(result);
       attachment.converterVersion = result.converterVersion;
+      if (result.pageCount > 100) return failed("pdf-too-many-pages");
+      if (!result.text.trim())
+        return failed(
+          result.pagesNeedingOcr.length
+            ? "pdf-ocr-required"
+            : "pdf-conversion-failed",
+        );
       const derivedDigest = await this.put(
         new TextEncoder().encode(result.text),
         attachment,
@@ -1533,11 +1669,7 @@ export class AttachmentStore {
     } catch (error) {
       if (error instanceof EditorHistoryLimitError)
         return { ok: false, reason: "editor-history-limit" };
-      return failed(
-        error instanceof Error && error.message === "storage-full"
-          ? "storage-full"
-          : "pdf-conversion-failed",
-      );
+      return failed(conversionFailure(error, "pdf"));
     }
   }
   async prepare(
@@ -1590,6 +1722,7 @@ export class AttachmentStore {
           reason: "attachment-not-found",
           attachmentId: token.id,
         };
+      record = await this.refreshLegacyDocument(record);
       let attachment = record.attachment;
       if (
         attachment.status !== "ready" &&
@@ -1702,7 +1835,7 @@ export class AttachmentStore {
         record = converted.record;
         attachment = record.attachment;
         outputRepresentation = "pdf-text";
-        content.message += `\n[${attachment.path ?? attachment.name}; PDF text${attachment.textOnly ? "; explicit text-only" : ""}]\n${converted.text}\n[/attachment]\n`;
+        content.message += `${attachmentTextHeader(attachment.path ?? attachment.name, "pdf", attachment.textOnly)}${converted.text}\n[/attachment]\n`;
       } else if (
         attachment.representation === "reference" &&
         representation.kind === "document"
@@ -1721,7 +1854,7 @@ export class AttachmentStore {
         attachment = record.attachment;
         this.save(record);
         outputRepresentation = "document-text";
-        content.message += `\n[${attachment.path ?? attachment.name}; document converted to Markdown]\n${new TextDecoder().decode(await this.readObject(described.derivedDigest))}\n[/attachment]\n`;
+        content.message += `${attachmentTextHeader(attachment.path ?? attachment.name, "document")}${new TextDecoder().decode(await this.readObject(described.derivedDigest))}\n[/attachment]\n`;
       } else if (
         attachment.representation === "pdf-text" ||
         attachment.representation === "document-text"
@@ -1733,7 +1866,7 @@ export class AttachmentStore {
             attachmentId: token.id,
           };
         try {
-          content.message += `\n[${attachment.name}; ${attachment.representation === "pdf-text" ? `PDF converted to Markdown${attachment.textOnly ? "; explicit text-only" : ""}` : "document converted to Markdown"}]\n${new TextDecoder().decode(await this.readObject(record.derivedDigest))}\n[/attachment]\n`;
+          content.message += `${attachmentTextHeader(attachment.name, attachment.representation === "pdf-text" ? "pdf" : "document", attachment.textOnly)}${new TextDecoder().decode(await this.readObject(record.derivedDigest))}\n[/attachment]\n`;
         } catch (error) {
           return {
             ok: false,
@@ -1745,7 +1878,7 @@ export class AttachmentStore {
           };
         }
       } else if (representation.kind === "text")
-        content.message += `\n[${attachment.path ?? attachment.name}${attachment.referenceKind === "directory" ? "; directory listing" : ""}]\n${representation.text}\n[/attachment]\n`;
+        content.message += `${attachmentTextHeader(attachment.path ?? attachment.name, attachment.referenceKind === "directory" ? "directory" : "text")}${representation.text}\n[/attachment]\n`;
       else if (representation.kind === "image") {
         if (attachment.representation === "reference") {
           const described = await this.describe(record, bytes, false);

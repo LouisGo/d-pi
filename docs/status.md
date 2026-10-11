@@ -31,7 +31,7 @@
 | 基建 | [国际化基础](../.scratch/i18n-foundation/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 0.1.0-i18n.0 [证据1](../.scratch/i18n-foundation/handoff.md) | 等待热切换与输入体验反馈 |
 | 基建 | [S5 前基建收口](../.scratch/infrastructure-closure/spec.md) | 工程完成 | 未交付 | 不适用 | 3285474e-dirty-1f488792（工程安全候选） [证据1](../.scratch/infrastructure-closure/handoff.md) | 本轮已完成；S5 按新授权进入所属规格，M2 未启动 |
 | 基建 | [Linux E2E 反馈修复](../.scratch/linux-e2e-repair/spec.md) | 工程完成 | 已交付待试用 | 待认可 | base c14297c3 / codex/linux-e2e-repair [证据1](../.scratch/linux-e2e-repair/handoff.md) · [证据2](../.scratch/linux-e2e-repair/validation.md) · [证据3](../.scratch/linux-e2e-repair/review.md) | 原 Linux 机器复试 SDK import 和原生 GUI；137 的终止来源仍未知，用户认可待反馈。 |
-| 基建 | [OMP 18.8.9 隔离升级](../.scratch/omp-sdk-1889/spec.md) | 工程完成 | 未交付 | 待认可 | codex/omp-sdk-1889；提交前目录包 1e73213e-dirty-7e9f06fd [证据1](../.scratch/omp-sdk-1889/spec.md) · [证据2](../.scratch/omp-sdk-1889/evidence/validation.json) · [证据3](../.scratch/omp-sdk-1889/evidence/package-smoke.json) | 独立分支提交交付；与附件会话最终 patch 组合时重新适配版本/哈希、准备资源及验收，不自动合回 main。 |
+| 基建 | [OMP 18.8.9 隔离升级](../.scratch/omp-sdk-1889/spec.md) | 工程完成 | 未交付 | 待认可 | Dev SDK 18.8.9 + 固定 XLSX patch；旧目录包不覆盖本次组合 [证据1](../.scratch/omp-sdk-1889/spec.md) · [证据2](../.scratch/omp-sdk-1889/evidence/validation.json) · [证据3](../.scratch/omp-sdk-1889/evidence/package-smoke.json) · [证据4](../.scratch/omp-sdk-1889/evidence/integrated-validation.json) · [证据5](../.scratch/omp-sdk-1889/evidence/integrated-cold-resume.json) | 从合入后的 main 试用；原 checkout 的安装/SDK 仍需在资源无占用时同步。真实供应商与用户认可待验证。 |
 | 基建 | [OMP 18.4.6 升级与运行时边界加固](../.scratch/runtime-hardening-omp1845/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 0.1.0-m2.7 / 24f086e7-fa83a4f5 [证据1](../.scratch/runtime-hardening-omp1845/handoff.md) · [证据2](../.scratch/runtime-hardening-omp1845/evidence.md) | 完整切片已本地交付；等待用户试用，M2其它能力与S3退出待决继续留原票 |
 | 基建 | [打包体积收敛](../.scratch/package-size/spec.md) | 工程完成 | 已交付待试用 | 待认可 | 0.1.0-workbench.3 / a0367bec-dirty-fa25a054；App851.4MiB / ZIP283.0MiB [证据1](../.scratch/package-size/handoff.md) · [证据2](../.scratch/package-size/comparison.json) · [证据3](../.scratch/package-size/runtime-verification.json) · [证据4](../.scratch/package-size/license-verification.json) · [证据5](../.scratch/package-size/review.md) | 试用体积收敛的macOS arm64本地包；以后升级依赖复核预算和运行闭包；用户认可独立。 |
 | 基建 | [全项目组织整理](../.scratch/project-organization/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/project-organization/spec.md) | 组织整理与工程验证完成；继续按职责落点维护，新功能由所属切片授权 |
@@ -83,7 +83,7 @@
 - [开发者工具与基础组件看板](../.scratch/component-dashboard/spec.md)：仅本地实施与交付；开发者区域固定中文；不改变Thread执行与持久化。
 - [Effect 原生连接生命周期](../.scratch/effect-native-lifecycle/spec.md)：Effect 限定 execution/host 与 execution/main/transport；unknown 不自动重发，冷恢复只读。
 - [S5 前基建收口](../.scratch/infrastructure-closure/spec.md)：只本地 commit、不 push 或公开发布；许可证由权利人决定，签名/公证/更新尚未实施。
-- [OMP 18.8.9 隔离升级](../.scratch/omp-sdk-1889/spec.md)：完整检查存在已复现的基点失败；真实供应商/用户试用未验收，未 push/merge/正式发布。
+- [OMP 18.8.9 隔离升级](../.scratch/omp-sdk-1889/spec.md)：用户已授权本地 PR 合 main 后 push；完整检查存在已复核的当前 main 基线失败，不公开发布，不终止附件会话进程。
 - [OMP 18.4.6 升级与运行时边界加固](../.scratch/runtime-hardening-omp1845/spec.md)：2026-10-01 用户认可方案及实施范围，允许合理分工与适量 sub agent；本次从4d294e0实施；随后授权18.4.6及唯一导入修正。保留冷恢复只读、unknown 不自动重发和同目录多 Thread 基线。
 - [打包体积收敛](../.scratch/package-size/spec.md)：不改OMP行为或持久化；不扩平台支持；未签名不发布；全量tooling两个本机环境用例失败见交接。
 - [全项目组织整理](../.scratch/project-organization/spec.md)：保留领域公开面、资源所有权、持久化事务和恢复顺序；历史证据不改写。
@@ -92,4 +92,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: a57450b908984c8a9f2a7d9ed72301815e8826cfdf751ce92e51d8f8bd82806e; sources: 186 -->
+<!-- source-sha256: f64e4c5b797c0f113817fe5176723732110f062b290eeccde9f348e715b41a47; sources: 186 -->
