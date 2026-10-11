@@ -22,6 +22,8 @@
 
 ## 工作记录
 
+[会话组件与应用编排完整方案（2026-10-11）](product/session-components-plan-2026-10-11.md)保留附件完整正文；[WB00–WB08 唯一实施跟踪](../.scratch/session-components/spec.md)维护本轮 WB00/WB01 授权、合同、证据、偏差与后续入口。接手先读取这两份文件，以当前源码及 OMP 18.8.9 为准。
+
 集成终端的D-40/B架构与xterm.js路线已确认，本次仅完成[终端规格](../.scratch/integrated-terminal/spec.md)、[契约](architecture/terminal.md)、[验收设计](validation/terminal.md)与[交接](../.scratch/integrated-terminal/handoff.md)。开发顺序和两项产品待决从所属规格进入，终端尚未实现。
 
 当前工作从固定[项目总看板](status.md)进入[M2 首版规格](../.scratch/m2-first-release/spec.md)。[OMP 18.4.5 升级与边界加固](../.scratch/runtime-hardening-omp1845/spec.md)是 2026-10-01 用户已认可、待新会话实施的方案，尚未替换运行资源。[基建收口](../.scratch/infrastructure-closure/spec.md)与[重写准备与执行](../.scratch/rewrite-preparation/spec.md)保留原交付范围与试用状态，对应重写构建见[重写交接](../.scratch/rewrite-preparation/handoff.md)；[M1 开发准备](../.scratch/development-foundation/spec.md)保存阶段和跨模块责任。各切片范围、授权、工程状态、试用及继续边界直接读取所属规格：
