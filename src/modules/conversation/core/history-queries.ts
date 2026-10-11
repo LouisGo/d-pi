@@ -8,6 +8,7 @@ import { createId } from "../../../shared/identity";
 import {
   type ReadAbortSignal,
   type ReadIdentity,
+  ReadOperationError,
   type ReadResponse,
   requestReadOperation,
   throwIfReadCancelled,
@@ -406,7 +407,12 @@ export function nativeImageQuery(
       index,
     ] as const,
     networkMode: "always",
-    retry: false,
+    retry: (failures, error) =>
+      failures < 3 &&
+      error instanceof ReadOperationError &&
+      error.code === "busy" &&
+      error.retryable,
+    retryDelay: (attempt) => Math.min(1000, 250 * 2 ** attempt),
     gcTime: 0,
     staleTime: Infinity,
     queryFn: async ({ signal }) => {

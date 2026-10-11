@@ -135,6 +135,8 @@
 - 八文件105/105通过，包括51运行时集成、真实Workbench两条生产组合与历史集成（现有React act提示保留）。Core/Main/Preload类型、design/i18n通过；Renderer仍只有既有composer-tag.tsx:134基线。构建Main实际Worker在Node24.21.0/Electron44.4.5完成page/tail/backward/append、工具实际祖先参数、原生图像及CLI发现/读取，8次退出active=0。此smoke没有GUI窗口，不冒称完整Electron性能trace。
 - WB03完整artifact/子会话读取、Viewer/native warm/可见性预算及生产工作台trace，WB02 SourceTarget和WB04完整交互仍未完成；继续现有goal，不推送或发布。
 
+固定 `d548e3d..1e1e795` review发现P2：共享2个Worker满额时图片Query禁用重试，第三张可见图会停在不可用。已用正式MessageMedia+Query反例复现仅显示2/3张；对类型化retryable busy最多3次250/500/1000ms退避，每次使用新operation身份，持续占用后提供显式重新检查。生产三图与持续busy→停止自动尝试→手动恢复两条回归通过；读取取消和退出名额合同保持。该组合替代IPC准入/资源延时，未宣称实际并发Worker的GUI观测；Worker限额由既有runner/构建验证证明。相关query/saved阅读44项通过，新媒体2/2通过（总矩阵有重叠不相加）；必要Core/设计/i18n/架构通过，Renderer仍仅既有基线。其余固定范围无新增明确高价值问题；独立闭合继续核实。
+
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。
 
 ### WB00 milestone（2026-10-11）

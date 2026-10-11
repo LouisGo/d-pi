@@ -221,8 +221,21 @@ function LoadedImage({
   );
   const [broken, setBroken] = useState(false);
   if (query.isPending) return <ImagePlaceholder name={name} />;
+  if (query.isError)
+    return (
+      <div>
+        <ImagePlaceholder name={name} unavailable />
+        <Button
+          variant="ghost"
+          disabled={query.isFetching}
+          onClick={() => void query.refetch()}
+        >
+          {t("app.retry")}
+        </Button>
+      </div>
+    );
   const reply = query.data;
-  if (query.isError || reply?.kind !== "image" || broken)
+  if (reply?.kind !== "image" || broken)
     return <ImagePlaceholder name={name} unavailable />;
   return (
     <Button

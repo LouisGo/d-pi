@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "c41f553224113ad3717d61f78e6f068f29a87910c844f166c5754a9197da55e6",
+  "inputsHash": "b5559c30d0589def083546fca052910bbd63860001227c11b816788a487c7752",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 638,
-    "scannedFiles": 638,
+    "sourceFiles": 639,
+    "scannedFiles": 639,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 284,
-      "lines": 55497,
+      "files": 285,
+      "lines": 55749,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -311,7 +311,7 @@
       ],
       "materialized": true,
       "files": 41,
-      "lines": 10506,
+      "lines": 10512,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -11443,6 +11443,78 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/components/url-display.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/message-media.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/message-media.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/message-media.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/message-media.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/message-media.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/conversation/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/reading/message-media.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/message-media.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./message-media",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/message-media.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
