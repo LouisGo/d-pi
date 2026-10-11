@@ -31,6 +31,7 @@ import { ReadingBody } from "./reading-body";
 import { ReadingWindow } from "./reading-window";
 import { SubagentMessage } from "./subagents";
 import { ToolObservationDetails } from "./tool-observation";
+import { ToolSemanticBody } from "./tool-semantic-body";
 
 export function Conversation({
   model,
@@ -261,7 +262,9 @@ export function ConversationItemView({
           evidence={evidence}
         >
           {item.detail && <p role="status">{item.detail}</p>}
-          {item.tool?.name === "bash" || item.tool?.name === "exec" ? (
+          {item.tool?.semantic?.kind === "command" ||
+          item.tool?.name === "bash" ||
+          item.tool?.name === "exec" ? (
             <ToolCard
               target={toolTarget}
               toolCallId={item.tool.toolCallId}
@@ -269,6 +272,12 @@ export function ConversationItemView({
               partial={item.tool.coverage === "partial" || item.tool.truncated}
               summary={item.text}
               status={t(`workbench.tool.lifecycle.${item.tool.lifecycle}`)}
+            />
+          ) : item.tool?.semantic ? (
+            <ToolSemanticBody
+              tool={item.tool}
+              text={item.text}
+              target={toolTarget}
             />
           ) : (
             <>

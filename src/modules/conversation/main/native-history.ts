@@ -19,6 +19,7 @@ import type {
 import { nativeMessageTime } from "../contracts/message-time";
 import type { ToolExecutionObservation } from "../contracts/tool-observation";
 import {
+  decodeToolSemantic,
   projectToolPayload,
   type ToolPayloadByteCounter,
   toolOutputCoverage,
@@ -524,6 +525,12 @@ export async function readNativeHistory(
             truncated,
             ...(argumentsPayload ? { arguments: argumentsPayload } : {}),
             result: resultPayload,
+            semantic: decodeToolSemantic(
+              message.toolName,
+              matchedCall?.arguments,
+              resultInput,
+              "result",
+            ),
           };
         })();
         const thinking =

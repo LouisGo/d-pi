@@ -16,7 +16,11 @@ import type {
   ToolExecutionObservation,
   ToolPayload,
 } from "../contracts/tool-observation";
-import { projectToolPayload } from "../core/public";
+import {
+  decodeToolSemantic,
+  projectToolPayload,
+  toolSemanticArguments,
+} from "../core/public";
 
 import { SubagentProjection } from "./subagent-projection";
 
@@ -207,6 +211,12 @@ export class ConversationProjection {
                 coverage: "partial" as const,
                 truncated: projected.truncated,
                 result: projected,
+                semantic: decodeToolSemantic(
+                  toolName,
+                  undefined,
+                  resultInput,
+                  "result",
+                ),
               };
             })()
           : undefined;
@@ -422,6 +432,18 @@ export class ConversationProjection {
         toolCallId,
         name: toolName.slice(0, 120),
         lifecycle,
+        semantic: decodeToolSemantic(
+          toolName,
+          stage !== "end" && frame.args !== undefined
+            ? frame.args
+            : toolSemanticArguments(prior?.tool?.semantic),
+          payload,
+          stage === "start"
+            ? "intent"
+            : stage === "update"
+              ? "progress"
+              : "result",
+        ),
         ...(backgroundState ? { backgroundState } : {}),
         observed,
         coverage:

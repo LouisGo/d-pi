@@ -3,6 +3,7 @@ import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import type { ConversationItem } from "../../../modules/conversation/contracts/public";
+import { decodeToolSemantic } from "../../../modules/conversation/core/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { ConversationItemView } from "./conversation";
 import { MessageMedia } from "./message-media";
@@ -45,6 +46,70 @@ const base: ConversationItem = {
   label: { kind: "literal", text: "You" },
   text: "Keep **literal** prompt\nSecond line",
 };
+it.each([
+  [
+    "read",
+    { path: "/a.ts" },
+    { details: { displayContent: { text: "observed source", startLine: 9 } } },
+    "resource-read",
+    "observed source",
+  ],
+  [
+    "find",
+    { query: "needle" },
+    {
+      details: {
+        hits: [
+          {
+            rel: "a.ts",
+            ranges: [{ start: 4, end: 5, snippet: "actual match" }],
+          },
+        ],
+      },
+    },
+    "search",
+    "actual match",
+  ],
+  [
+    "write",
+    { path: "xd://edit" },
+    {
+      details: {
+        xdev: {
+          tool: "edit",
+          mode: "execute",
+          inner: { path: "/a", diff: "-before\n+after" },
+        },
+      },
+    },
+    "file-change",
+    "+after",
+  ],
+] as const)(
+  "renders %s through its effective native Body",
+  async (name, args, result, kind, text) => {
+    const container = await mount({
+      ...base,
+      role: "tool",
+      text: "raw fallback",
+      tool: {
+        name,
+        toolCallId: "native-call",
+        lifecycle: "completed",
+        observed: ["start", "end"],
+        coverage: "observed",
+        truncated: false,
+        semantic: decodeToolSemantic(name, args, result, "result"),
+      },
+    });
+    expect(
+      container.querySelector(`[data-tool-body="${kind}"]`)?.textContent,
+    ).toContain(text);
+    expect(container.querySelector("[data-tool-body]")?.textContent).toContain(
+      "Native result",
+    );
+  },
+);
 it("places sent media and text together inside the bubble and displays the real message time", async () => {
   const container = await mount(
     { ...base, timestamp: 1791500000000, text: "Question\n[image: shot.png]" },

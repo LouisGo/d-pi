@@ -1,8 +1,29 @@
 export const ui = {
+  "tool.semantic.intent": "Call intent",
+  "tool.semantic.progress": "Observed progress",
+  "tool.semantic.result": "Native result",
+  "tool.semantic.viewFailed":
+    "This view could not render. Available raw evidence follows.",
+  "tool.semantic.copyObserved": "Copy observed output",
+  "tool.semantic.resource.file": "File",
+  "tool.semantic.resource.directory": "Directory",
+  "tool.semantic.resource.image": "Image",
+  "tool.semantic.resource.internal": "Internal resource",
+  "tool.semantic.snapshot":
+    "Observed read snapshot; the current file may differ.",
+  "tool.semantic.startLine": "Starts at line {line}",
+  "tool.semantic.toolChanges":
+    "Tool-reported changes; current Git changes are a separate source.",
+  "tool.semantic.noPatch": "No native patch available.",
+  "tool.semantic.snapshotsPruned": "Native before/after snapshots were pruned.",
+  "tool.semantic.matches": "{count} matches",
+  "tool.semantic.filter": "Filter loaded results",
+  "tool.semantic.noLoadedHits": "No matching loaded results.",
+
   "workbench.tool.surfaceLimit":
     "Close a pinned detail before opening another (8 maximum).",
-  "workbench.tool.open": "Open command details",
-  "workbench.tool.heading": "Command details",
+  "workbench.tool.open": "Open tool details",
+  "workbench.tool.heading": "Tool details",
   "workbench.tool.sourceUnavailable": "Source identity is unavailable.",
   "workbench.tool.pinned": "Pinned",
   "workbench.tool.pin": "Pin",

@@ -108,6 +108,12 @@ OMP JSONL 仍为事实来源；Main 继续授权与解析，未引入新数据�
 
 ## 命令详情读取（WB01）
 
+### WB02 裁剪前工具语义
+
+`ToolSemantic` 是 conversation/contracts 的纯数据联合；Host 与原生 history adapter 在通用 payload 裁剪前调用同一 `decodeToolSemantic`。transportTool 保留外层真实工具，effectiveTool 来自固定 OMP 18.8.9 的 `details.xdev.tool/mode/inner`；read URL/proc/cfg、write 非文件目标不能误报文件读取或修改。intent/progress/result 仅表示观察阶段，不证明执行成功；具体 lifecycle 继续独立。路径、范围、原生 patch、部分失败与 snapshotsPruned 只是本次原生证据，当前工作区/Git 是另一来源。
+
+专用 read/search/change Body 消费强类型 DTO，仍共用 WB01 详情 Surface/reader、来源、冻结引用与返回。单 Body 异常降级到可得原文，不改工具结果。语义列表最多8项、每项最多8范围、正文单段2048 UTF-16，来源路径最多4096，过界身份不截成另一目标；预算、原生截断和快照裁剪如实标 partial/truncated。未识别包装/版本走正式 generic；专业 Job/Plan/Task 控制不因语义识别自动实施。
+
 ConversationProjection 只供有界卡片。Host 在摘要前观察原始生命周期，ToolDetail reader 独立分发版本；live-tool 绑定真实 nativeSessionKey、Thread、代次与 toolCallId。native-record 读取沿用绑定与 history cursor 的可信路径、文件头、前缀身份校验。来源叶子见 `resources/contracts/public.ts`，不依赖 input 或 execution。Surface 关闭只释放读取，不改变执行。
 
 WB01 复核补充：历史详情 lease 按捕获的 Thread/原生绑定和 sender 校验，切 Thread 不撤销已固定的只读来源。详情按可信冻结前缀恢复实际工具调用参数，输出独立于卡片投影；恢复扫描最多16页/16MiB，超过预算明确不可用。完成记录可通过真实 nativeRecordId 转接持久读取；转接失败保留最后已观察版本并标明不可用，不能清空后冒称内容不存在。导航在草稿保存之后、派发切换之前再次核对 ticket；新 Surface 意图使旧返回失效。

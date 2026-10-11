@@ -13,6 +13,8 @@ export {
   ToolExecutionObservationSchema,
   ToolPayloadSchema,
 } from "./tool-observation";
+export type { ToolChange, ToolSearchHit, ToolSemantic } from "./tool-semantic";
+export { ToolSemanticSchema } from "./tool-semantic";
 export const ConversationLabelSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("literal"), text: z.string() }),
   z.strictObject({ kind: z.literal("message"), value: UiMessageSchema }),

@@ -25,3 +25,4 @@ export {
   type ToolPayloadByteCounter,
   toolOutputCoverage,
 } from "./tool-payload";
+export { decodeToolSemantic, toolSemanticArguments } from "./tool-semantic";

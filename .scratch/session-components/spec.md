@@ -8,13 +8,17 @@
 
 ## 工作包
 
+2026-10-11 接力授权：从本地 main `268d91b`（clean）串行推进 WB02–WB04；WB05–WB08 留待后续。不推送、不发布。原方案完整验收保持有效，上述 WB00/WB01 限制只描述上轮范围。本轮先完成裁剪前语义/生产 Body，再交错落实 demand、读取和资源预算，最后装配完整交互；关键 milestone 独立 review。
+
+先行 API：conversation/contracts 的 `ToolSemantic` 为纯判别联合，保留 transportTool/effectiveTool、intent/result 阶段、partial/truncated 与原生路径/范围/patch。`decodeToolSemantic(name, args, result, phase)` 在 Host 和历史 adapter 通用裁剪前调用；Renderer 不解析 native JSON。结果仅为有界阅读投影，不授予文件权限、不证明磁盘当前版本或 Agent 因果。read 的 url/proc/cfg 与 write 的 xdev/proc/非文件目标先解包；不能解包的有效操作降级 generic，详情继续使用 WB01 Source/Surface。
+
 | ID | 依赖 | 状态 | 验收条件 | 验证证据 / 下一步 |
 | --- | --- | --- | --- | --- |
 | WB00 | 当前运行基线 | complete | 18.8.9 实际依赖；A/B 回答独立结果；同目标单次发送；草稿跨卸载；代次隔离；written 与原生结束分开；stop 独立 | 下方 WB00 证据；已与WB01合装，待用户试用 |
 | WB01 | WB00 | complete | 命令卡→实时详情→pin→切 B→明确 B 草稿引用→回 A 原成员；有界摘要、final 对账、coverage、关闭释放、旧导航不抢占；键盘入口 | Source/Surface/reader/FrozenContext 与命令卡/Inspector 已装配；主矩阵143项与最后受影响31项通过；独立review已闭合；下方Dev源码试用交接 |
-| WB02 | WB01 | planned | 活动组、常用 read/search/edit、轮次、变化摘要真实 | 后续授权与语义契约 |
-| WB03 | WB00；联调 WB01/02 | planned | demand/范围读取/字节缓存/Worker/Viewer/native warm 有界 | 后续性能预算及资源策略 |
-| WB04 | WB00、WB01 | planned | 多题/权限/超时/unknown/回答历史完整 | 后续原生 ask bridge 与 DecisionDock |
+| WB02 | WB01 | implementing | 活动组、常用 read/search/edit、轮次、变化摘要真实 | 裁剪前语义与生产专用Body已接，活动结构/来源导航仍待完成 |
+| WB03 | WB00；联调 WB01/02 | planned | demand/范围读取/字节缓存/Worker/Viewer/native warm 有界 | 本轮已授权，随WB02交错落实资源策略 |
+| WB04 | WB00、WB01 | planned | 多题/权限/超时/unknown/回答历史完整 | 本轮已授权，后续原生ask/approval与持久历史 |
 | WB05 | WB01、WB03、WB04 请求事实 | planned | 任务→子代理→Job→使用量/策略/资源 | 后续真实 owner scope 合同 |
 | WB06 | WB01、WB02、WB04 | planned | Plan 到安排执行；Diff/消息反馈；精确分叉 | 后续原生能力与反馈协调 |
 | WB07 | WB01、WB02、WB03 | planned | 搜索定位与专业 Body 复用来源/详情/资源 | 后续专业结果合同 |
@@ -72,6 +76,13 @@
 
 ## 验证和偏差
 
+### WB02 milestone：裁剪前语义与专用 Body（接力，2026-10-11）
+
+- 先写 ToolSemantic schema/API，再以5个decoder反例、实时Host/持久record两条边界和生产Conversation三种Body红灯驱动实现。固定本机OMP18.8.9 read/write/xdev/edit/grep/find官方类型为依据，不导入终端依赖。
+- read范围/显示正文、search文件/真实range和计数、edit原生patch/部分失败/snapshotsPruned在通用JSON裁剪前保留；write包装edit分派，URL/proc/cfg/xd非文件操作不冒称修改。Body沿用同一详情Surface/冻结引用/返回，专用搜索只过滤已加载结果，原生读快照与当前文件/Git分别表达。异常边界保留可得原文和工具执行状态。
+- 当前5文件71/71通过（decoder/Host/native-history/生产Body/既有真实Workbench组合）。Core/Host/Main类型通过；Renderer仅既有composer-tag.tsx:134基线失败。design/i18n/interaction、architecture通过，结构/看板已生成。组合有既有React act提示；未做本milestone实机/供应商/IME，不宣称WB02完成。
+- 下一步：固定本milestone独立review并闭合；增量ActivityReadModel与真实轮次/来源定位，WB03范围与缓存/demand随后交错实施。WB04尚未实施；goal保持active。
+
 按行为逐段 TDD：独立回答/双击/重连/重挂载，详情更新与final，跨Thread草稿/Undo/来源定位/lease释放与晚到导航。只跑相关类型、行为、边界和文档门禁；必要的真实 SDK/生产链路验收有界执行，不重复 provider/系统 IME 或包矩阵。
 
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。
@@ -89,14 +100,14 @@ WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sour
 [
   {
     "id": "session-components",
-    "title": "会话组件体系 WB00–WB01",
+    "title": "会话组件体系 WB00–WB04",
     "phase": "M2",
-    "engineering": "complete",
+    "engineering": "in-progress",
     "trial": "delivered",
     "acceptance": "pending",
-    "next": "重启Dev试用WB00/WB01；下一轮先读方案/跟踪推进WB02",
+    "next": "推进WB02活动语义/结构，与WB03资源策略交错，再完成WB04完整交互",
     "evidence": ["../../docs/product/session-components-plan-2026-10-11.md"],
-    "constraints": "本轮仅 WB00、WB01；后续先读完整方案与本跟踪文件"
+    "constraints": "本轮授权WB02–WB04；WB05–WB08后续，不推送或发布，用户验收pending"
   }
 ]
 ```

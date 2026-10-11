@@ -13,6 +13,73 @@ import { join } from "node:path";
 import { expect, it } from "vitest";
 import { readNativeHistory, readNativeImage } from "./native-history";
 
+it("reads wrapped edit semantic evidence from the original native record", async () => {
+  const root = mkdtempSync(join(tmpdir(), "d-pi-semantic-history-"));
+  const threadId = crypto.randomUUID();
+  mkdirSync(join(root, threadId));
+  const sessionFile = join(root, threadId, "session.jsonl");
+  writeFileSync(
+    sessionFile,
+    [
+      { type: "session", version: 3, id: "session" },
+      {
+        type: "message",
+        id: "call",
+        parentId: null,
+        message: {
+          role: "assistant",
+          content: [
+            {
+              type: "toolCall",
+              id: "wrapped",
+              name: "write",
+              arguments: { path: "xd://edit" },
+            },
+          ],
+        },
+      },
+      {
+        type: "message",
+        id: "result",
+        parentId: "call",
+        message: {
+          role: "toolResult",
+          toolCallId: "wrapped",
+          toolName: "write",
+          isError: false,
+          content: "edited",
+          details: {
+            xdev: {
+              tool: "edit",
+              mode: "execute",
+              inner: { path: "/a", diff: "x".repeat(1800) },
+            },
+          },
+        },
+      },
+    ]
+      .map((row) => JSON.stringify(row))
+      .join("\n") + "\n",
+  );
+  try {
+    const page = await readNativeHistory(root, {
+      threadId,
+      configContextId: "fixture",
+      sessionId: "session",
+      sessionFile,
+    });
+    expect(
+      page.kind === "page" && page.entries[1]?.tool?.semantic,
+    ).toMatchObject({
+      kind: "file-change",
+      effectiveTool: "edit",
+      changes: [{ patch: "x".repeat(1800) }],
+    });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 it.each(["inline", "blob"])(
   "retains real times and lazy %s image references while leaving the native file untouched",
   async (format) => {
@@ -464,7 +531,7 @@ it("projects bounded tool execution observations with real identity, arguments f
       coverage: "text-parts-only",
     });
     expect(entry?.tool).toBeDefined();
-    expect(entry?.tool).toEqual({
+    expect(entry?.tool).toMatchObject({
       toolCallId: "call-1",
       name: "write",
       lifecycle: "completed",
@@ -752,7 +819,7 @@ it("retains truthful partial coverage and available factual arguments/result for
     expect(page.kind).toBe("page");
     if (page.kind !== "page") return;
     const entry = page.entries.find((e) => e.id === "res-plain");
-    expect(entry?.tool).toEqual({
+    expect(entry?.tool).toMatchObject({
       toolCallId: "call-plain",
       name: "read",
       lifecycle: "completed",

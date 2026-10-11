@@ -13,6 +13,7 @@ import type {
 } from "./window-workbench";
 
 export function commandSummary(tool: ToolExecutionObservation): string {
+  if (tool.semantic?.kind === "command") return tool.semantic.command;
   const value = tool.arguments?.value;
   if (
     value &&
@@ -43,7 +44,6 @@ export function ToolCard({
 }) {
   const workbench = useContext(ToolWorkbenchContext);
   const { t } = useI18n();
-  const [atLimit, setAtLimit] = useState(false);
   return (
     <div className="command-card" data-command-card>
       <code>{command}</code>
@@ -53,6 +53,22 @@ export function ToolCard({
         {summary.split("\n").slice(0, 6).join("\n").slice(0, 2048) ||
           t("ui.conversation.waitingResult")}
       </pre>
+      <ToolDetailAction target={target} />
+      {partial && <small>{t("workbench.tool.partial")}</small>}
+      {!target && <small>{t("workbench.tool.sourceUnavailable")}</small>}
+    </div>
+  );
+}
+export function ToolDetailAction({
+  target,
+}: {
+  target?: ToolTarget | undefined;
+}) {
+  const workbench = useContext(ToolWorkbenchContext);
+  const { t } = useI18n();
+  const [atLimit, setAtLimit] = useState(false);
+  return (
+    <>
       <Button
         variant="secondary"
         data-command-open={target ? sourceKey(target.source) : undefined}
@@ -64,9 +80,7 @@ export function ToolCard({
         {t("workbench.tool.open")}
       </Button>
       {atLimit && <p role="alert">{t("workbench.tool.surfaceLimit")}</p>}
-      {partial && <small>{t("workbench.tool.partial")}</small>}
-      {!target && <small>{t("workbench.tool.sourceUnavailable")}</small>}
-    </div>
+    </>
   );
 }
 export function useToolWorkspace(model: AppModel): WorkspaceHost | undefined {

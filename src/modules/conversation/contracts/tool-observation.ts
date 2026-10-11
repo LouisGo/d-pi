@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ToolSemanticSchema } from "./tool-semantic";
 
 // OMP 18.4.6 tool args / partialResult / result are JSON, not app artifacts.
 export const ToolPayloadSchema = z.strictObject({
@@ -21,6 +22,7 @@ export const ToolExecutionObservationSchema = z.strictObject({
   arguments: ToolPayloadSchema.optional(),
   progress: ToolPayloadSchema.optional(),
   result: ToolPayloadSchema.optional(),
+  semantic: ToolSemanticSchema.optional(),
 });
 export type ToolExecutionObservation = z.infer<
   typeof ToolExecutionObservationSchema

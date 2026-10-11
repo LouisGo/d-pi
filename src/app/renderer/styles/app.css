@@ -23,6 +23,7 @@
 @import "../components/ui/action-menu.css";
 @import "../components/ui/feedback.css";
 @import "../reading/message-parts.css";
+@import "../reading/tool-semantic-body.css";
 @import "../reading/conversation-display.css";
 @import "../workbench/composer-toolbar.css";
 @import "../workbench/composer.css";

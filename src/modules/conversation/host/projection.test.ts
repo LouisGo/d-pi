@@ -6,6 +6,48 @@ import {
 import { ConversationModel } from "../core/public";
 import { ConversationProjection } from "./projection";
 
+it("extracts wrapped edit semantics before clipping and keeps them on native final", () => {
+  const p = new ConversationProjection(crypto.randomUUID(), () => {});
+  p.accept({
+    type: "tool_execution_start",
+    toolCallId: "wrapped",
+    toolName: "write",
+    args: { path: "xd://edit" },
+  });
+  p.accept({
+    type: "tool_execution_end",
+    toolCallId: "wrapped",
+    toolName: "write",
+    isError: false,
+    result: {
+      content: [{ type: "text", text: "edited" }],
+      details: {
+        xdev: {
+          tool: "edit",
+          mode: "execute",
+          inner: { path: "/a", diff: "x".repeat(1800) },
+        },
+      },
+    },
+  });
+  expect(p.snapshot().items[0]?.tool?.semantic).toMatchObject({
+    kind: "file-change",
+    effectiveTool: "edit",
+    changes: [{ patch: "x".repeat(1800) }],
+  });
+  p.accept({
+    type: "message_end",
+    message: {
+      role: "toolResult",
+      toolCallId: "wrapped",
+      content: "edited",
+      dPiRecordId: "persisted",
+    },
+  });
+  expect(p.snapshot().items[0]?.tool?.semantic?.kind).toBe("file-change");
+  p.dispose();
+});
+
 it("defers superseded full snapshots until a lifecycle barrier and preserves delta ordering", () => {
   const emitted: string[] = [];
   const p = new ConversationProjection(crypto.randomUUID(), (event) => {
@@ -830,7 +872,7 @@ it("projects restored toolResult message with observed 'message' keeping truthfu
   expect(item?.text).toBe("file contents");
   expect(item?.nativeRecordId).toBe("native-rec-1");
   expect(item?.restored).toBe(true);
-  expect(item?.tool).toEqual({
+  expect(item?.tool).toMatchObject({
     toolCallId: "restored-call-1",
     name: "read",
     lifecycle: "completed",

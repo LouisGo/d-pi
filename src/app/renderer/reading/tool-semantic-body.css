@@ -1,0 +1,14 @@
+@layer components {
+  .tool-semantic-body {
+    display: grid;
+    gap: var(--spacing);
+    min-width: 0;
+  }
+  .tool-semantic-body > code {
+    overflow-wrap: anywhere;
+  }
+  .tool-semantic-body ul {
+    margin: 0;
+    padding-inline-start: var(--panel-padding);
+  }
+}
