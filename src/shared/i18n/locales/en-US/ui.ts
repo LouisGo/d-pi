@@ -1,4 +1,21 @@
 export const ui = {
+  "ui.approval.reasonTruncated": "Approval reason excerpt",
+  "ui.interaction.appDefault":
+    "App default at {deadline, date, short} {deadline, time, medium}: {answer}",
+  "ui.approval.section": "Tool approvals",
+  "ui.approval.title": "Tool approval: {tool}",
+  "ui.approval.source": "Tool call: {id}",
+  "ui.approval.mode": "Native approval policy: {mode}",
+  "ui.approval.pending": "Awaiting a decision",
+  "ui.approval.approved": "Approved by native observation",
+  "ui.approval.denied": "Denied by native observation",
+  "ui.approval.unknown": "Decision unavailable",
+  "ui.approval.unassociated":
+    "This tool event does not identify its approval dialog or resource scope. Review the native prompt and answer its separate dialog.",
+  "ui.approval.manual":
+    "A tool approval was observed in this session. This choice requires your answer; it will not use an App default.",
+  "ui.approval.gap":
+    "Some approval facts are unavailable. Unassociated choices remain manual.",
   "activity.changedFiles": "Changed files",
   "activity.captureUnavailable":
     "Could not navigate to the sampled Diff. Select the file again.",

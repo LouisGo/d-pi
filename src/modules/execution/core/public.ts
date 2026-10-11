@@ -4,6 +4,7 @@ export {
   reduceAskForm,
   seedAskForm,
 } from "./interactions/ask-form";
+export { interactionPolicy } from "./interactions/interaction-policy";
 export {
   type AdmissionResult,
   type AdmissionStore,

@@ -342,3 +342,75 @@ it("keeps stop in the composer and dispatches against the current execution iden
     model.dispose();
   }
 });
+it("shows unassociated native approvals without inventing resource scope or approval actions", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const view = RuntimeViewSchema.parse({
+    threadId: crypto.randomUUID(),
+    traceId: crypto.randomUUID(),
+    revision: 1,
+    phase: "ready",
+    trusted: true,
+    busy: false,
+    model: "fixture",
+    configuration: { code: "runtime.configDefault" },
+    message: { code: "runtime.idle" },
+    approvals: {
+      connectionGeneration: crypto.randomUUID(),
+      coverage: "observed",
+      items: [
+        {
+          nativeSessionKey: "native",
+          toolCallId: "A",
+          toolName: "bash",
+          status: "pending",
+          approvalMode: "write",
+          reason: "native reason A",
+        },
+        {
+          nativeSessionKey: "native",
+          toolCallId: "B",
+          toolName: "write",
+          status: "pending",
+          approvalMode: "always-ask",
+          reason: "native reason B",
+        },
+      ],
+    },
+  });
+  const commands = vi.fn(async () => ({ kind: "view" as const, view }));
+  const model = new RuntimeModel({
+    subscribe: () => () => {},
+    request: commands,
+  });
+  await model.bind(view.threadId);
+  commands.mockClear();
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  try {
+    await act(() =>
+      root.render(
+        createElement(I18nProvider, {
+          initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
+          children: createElement(RuntimePanel, {
+            model,
+            inspection: false,
+            onFollowUp: undefined,
+          }),
+        }),
+      ),
+    );
+    const cards = container.querySelectorAll("[data-permission-approval]");
+    expect(cards).toHaveLength(2);
+    expect(cards[0]?.textContent).toContain("native reason A");
+    expect(cards[1]?.textContent).toContain("native reason B");
+    expect(cards[0]?.textContent).toContain("does not identify");
+    expect(cards[0]?.querySelector("button")).toBeNull();
+    expect(commands).not.toHaveBeenCalled();
+  } finally {
+    await act(() => root.unmount());
+    container.remove();
+    model.dispose();
+    vi.unstubAllGlobals();
+  }
+});

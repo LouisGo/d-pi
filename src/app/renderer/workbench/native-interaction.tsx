@@ -180,6 +180,21 @@ export function NativeInteraction({
         )}
       </header>
       {item.message && <p>{item.message}</p>}
+      {item.policy?.defaultOwner === "app" && item.status === "pending" && (
+        <p className="muted" data-default-policy="app">
+          {t("ui.interaction.appDefault", {
+            deadline: new Date(item.policy.expiry),
+            answer:
+              item.policy.defaultResult.kind === "value"
+                ? item.policy.defaultResult.value || t("ui.interaction.empty")
+                : t("ui.interaction.cancelled"),
+          })}
+        </p>
+      )}
+      {item.policy?.reason === "approval-unassociated" &&
+        item.status === "pending" && (
+          <p className="muted">{t("ui.approval.manual")}</p>
+        )}
       {operation?.status === "not-dispatched" && (
         <p role="alert">{t("ui.interaction.notDispatched")}</p>
       )}

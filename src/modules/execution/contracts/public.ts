@@ -1,4 +1,5 @@
 export * from "./answer-history";
+export * from "./approval";
 export * from "./control";
 export * from "./host";
 export * from "./interactions";

@@ -20,6 +20,7 @@ import {
 } from "../../../modules/ui/renderer/public";
 import { runtimePhaseLabel } from "../components/runtime-phase";
 import { type FollowUpResult, NativeInteraction } from "./native-interaction";
+import { PermissionApprovalBody } from "./permission-approval-body";
 import { QueueControls } from "./queue-controls";
 import {
   RecoveryActionPanel,
@@ -70,6 +71,10 @@ export function RuntimePanel({
       <LoadingIndicator pending label={t("app.loading")} />
     ) : null;
   const actionable =
+    state.approvals?.coverage === "gap" ||
+    state.approvals?.items.some(
+      (item) => item.status === "pending" || item.status === "unknown",
+    ) ||
     state.interactions?.unsupported ||
     state.interactions?.items.some(
       (item) =>
@@ -165,6 +170,26 @@ export function RuntimePanel({
           </div>
         )}
       {inspection && <QueueControls model={model} />}
+      {state.approvals && (
+        <section aria-label={t("ui.approval.section")}>
+          {state.approvals.coverage === "gap" && (
+            <p role="alert">{t("ui.approval.gap")}</p>
+          )}
+          {state.approvals.items
+            .filter(
+              (item) =>
+                inspection ||
+                item.status === "pending" ||
+                item.status === "unknown",
+            )
+            .map((item) => (
+              <PermissionApprovalBody
+                key={`${state.approvals?.connectionGeneration}-${item.nativeSessionKey}-${item.toolCallId}`}
+                item={item}
+              />
+            ))}
+        </section>
+      )}
       {state.interactions && (
         <section
           aria-label={t("ui.runtime.interactionsLabel")}

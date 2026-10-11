@@ -34,6 +34,7 @@ import {
   captureCurrentModelConfiguration,
   ensureCurrentModelConfiguration,
 } from "./model-selection.mjs";
+import { createApprovalObservation } from "./native-approval-observation.mjs";
 import { NativeQueueManager } from "./native-queue.mjs";
 import { createSubagentConfiguration } from "./native-subagent-configuration.mjs";
 import { createReadingSession } from "./reading-session.mjs";
@@ -44,6 +45,7 @@ const selection = process.env.D_PI_MODEL_SELECTION
 const coldResume =
   JSON.parse(process.env.D_PI_RESUME_SESSION ?? "null") !== null;
 const manager = await managedSessionManager(SessionManager);
+const approvals = createApprovalObservation();
 const { session, setToolUIContext, subagentEventBus } = await (async () => {
   let created;
   try {
@@ -52,6 +54,7 @@ const { session, setToolUIContext, subagentEventBus } = await (async () => {
       // RPC can render synchronous native dialogs. Register AskTool without
       // enabling the SDK's terminal-only startup and warmup behavior.
       interactivePrompts: true,
+      extensions: [approvals.extension],
       // An explicit user choice must reach the factory before saved-model
       // restoration. The native resolver discovers it; applyModelSelection below
       // still enforces the exact available desktop model and thinking capability.
@@ -99,6 +102,7 @@ const output = (frame) => {
   for (const line of frameEncoder.encodeFrames(frame))
     process.stdout.write(line);
 };
+approvals.setPublisher((data) => output({ type: "d_pi_approval_state", data }));
 const state = () => ({
   imageSupport: !!session.model && sendsImageInputOnWire(session.model),
   queueState: queue.snapshot(),

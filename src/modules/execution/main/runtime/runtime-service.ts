@@ -189,6 +189,7 @@ export class RuntimeService {
           this.view = { ...this.view };
           delete this.view.control;
           delete this.view.interactions;
+          delete this.view.approvals;
           delete this.view.queueOperation;
           delete this.view.subagentOperation;
           delete this.view.modelChanging;
@@ -531,6 +532,10 @@ export class RuntimeService {
       control?.pendingAsync ||
       control?.admitted ||
       interactions?.unsupported ||
+      this.view?.approvals?.coverage === "gap" ||
+      this.view?.approvals?.items.some(
+        (item) => item.status === "pending" || item.status === "unknown",
+      ) ||
       interactions?.items.some(
         (item) => item.status === "pending" || item.status === "unknown",
       )
@@ -689,6 +694,16 @@ export class RuntimeService {
           });
         },
       )
+      .with({ kind: "approvals" }, ({ view }) => {
+        if (view.connectionGeneration !== this.currentConnectionGeneration)
+          return;
+        if (
+          view.coverage === "gap" ||
+          view.items.some((item) => item.status === "pending")
+        )
+          this.idleConfirmed = false;
+        this.update({ approvals: view });
+      })
       .with({ kind: "interactions" }, ({ view }) => {
         if (view.connectionGeneration === this.currentConnectionGeneration) {
           if (view.nativeSessionKey && this.view) {
@@ -1686,6 +1701,10 @@ export class RuntimeService {
     return (
       this.pendingEvidence.size > 0 ||
       this.pendingDefaultAnswers.size > 0 ||
+      this.view?.approvals?.coverage === "gap" ||
+      this.view?.approvals?.items.some(
+        (item) => item.status === "pending" || item.status === "unknown",
+      ) === true ||
       this.executingIds.size > 0 ||
       this.view?.queueOperation?.status === "pending" ||
       this.view?.subagentOperation?.status === "pending" ||

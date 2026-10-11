@@ -116,6 +116,7 @@ try {
     "image-compression.mjs",
     "native-queue.mjs",
     "native-subagent-configuration.mjs",
+    "native-approval-observation.mjs",
     "pdf-content.mjs",
     "document-content.mjs",
   ])
@@ -136,6 +137,7 @@ try {
     "image-compression.mjs",
     "native-queue.mjs",
     "native-subagent-configuration.mjs",
+    "native-approval-observation.mjs",
     "pdf-content.mjs",
     "document-content.mjs",
   ])

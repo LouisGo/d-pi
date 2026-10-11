@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "f249f6043ef204c5c81eefcda587446ce1aeafd466b2729aa87d5d837334d457",
+  "inputsHash": "5cd8e702ac7e27c61d3218357d9e180c9d2af6b32bff2f2066b97f9025487869",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 678,
-    "scannedFiles": 678,
+    "sourceFiles": 683,
+    "scannedFiles": 683,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 306,
-      "lines": 62534,
+      "files": 307,
+      "lines": 62714,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -68,7 +68,7 @@
       ],
       "materialized": true,
       "files": 35,
-      "lines": 3944,
+      "lines": 3945,
       "publicEntries": [
         {
           "path": "src/platform/main/storage/public.ts",
@@ -118,7 +118,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 4005,
+      "lines": 4038,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -351,8 +351,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 69,
-      "lines": 18471,
+      "files": 72,
+      "lines": 18820,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -385,8 +385,8 @@
       ],
       "defaultEnvironment": "omp",
       "materialized": true,
-      "files": 17,
-      "lines": 4003,
+      "files": 18,
+      "lines": 4082,
       "publicEntries": [
         {
           "path": "runtime/host.mjs",
@@ -22268,6 +22268,30 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/workbench/permission-approval-body.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/permission-approval-body.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/workbench/queue-controls.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -22780,6 +22804,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/workbench/native-interaction.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/runtime-panel.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./permission-approval-body",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/permission-approval-body.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -33123,6 +33159,15 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/execution/contracts/approval.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
       "from": "src/modules/execution/contracts/control.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "contracts",
@@ -33186,6 +33231,18 @@
       "resolution": "module",
       "to": "src/modules/threads/contracts/public.ts",
       "targetModule": "threads",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/contracts/host.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
+      "specifier": "./approval",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/approval.ts",
+      "targetModule": "execution",
       "targetEnvironment": "contracts"
     },
     {
@@ -33418,6 +33475,18 @@
       "sourceModule": "execution",
       "sourceEnvironment": "contracts",
       "test": false,
+      "specifier": "./approval",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/approval.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/contracts/public.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
       "specifier": "./control",
       "kind": "export",
       "resolution": "module",
@@ -33604,6 +33673,18 @@
       "sourceModule": "execution",
       "sourceEnvironment": "contracts",
       "test": false,
+      "specifier": "./approval",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/approval.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/contracts/runtime.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "contracts",
+      "test": false,
       "specifier": "./control",
       "kind": "import",
       "resolution": "module",
@@ -33768,6 +33849,51 @@
       "targetEnvironment": "contracts"
     },
     {
+      "from": "src/modules/execution/core/interactions/interaction-policy.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/modules/execution/core/interactions/interaction-policy.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "../../contracts/interactions",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/interactions.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/core/interactions/interaction-policy.test.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./interaction-policy",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/core/interactions/interaction-policy.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/execution/core/interactions/interaction-policy.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../../contracts/interactions",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/interactions.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
       "from": "src/modules/execution/core/public.ts",
       "sourceModule": "execution",
       "sourceEnvironment": "core",
@@ -33776,6 +33902,18 @@
       "kind": "export",
       "resolution": "module",
       "to": "src/modules/execution/core/interactions/ask-form.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/modules/execution/core/public.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "./interactions/interaction-policy",
+      "kind": "export",
+      "resolution": "module",
+      "to": "src/modules/execution/core/interactions/interaction-policy.ts",
       "targetModule": "execution",
       "targetEnvironment": "core"
     },
@@ -35106,6 +35244,18 @@
       "resolution": "module",
       "to": "src/modules/configuration/contracts/public.ts",
       "targetModule": "configuration",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/execution/host/session-host.ts",
+      "sourceModule": "execution",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "../contracts/approval",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/approval.ts",
+      "targetModule": "execution",
       "targetEnvironment": "contracts"
     },
     {
@@ -37668,6 +37818,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "runtime/model-selection.mjs",
+      "targetModule": "runtime",
+      "targetEnvironment": "omp"
+    },
+    {
+      "from": "runtime/host.mjs",
+      "sourceModule": "runtime",
+      "sourceEnvironment": "omp",
+      "test": false,
+      "specifier": "./native-approval-observation.mjs",
+      "kind": "import",
+      "resolution": "module",
+      "to": "runtime/native-approval-observation.mjs",
       "targetModule": "runtime",
       "targetEnvironment": "omp"
     },

@@ -10,6 +10,7 @@ import {
   SubagentConfigurationSnapshotSchema,
   ThinkingSelectionSchema,
 } from "../../configuration/contracts/public";
+import { ApprovalViewSchema } from "./approval";
 import { ControlCommandSchema, ControlStateSchema } from "./control";
 import {
   AnswerCommandSchema,
@@ -68,6 +69,7 @@ export const RuntimeViewSchema = z.strictObject({
   subagentOperation: RuntimeOperationSchema.optional(),
   queueOperation: RuntimeOperationSchema.optional(),
   interactions: InteractionViewSchema.optional(),
+  approvals: ApprovalViewSchema.optional(),
   interactionOperations: z.array(InteractionOperationSchema).max(64).optional(),
   revision: z.number().int().nonnegative(),
   recoveryFailure: NativeRecoveryReasonSchema.optional(),

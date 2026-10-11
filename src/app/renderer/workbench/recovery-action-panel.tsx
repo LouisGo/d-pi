@@ -23,6 +23,8 @@ export function runtimeNeedsRecovery(state: RuntimeView): boolean {
     state.phase === "interrupted" ||
     state.recoveryFailure !== undefined ||
     state.evidenceCoverage === "gap" ||
+    state.approvals?.coverage === "gap" ||
+    state.approvals?.items.some((item) => item.status === "unknown") === true ||
     hasUnknownRuntimeOperation(state) ||
     state.interactions?.items.some((item) => item.status === "unknown") ===
       true ||

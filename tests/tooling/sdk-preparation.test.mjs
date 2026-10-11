@@ -100,6 +100,7 @@ function fixture(t) {
     "pdf-content.mjs",
     "document-content.mjs",
     "native-subagent-configuration.mjs",
+    "native-approval-observation.mjs",
     "BUN-LICENSE.md",
   ])
     write(`runtime/${name}`, `fixture ${name}`);

@@ -352,3 +352,13 @@ Activation 独立复核（固定 `5a520bf..d17e3d5`）确认三项 P2，并逐�
 补正式ConversationItemView→ToolSemanticBody异常注入组合，原生状态不变、原始正文与实际详情入口仍可用，另一Body正常。补生产SavedConversation工具组的实时→nativeRecordId确认／保存重读组合：组展开、失败摘要、同一DOM、选区与键盘焦点保持，实际来源动作仍指向A/native/g/first工具，重挂载恢复轻展开；该fixture证明来源入口传参，不冒称完整App返回导航或系统选区实机证据。初轮组fixture缺semantic因而未装配详情按钮，补真实内部语义后通过，未为此更改生产逻辑。四文件97/97、Core/Host/Renderer类型通过；日志 `/tmp/d-pi-agent-read-red.log` 与 `/tmp/d-pi-wb02-acceptance-green.log`。固定10cf25f..a5c931c原生title修正独立复核无新增问题。WB02复核闭合继续，WB03生产trace和WB04权限等仍开放。
 
 固定 `a5c931c..b135787` 独立复核闭合内部来源 P2，无新增生产缺陷。更正新增保存重读组合的旧式 tool DTO：使用 completed/failed、observed 标记数组与 observed coverage，并通过正式 HistoryPageSchema 校验夹具。该组合仅证明 live 实体仍驻留时的 native ID 确认／保存重读，不扩称 live 已回收后的纯 saved 接棒。
+
+### WB04 原生工具审批观察与显式默认策略（2026-10-11，继续实施）
+
+参考同级 T3 `ComposerPendingApprovalPanel/Actions`（a908a7ac）的事实／请求动作分离，固定 OMP 18.8.9 公共扩展 API 注册真实 tool_approval_requested/resolved；adapter 只观察，不回答或改变原生工具政策。按真实 nativeSessionKey/toolCallId 保留最多32待决＋32终态，缺口明示，不用标题、先后或最近工具配对普通 select。Main/Host 代次围栏、准入、idle 与冷却保护真实待决／unknown；断连保持 unknown。PermissionApprovalBody 独立展示原生工具与决定，未取得的对话／资源范围关联明确不可得，不添加 always allow 或工具 cancel。实际原生 prompt 和 Approve/Deny 仍在独立请求中编辑／发送；C23 的可靠关联与完整资源范围尚未取得，不冒称完整权限 Body。
+
+旧单题默认移到 Core 的显式 InteractionPolicy：App/native/manual、固定首次观察 deadline 和 defaultResult。旧 confirm/rich ask 不由App自动回答，其他旧默认保留；同一原生scope有真实审批或观察缺口时，未关联select终身手动，审批结束不重启其旧120秒timer。Main持久许可等待后再次复核，取消不重发；GUI预先显示普通App默认回答与时间，审批保护提示手动处理。两项真实反例先失败：请求先到及等待permit期间审批到来；另三项无dialog的pending/unknown/gap准入反例失败后补共同规则。
+
+五文件147/147及准入目标文件通过；adapter／正式SDK准备8/8，Core/Host/Main/Renderer类型、design/i18n通过。SDK准备第一轮因旧测试夹具漏带新adapter失败，补齐真实文件后通过。正式prepare-sdk在既有隔离root重新准备112包477.1MiB；在用Dev及项目SDK不动。独立Electron44.4.5正式Main/Host/OMP实测两个并发bash审批：两条真实事实和两个不关联dialog；等待3秒期间无App答案／文件，分别原生拒绝和批准，批准命令写文件，拒绝命令未写；同native文件有相应成功／错误toolResult，两个回答入库，native实际cold后进程返回0。证据 [approval-native.json](evidence/approval-native.json) 带3668537 dirty检查点、参与SHA及明确范围；120秒竞争由Host虚拟时间反例验证，3秒实测不冒称长时验收。没有GUI、真实provider、系统IME或生产性能trace；完整WB02–WB04继续。
+
+审批原因超出4KiB时保留节选标记，不把展示截断误作身份／决定缺口；专门反例先失败，adapter三项最终通过。

@@ -86,6 +86,25 @@ export const AnswerSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("cancel") }),
 ]);
 export type Answer = z.infer<typeof AnswerSchema>;
+export const InteractionPolicySchema = z.discriminatedUnion("defaultOwner", [
+  z.strictObject({
+    defaultOwner: z.literal("app"),
+    expiry: z.number().finite(),
+    defaultResult: AnswerSchema,
+    reason: z.literal("legacy-default"),
+  }),
+  z.strictObject({
+    defaultOwner: z.literal("native"),
+    expiry: z.number().finite().nullable(),
+    reason: z.literal("native-ask"),
+  }),
+  z.strictObject({
+    defaultOwner: z.literal("manual"),
+    expiry: z.number().finite().nullable(),
+    reason: z.enum(["confirmation", "approval-unassociated"]),
+  }),
+]);
+export type InteractionPolicy = z.infer<typeof InteractionPolicySchema>;
 export const AnswerEvidenceSchema = z.strictObject({
   operationId: TraceIdSchema,
   origin: z.enum(["user", "default"]),
@@ -93,6 +112,7 @@ export const AnswerEvidenceSchema = z.strictObject({
   observedAt: z.iso.datetime(),
 });
 const observation = {
+  policy: InteractionPolicySchema.optional(),
   status: z.enum(["pending", "written", "cancelled", "expired", "unknown"]),
   expiresAt: z.number().nullable(),
   defaultAnswered: z.boolean().optional(),

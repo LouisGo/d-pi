@@ -94,3 +94,35 @@ it("keeps idle and busy native follow-ups admissible while explaining missing mo
     "model-changing",
   );
 });
+it.each(["pending", "unknown", "gap"] as const)(
+  "blocks native approval %s even when its dialog is not available",
+  (status) => {
+    const view = RuntimeViewSchema.parse({
+      threadId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+      revision: 1,
+      phase: "ready",
+      trusted: true,
+      busy: false,
+      model: "fixture",
+      configuration: { code: "runtime.configDefault" },
+      message: { code: "runtime.idle" },
+      approvals: {
+        connectionGeneration: crypto.randomUUID(),
+        coverage: status === "gap" ? "gap" : "observed",
+        items:
+          status === "gap"
+            ? []
+            : [
+                {
+                  nativeSessionKey: "native",
+                  toolCallId: "A",
+                  toolName: "bash",
+                  status,
+                },
+              ],
+      },
+    });
+    expect(canSubmit(view)).toBe(false);
+  },
+);

@@ -36,9 +36,13 @@ export function submissionBlockReason(
       if (!view.model) return "no-model";
       if (view.control?.stopping) return "stopping";
       if (view.control?.paused) return "paused";
-      if (view.interactions?.unsupported) return "unsupported-interaction";
+      if (view.interactions?.unsupported || view.approvals?.coverage === "gap")
+        return "unsupported-interaction";
       if (
         view.interactions?.items.some(
+          (item) => item.status === "pending" || item.status === "unknown",
+        ) ||
+        view.approvals?.items.some(
           (item) => item.status === "pending" || item.status === "unknown",
         )
       )

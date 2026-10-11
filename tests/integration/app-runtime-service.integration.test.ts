@@ -2849,3 +2849,34 @@ it("keeps a post-write persistence failure unknown and blocks another answer ins
     { kind: "answer", status: "dispatching", answer: { value: "frozen" } },
   );
 });
+it("observes exact native approval facts independently from dialogs and protects their scope", async () => {
+  const f = await running();
+  const current = await f.act("inspect");
+  const view = {
+    connectionGeneration: current.connectionGeneration,
+    coverage: "observed",
+    items: [
+      {
+        nativeSessionKey: "native",
+        toolCallId: "actual",
+        toolName: "bash",
+        approvalMode: "write",
+        status: "pending",
+        requestedAt: 1,
+      },
+    ],
+  };
+  f.host.emit("message", { kind: "approvals", view });
+  expect((await f.act("inspect")).approvals).toEqual(view);
+  expect(f.runtime.hasActiveWork()).toBe(true);
+  expect(await f.runtime.coolIfIdle(() => true)).toEqual({
+    kind: "retained",
+    reason: "active-work",
+  });
+  f.host.emit("message", {
+    kind: "approvals",
+    view: { ...view, connectionGeneration: crypto.randomUUID(), items: [] },
+  });
+  expect((await f.act("inspect")).approvals).toEqual(view);
+  expect(f.runtime.hasActiveWork()).toBe(true);
+});

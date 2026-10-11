@@ -706,3 +706,33 @@ it("keeps an oversized grouped answer editable and sends nothing until the user 
     await f.cleanup();
   }
 });
+it("shows the declared App default before it happens and preserves manual approval handling", async () => {
+  const view = await setup({
+    ...item,
+    policy: {
+      defaultOwner: "app",
+      expiry: 1900000000000,
+      defaultResult: { kind: "value", value: "原文默认" },
+      reason: "legacy-default",
+    },
+  });
+  try {
+    expect(
+      view.host.querySelector('[data-default-policy="app"]')?.textContent,
+    ).toContain("原文默认");
+    expect(view.answer).not.toHaveBeenCalled();
+    await view.render({
+      ...item,
+      policy: {
+        defaultOwner: "manual",
+        expiry: null,
+        reason: "approval-unassociated",
+      },
+    });
+    expect(view.host.querySelector('[data-default-policy="app"]')).toBeNull();
+    expect(view.host.textContent).toContain("手动回答");
+    expect(view.answer).not.toHaveBeenCalled();
+  } finally {
+    await view.cleanup();
+  }
+});

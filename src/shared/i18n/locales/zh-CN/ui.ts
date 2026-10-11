@@ -1,4 +1,20 @@
 export const ui = {
+  "ui.approval.reasonTruncated": "审批原因节选",
+  "ui.interaction.appDefault":
+    "App 将在 {deadline, date, short} {deadline, time, medium} 使用默认回答：{answer}",
+  "ui.approval.section": "工具审批",
+  "ui.approval.title": "工具审批：{tool}",
+  "ui.approval.source": "工具调用：{id}",
+  "ui.approval.mode": "原生审批策略：{mode}",
+  "ui.approval.pending": "等待决定",
+  "ui.approval.approved": "原生已确认批准",
+  "ui.approval.denied": "原生已确认拒绝",
+  "ui.approval.unknown": "决定不可得",
+  "ui.approval.unassociated":
+    "此工具事件未提供审批对话框及资源范围的关联。请核对原生提示，并在独立对话框中回答。",
+  "ui.approval.manual":
+    "此会话已观察到工具审批，本选择需要手动回答，不采用 App 默认值。",
+  "ui.approval.gap": "部分审批事实不可得，未关联的选择仍需手动回答。",
   "activity.changedFiles": "变化文件",
   "activity.captureUnavailable": "未跳转到采样的 Diff。请重新选择文件。",
   "activity.changesCoverage":

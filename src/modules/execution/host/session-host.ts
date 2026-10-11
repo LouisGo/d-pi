@@ -9,8 +9,9 @@ import {
   NativeFrameTypes,
 } from "../../../platform/omp/protocol/public";
 import { SubagentConfigurationSnapshotSchema } from "../../configuration/contracts/public";
+import { type ApprovalState, ApprovalStateSchema } from "../contracts/approval";
 import { type ControlState, ControlStateSchema } from "../contracts/control";
-import { defaultAnswerFor } from "../contracts/interactions";
+import type { Interaction } from "../contracts/interactions";
 import type { NativeFailureSummary } from "../contracts/native-failure";
 import type { FrozenSubmission, SubmissionEvent } from "../contracts/public";
 import {
@@ -23,7 +24,11 @@ import {
   type SubmissionRejectionReason,
 } from "../contracts/public";
 import { QueueSnapshotSchema } from "../contracts/queue";
-import { changesManagedSession, submissionFrame } from "../core/public";
+import {
+  changesManagedSession,
+  interactionPolicy,
+  submissionFrame,
+} from "../core/public";
 import { HostScope, type ScopedDeadline } from "./host-scope";
 import { PendingInteractions } from "./interactions/interactions";
 import { nativeData, nativeFailureOf } from "./native/native-request-failure";
@@ -112,6 +117,40 @@ export function createSessionHost(
   let disconnected = false;
   let successfulRefresh = 0;
   let refreshFlight: Promise<void> | null = null;
+  let approvals: ApprovalState = { items: [], coverage: "observed" };
+  const manualSelectIds = new Set<string>();
+  const interactionObservedAt = new Map<string, number>();
+  const approvalUnsettled = () =>
+    approvals.coverage === "gap" ||
+    approvals.items.some(
+      (item) => item.status === "pending" || item.status === "unknown",
+    );
+  function policyFor(dialog: Interaction) {
+    if (!interactionObservedAt.has(dialog.id))
+      interactionObservedAt.set(dialog.id, Date.now());
+    if (
+      dialog.method === "select" &&
+      dialog.status === "pending" &&
+      (approvals.coverage === "gap" ||
+        approvals.items.some((item) => item.status === "pending"))
+    )
+      manualSelectIds.add(dialog.id);
+    return interactionPolicy(
+      dialog,
+      interactionObservedAt.get(dialog.id) ?? Date.now(),
+      manualSelectIds.has(dialog.id),
+    );
+  }
+  function publishApprovals() {
+    if (start)
+      send({
+        kind: "approvals",
+        view: {
+          ...approvals,
+          connectionGeneration: start.connectionGeneration,
+        },
+      });
+  }
   const activeControl = (value: ControlState) =>
     !!(
       value.streaming ||
@@ -124,12 +163,8 @@ export function createSessionHost(
     );
 
   const interactions = new PendingInteractions(publishInteractions);
-  // Timeout default answers (2026-09-28 user decision): confirm dialogs never
-  // auto-answer; select/input/editor fall back to the product default so the
-  // task keeps flowing. The native side honors the first response per id and
-  // silently drops later ones, so a default once written cannot be withdrawn.
-  const APP_DEFAULT_ANSWER_MS = 120_000;
-  const NATIVE_EXPIRY_MARGIN_MS = 1_000;
+  // Explicit policy preserves the legacy defaults, except an unassociated
+  // select observed during native approval must stay manual for its lifetime.
   const defaultAnswerTimers = new Map<string, ScopedDeadline>();
   function clearDefaultAnswerTimer(id: string): void {
     const timer = defaultAnswerTimers.get(id);
@@ -147,7 +182,8 @@ export function createSessionHost(
     const dialog = interactions.snapshot().find((item) => item.id === id);
     if (!dialog || dialog.status !== "pending" || dialog.method === "confirm")
       return;
-    const answer = defaultAnswerFor(dialog);
+    const policy = policyFor(dialog);
+    const answer = policy.defaultOwner === "app" ? policy.defaultResult : null;
     if (!answer) return;
     const traceId = randomUUID();
     if (!state?.sessionId) return;
@@ -179,6 +215,7 @@ export function createSessionHost(
     });
     if (
       !allowed ||
+      policyFor(dialog).defaultOwner !== "app" ||
       closing ||
       disconnected ||
       start.connectionGeneration !== target.connectionGeneration ||
@@ -223,7 +260,7 @@ export function createSessionHost(
         .snapshot()
         .filter(
           (item) =>
-            item.status === "pending" && defaultAnswerFor(item) !== null,
+            item.status === "pending" && policyFor(item).defaultOwner === "app",
         )
         .map((item) => [item.id, item] as const),
     );
@@ -235,10 +272,8 @@ export function createSessionHost(
       // write would be silently dropped and the dialog only shows expired.
       // A native timeout is honored as given; the 120s App fallback applies
       // only when native carries no timeout field (2026-09-28 decision).
-      const latest =
-        dialog.expiresAt === null
-          ? Date.now() + APP_DEFAULT_ANSWER_MS
-          : dialog.expiresAt - NATIVE_EXPIRY_MARGIN_MS;
+      const latest = policyFor(dialog).expiry;
+      if (latest === null) continue;
       const delay = Math.max(0, latest - Date.now());
       const timer = tasks.deadline(
         Math.min(delay, 2147483647),
@@ -253,13 +288,20 @@ export function createSessionHost(
   }
   function publishInteractions(): void {
     observationVersion++;
+    const items = interactions.snapshot();
+    const retained = new Set(items.map((item) => item.id));
+    for (const id of interactionObservedAt.keys())
+      if (!retained.has(id)) {
+        interactionObservedAt.delete(id);
+        manualSelectIds.delete(id);
+      }
     if (start)
       send({
         kind: "interactions",
         view: {
           connectionGeneration: start.connectionGeneration,
           ...(state?.sessionId ? { nativeSessionKey: state.sessionId } : {}),
-          items: interactions.snapshot(),
+          items: items.map((item) => ({ ...item, policy: policyFor(item) })),
           unsupported: interactions.unsupported,
         },
       });
@@ -426,6 +468,13 @@ export function createSessionHost(
         });
       clearPrompts();
       interactions.disconnect();
+      approvals = {
+        ...approvals,
+        items: approvals.items.map((item) =>
+          item.status === "pending" ? { ...item, status: "unknown" } : item,
+        ),
+      };
+      publishApprovals();
       clearDefaultAnswerTimers();
       send({
         kind: "interrupted",
@@ -436,6 +485,17 @@ export function createSessionHost(
     }
     if (disconnected || closing) return;
     const frame = event.frame;
+    if (isNativeFrameType(frame, NativeFrameTypes.dPiApprovalState)) {
+      const parsed = ApprovalStateSchema.safeParse(frame.data);
+      approvals = parsed.success
+        ? parsed.data
+        : { ...approvals, coverage: "gap" };
+      observationVersion++;
+      publishApprovals();
+      publishInteractions();
+      reconcileDefaultAnswerTimers();
+      return;
+    }
     subagentObservation?.accept(frame);
     if (isNativeFrameType(frame, NativeFrameTypes.dPiControlState) && start) {
       const control = ControlStateSchema.safeParse(frame.data);
@@ -668,7 +728,13 @@ export function createSessionHost(
         pendingInteraction: interactions.pending,
         busy,
       });
-      if (!busy && !interactions.pending && start && prompts.size === 0)
+      if (
+        !busy &&
+        !interactions.pending &&
+        !approvalUnsettled() &&
+        start &&
+        prompts.size === 0
+      )
         send({
           kind: "idle-confirmed",
           connectionGeneration: start.connectionGeneration,
@@ -869,7 +935,8 @@ export function createSessionHost(
     if (value.content?.images.length && !lastControl?.imageSupport)
       return "image-unsupported";
     if (paused) return "paused";
-    if (interactions.blocked) return "interaction-pending";
+    if (interactions.blocked || approvalUnsettled())
+      return "interaction-pending";
     if (
       value.threadId !== start.threadId ||
       value.target.processInstanceId !== start.processInstanceId ||
@@ -1358,6 +1425,7 @@ export function createSessionHost(
           unsettledPrompt ||
           busy ||
           interactions.blocked ||
+          approvalUnsettled() ||
           starting ||
           (lastControl ? activeControl(lastControl) : false)
         ) {
@@ -1391,6 +1459,7 @@ export function createSessionHost(
             unsettledPrompt ||
             busy ||
             interactions.blocked ||
+            approvalUnsettled() ||
             starting ||
             (lastControl ? activeControl(lastControl) : true)
           ) {

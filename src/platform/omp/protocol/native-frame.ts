@@ -36,6 +36,7 @@ export const NativeFrameTypes = {
   extensionUiRequest: "extension_ui_request",
   extensionUiResponse: "extension_ui_response",
   dPiControlState: "d_pi_control_state",
+  dPiApprovalState: "d_pi_approval_state",
   hostToolCancel: "host_tool_cancel",
   hostUriCancel: "host_uri_cancel",
   hostToolCall: "host_tool_call",

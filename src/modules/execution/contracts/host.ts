@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { SubagentConfigurationSnapshotSchema } from "../../configuration/contracts/public";
 import { DirectoryIdentitySchema } from "../../threads/contracts/public";
+import { ApprovalViewSchema } from "./approval";
 import { ControlCommandSchema, ControlStateSchema } from "./control";
 import {
   AnswerCommandSchema,
@@ -161,6 +162,7 @@ export type NativeState = z.infer<typeof NativeStateSchema>;
 
 export type HostCommand = z.infer<typeof HostCommandSchema>;
 export const HostMessageSchema = z.discriminatedUnion("kind", [
+  z.strictObject({ kind: z.literal("approvals"), view: ApprovalViewSchema }),
   z.strictObject({
     kind: z.literal("prepare-default-answer"),
     traceId: z.uuid(),

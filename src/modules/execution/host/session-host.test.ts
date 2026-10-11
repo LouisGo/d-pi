@@ -2173,3 +2173,81 @@ it("refuses SDK readiness when rich ask acknowledgement does not confirm enabled
   expect(exit).toHaveBeenCalledWith(1);
   expect(native.writes).toHaveLength(0);
 });
+it.each(["before-dialog", "before-permit"] as const)(
+  "never defaults an unassociated select in a real approval scope (%s)",
+  async (scenario) => {
+    vi.useFakeTimers();
+    const messages: HostMessage[] = [];
+    const host = createSessionHost(
+      (message) => messages.push(message),
+      vi.fn(),
+    );
+    const generation = crypto.randomUUID();
+    await host.handle({
+      kind: "start",
+      threadId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: generation,
+      configContextId: "fixture",
+      binary: "/fixture/omp",
+      identity: { directory: "/project", device: "1", inode: "2" },
+      environment: {},
+      sessionDirectory: "/sessions",
+    });
+    const emitApproval = (status: "pending" | "denied") =>
+      native.observers[0]?.({
+        kind: "frame",
+        frame: {
+          type: "d_pi_approval_state",
+          data: {
+            coverage: "observed",
+            items: [
+              {
+                nativeSessionKey: "session",
+                toolCallId: "actual-tool",
+                toolName: "bash",
+                approvalMode: "write",
+                status,
+                requestedAt: Date.now(),
+                ...(status === "denied" ? { resolvedAt: Date.now() } : {}),
+              },
+            ],
+          },
+        },
+      });
+    if (scenario === "before-dialog") emitApproval("pending");
+    native.observers[0]?.({
+      kind: "frame",
+      frame: {
+        type: "extension_ui_request",
+        method: "select",
+        id: "unassociated",
+        title: "Actual native prompt",
+        options: ["Approve", "Deny"],
+      },
+    });
+    await vi.advanceTimersByTimeAsync(120_000);
+    const request = messages.find(
+      (message) => message.kind === "prepare-default-answer",
+    );
+    if (scenario === "before-permit") {
+      if (!request || request.kind !== "prepare-default-answer")
+        throw Error("missing permit request");
+      emitApproval("pending");
+      await host.handle({
+        kind: "answer-permit",
+        traceId: request.traceId,
+        connectionGeneration: generation,
+        allowed: true,
+      });
+    } else {
+      expect(request).toBeUndefined();
+    }
+    expect(native.writes).toHaveLength(0);
+    emitApproval("denied");
+    await vi.advanceTimersByTimeAsync(240_000);
+    expect(native.writes).toHaveLength(0);
+    await host.handle({ kind: "close-idle" });
+  },
+);

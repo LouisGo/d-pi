@@ -1,0 +1,84 @@
+{
+  "commit": "36685379c0c556a0f5e49c19969949f99c55c41a",
+  "sourceDirty": true,
+  "electron": "44.4.5",
+  "omp": "18.8.9",
+  "sdkHostSha256": "45dea08af1807cf2206826c495d4f8c21f7758e501d51b05692f56ea538477c9",
+  "sdkApprovalSha256": "4aef4631e595260ef2265b95a2ad37b487b45ebf581fc7c4522495ed9fb490c9",
+  "hostEntrySha256": "a6d430753390eb2083eff17f1c898acee913bfac04cda78481a75863fee8a26a",
+  "sourceHashes": {
+    "runtime/host.mjs": "45dea08af1807cf2206826c495d4f8c21f7758e501d51b05692f56ea538477c9",
+    "runtime/native-approval-observation.mjs": "4aef4631e595260ef2265b95a2ad37b487b45ebf581fc7c4522495ed9fb490c9",
+    "src/modules/execution/contracts/approval.ts": "ec27ce277a15384b4e2c49327a4fb6ba4ae6faf0616c6d1e47e0c83ea3499056",
+    "src/modules/execution/contracts/interactions.ts": "5524e09919290b592d3be02616c0423622be3f50aa3497bf4e49d54585346166",
+    "src/modules/execution/core/interactions/interaction-policy.ts": "deebfe8830fe9b848c2424b7f0ea33265c99417dc66da081612016b956192f97",
+    "src/modules/execution/host/session-host.ts": "4ea777d1c02daf9308120217190814189e3f30fedd0977ef6e2e1d9a9b5d7536",
+    "src/modules/execution/main/runtime/runtime-service.ts": "f61e76a0827fdc1ed9641590f810f72f99d3403ce6a4c3ae22b4c476f8b18a64"
+  },
+  "modelRequests": 2,
+  "initialFacts": {
+    "items": [
+      {
+        "nativeSessionKey": "01a12b06-22de-7000-a844-91ba1c19654f",
+        "toolCallId": "approval-approve",
+        "toolName": "bash",
+        "approvalMode": "always-ask",
+        "status": "pending",
+        "requestedAt": 1791723185395
+      },
+      {
+        "nativeSessionKey": "01a12b06-22de-7000-a844-91ba1c19654f",
+        "toolCallId": "approval-deny",
+        "toolName": "bash",
+        "approvalMode": "always-ask",
+        "status": "pending",
+        "requestedAt": 1791723185395
+      }
+    ],
+    "coverage": "observed",
+    "connectionGeneration": "b57c424b-40be-4d30-a559-a793206718ce"
+  },
+  "finalFacts": {
+    "items": [
+      {
+        "nativeSessionKey": "01a12b06-22de-7000-a844-91ba1c19654f",
+        "toolCallId": "approval-approve",
+        "toolName": "bash",
+        "approvalMode": "always-ask",
+        "status": "approved",
+        "requestedAt": 1791723185395,
+        "resolvedAt": 1791723188440
+      },
+      {
+        "nativeSessionKey": "01a12b06-22de-7000-a844-91ba1c19654f",
+        "toolCallId": "approval-deny",
+        "toolName": "bash",
+        "approvalMode": "always-ask",
+        "reason": "denied by user",
+        "status": "denied",
+        "requestedAt": 1791723185395,
+        "resolvedAt": 1791723188414
+      }
+    ],
+    "coverage": "observed",
+    "connectionGeneration": "b57c424b-40be-4d30-a559-a793206718ce"
+  },
+  "writtenAnswerCount": 2,
+  "approvedFileExists": true,
+  "deniedFileExists": false,
+  "limitations": [
+    "isolated formal Main/Host/native, no GUI/provider/system IME",
+    "select IDs remain unassociated in production; fixture command text is not an App correlation",
+    "three-second native hold; 120-second default race is covered by Host virtual-time tests"
+  ],
+  "finalNativeCold": true,
+  "processExit": 0,
+  "scope": {
+    "formalMainHostNative": true,
+    "officialSdkPatched": false,
+    "GUI": false,
+    "realProvider": false,
+    "systemIME": false,
+    "fullPerformanceTrace": false
+  }
+}
