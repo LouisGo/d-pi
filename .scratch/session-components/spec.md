@@ -313,3 +313,6 @@ Main 通知冻结当时事件与 SourceTarget（真实 RequestKey、发送收据
 9个目标文件73/73通过：冻结旧通知、同 ID 来源变更、32队列/合并、窗口替换与旧 Renderer/旧 IPC generation ACK 拒绝、真实 DOM focus 后确认、隐藏与显式取消、ACK/ready传输失败恢复及原生表单组合。Renderer/Main/Preload类型与 design/i18n通过。navigation-continuity 的旧4项失败以未改ThreadWorkbench再次复现，仍对应本spec既有 a900272 基线记录，未冒称整套导航绿色。隔离 Electron44.4.5 实测实际正式 NativeInteraction/Dock：精确RequestKey定位当前Dock；旧generation/另一nativeSessionKey不定位新题；原始中文草稿保持、回答写入0；随后整组回答正常。证据 [activation-renderer.json](evidence/activation-renderer.json) 带真实 HEAD/dirty=true 和参与源码 SHA，限定 Renderer fixture，不是完整 App/native/provider/系统IME验收。后续工具/外部打开的 SourceNavigation 唤醒组合仍需其真实入口证据，不能凭本通知链路冒称已覆盖。
 
 固定998e12d..5a520bf的Dock/Recovery独立综合复核无新增可达高价值问题。本轮完整 WB02–WB04 仍继续，权限可靠关联、原生 AskTool 与生产性能验收待完成，不推送、不发布。
+
+
+Activation 独立复核（固定 `5a520bf..d17e3d5`）确认三项 P2，并逐项由正式拥有者反例复现后修正：ready/DOM ACK 的协议失败独立保留，普通推送与 visible 回包不能抹掉显式刷新入口；SubmissionModel 公布实际 list 读取状态，定位等待完成，成功空样本或读取失败才明确不可用；已接受的新 Thread/阅读页/开发页导航取消旧定位，组合态拒绝切换则保留。关窗/重载卸载不发送取消，仍由 Main 排队等新窗口。收据测试改为正式 SubmissionModel 与 Submissions，覆盖延迟有目标、空样本和传输失败，实际 DOM focus 后再确认。七文件77/77及Renderer类型、design通过，保留既有 React act 提示。反例日志 `/tmp/d-pi-activation-protocol-red.log`、`receipt-red.log`、`navigation-red.log`；本段最终矩阵 `/tmp/d-pi-activation-review-green.log`。修正仍待固定复核，不新增 native/provider/系统IME或完整工作包验收声明。

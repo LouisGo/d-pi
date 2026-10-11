@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "1e89bf021f118c14fd6d26944246437a5938e107ad5b921a874a3ee911e20a64",
+  "inputsHash": "ed4b021a2154c57963d425d73745b0d59bc5cd7fb138c0756c24ea0dbd5d225d",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 678,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 306,
-      "lines": 61898,
+      "lines": 62123,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -352,7 +352,7 @@
       ],
       "materialized": true,
       "files": 69,
-      "lines": 18328,
+      "lines": 18341,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -23195,6 +23195,54 @@
       "resolution": "module",
       "to": "src/modules/conversation/core/public.ts",
       "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/workbench/thread-workbench.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/execution/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/contracts/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/thread-workbench.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/execution/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/execution/renderer/public.ts",
+      "targetModule": "execution",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/thread-workbench.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/input/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/contracts/public.ts",
+      "targetModule": "input",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/thread-workbench.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/input/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/input/core/public.ts",
+      "targetModule": "input",
       "targetEnvironment": "core"
     },
     {

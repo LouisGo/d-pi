@@ -18,6 +18,7 @@ import {
 } from "../../contracts/public";
 
 export interface SubmissionView {
+  listRead: "pending" | "ready" | "failed";
   sending: boolean;
   sendingText: boolean;
   receipts: SubmissionReceipt[];
@@ -35,6 +36,7 @@ const submissionInitial: StateCreator<
   [],
   [["zustand/subscribeWithSelector", never]]
 > = () => ({
+  listRead: "pending",
   sending: false,
   sendingText: false,
   receipts: [],
@@ -128,6 +130,7 @@ export class SubmissionModel {
   private captured: CapturedDraft | null = null;
   private remove: () => void;
   private disposed = false;
+  private listGeneration = 0;
   private editorAdapter: { replace: () => boolean } | null = null;
   constructor(
     private readonly bridge: SubmissionBridge,
@@ -240,12 +243,22 @@ export class SubmissionModel {
   }
   async refresh(): Promise<void> {
     if (this.disposed) return;
+    const generation = ++this.listGeneration;
+    this.publish({ listRead: "pending" });
     try {
-      this.accept(
-        await this.bridge.request({ kind: "list", threadId: this.threadId }),
-      );
+      const reply = await this.bridge.request({
+        kind: "list",
+        threadId: this.threadId,
+      });
+      this.accept(reply);
+      if (generation === this.listGeneration)
+        this.publish({ listRead: reply.kind === "list" ? "ready" : "failed" });
     } catch {
-      this.publish({ message: uiMessage("submission.stateUnverified") });
+      if (generation === this.listGeneration)
+        this.publish({
+          listRead: "failed",
+          message: uiMessage("submission.stateUnverified"),
+        });
     }
   }
   async send(delivery: "followUp" | "steer" = "followUp"): Promise<void> {

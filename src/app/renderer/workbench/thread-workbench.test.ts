@@ -7,13 +7,20 @@ import {
   ConversationModel,
   ReadingPositions,
 } from "../../../modules/conversation/core/public";
+import {
+  SubmissionReceiptSchema,
+  type SubmissionReply,
+} from "../../../modules/execution/contracts/public";
+import { SubmissionModel } from "../../../modules/execution/renderer/public";
+import { DraftSchema } from "../../../modules/input/contracts/public";
+import { DraftController } from "../../../modules/input/core/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
 import { ThreadIdSchema } from "../../../shared/identity";
 import type { AttentionEntry } from "../../contracts/attention";
 import { ThreadWorkbench } from "./thread-workbench";
 import { WindowWorkbench } from "./window-workbench";
 
-const trace = "test-trace";
+const trace = crypto.randomUUID();
 vi.mock("./composer", () => ({
   Composer: ({
     moreActions,
@@ -34,22 +41,6 @@ vi.mock("./composer", () => ({
     ),
 }));
 vi.mock("./file-panel", () => ({ FilePanel: () => null }));
-vi.mock("../reading/submissions", () => ({
-  Submissions: () =>
-    createElement(
-      "section",
-      null,
-      createElement(
-        "details",
-        null,
-        createElement(
-          "article",
-          { "data-attention-receipt-trace": "test-trace", tabIndex: -1 },
-          "failure",
-        ),
-      ),
-    ),
-}));
 vi.mock("../reading/saved-conversation", async () => ({
   SavedConversation: (await import("../reading/conversation")).Conversation,
 }));
@@ -61,7 +52,7 @@ vi.mock("../reading/markdown", () => ({
   Markdown: ({ text }: { text: string }) => createElement("p", null, text),
 }));
 
-function setup(target: boolean) {
+function setup(target: boolean, delayedList = false) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const frames = new Map<number, FrameRequestCallback>();
   let next = 0;
@@ -95,6 +86,56 @@ function setup(target: boolean) {
     kind: "failed",
     unread: true,
   };
+  const draft = DraftSchema.parse({
+    schemaVersion: 1,
+    threadId,
+    workingDirectoryId: crypto.randomUUID(),
+    directory: "/fixture/project",
+    revision: 0,
+    text: "retained draft",
+  });
+  const controller = new DraftController(
+    draft,
+    async (revision) => ({ kind: "saved", threadId, revision: revision + 1 }),
+    () => {},
+  );
+  const receipt = SubmissionReceiptSchema.parse({
+    submissionId: crypto.randomUUID(),
+    threadId,
+    traceId: trace,
+    revision: 0,
+    text: "failure",
+    requestId: crypto.randomUUID(),
+    state: "acknowledged",
+    outcome: "failed",
+    acknowledgedAt: "ACK",
+    target: {
+      processInstanceId: crypto.randomUUID(),
+      connectionGeneration: crypto.randomUUID(),
+      configContextId: "cfg",
+      nativeSessionRef: "session",
+    },
+    createdAt: "1",
+    updatedAt: "1",
+  });
+  let finishList: (reply: SubmissionReply) => void = () => {};
+  let failList: () => void = () => {};
+  const submission = new SubmissionModel(
+    {
+      subscribe: () => () => {},
+      request: async (command) => {
+        if (command.kind !== "list") throw Error("unexpected write");
+        if (delayedList)
+          return new Promise<SubmissionReply>((resolve, reject) => {
+            finishList = resolve;
+            failList = () => reject(Error("list transport failed"));
+          });
+        return { kind: "list", receipts: [receipt] };
+      },
+    },
+    threadId,
+    controller,
+  );
   const locationStore = createStore(() => ({ target: target ? entry : null }));
   const completeLocation = vi.fn();
   const positions = new ReadingPositions();
@@ -138,7 +179,7 @@ function setup(target: boolean) {
         reading,
         readingSources: positions,
         readingPositions: new Map([["submissions", 50]]),
-        submission: {},
+        submission,
       },
     },
     readingView: "submissions",
@@ -164,6 +205,8 @@ function setup(target: boolean) {
     });
   const cleanup = async () => {
     await act(() => root.unmount());
+    submission.dispose();
+    controller.dispose();
     reading.dispose();
     workbench.dispose();
     positions.dispose();
@@ -179,8 +222,49 @@ function setup(target: boolean) {
     cleanup,
     locationStore,
     completeLocation,
+    failList: () => failList(),
+    finishList: (present = true) =>
+      finishList({ kind: "list", receipts: present ? [receipt] : [] }),
   };
 }
+
+it.each(["present", "absent", "failed"])(
+  "waits for the formal receipt list before settling an activation (present=%s)",
+  async (result) => {
+    const present = result === "present";
+    const f = setup(false, true);
+    const target = {
+      threadId: f.props.threadSelection.thread.context.threadId,
+      eventId: crypto.randomUUID(),
+      traceId: trace,
+      kind: "failed" as const,
+      unread: true,
+      sourceTarget: { kind: "receipt" as const, traceId: trace },
+      activationId: crypto.randomUUID(),
+    };
+    try {
+      await f.render();
+      await act(() => f.locationStore.setState({ target }));
+      await f.flush();
+      expect(f.completeLocation).not.toHaveBeenCalled();
+      await act(() =>
+        result === "failed" ? f.failList() : f.finishList(present),
+      );
+      await f.flush();
+      expect(f.completeLocation).toHaveBeenCalledExactlyOnceWith(
+        target,
+        present ? "located" : "target-unavailable",
+      );
+      expect(document.activeElement).toBe(
+        present
+          ? f.host.querySelector(`[data-attention-receipt-trace="${trace}"]`)
+          : f.host.querySelector("[data-activation-thread]"),
+      );
+    } finally {
+      await f.cleanup();
+    }
+  },
+);
 
 it("acknowledges an activation only after a visible exact receipt has actually received focus", async () => {
   const f = setup(false);
@@ -190,7 +274,7 @@ it("acknowledges an activation only after a visible exact receipt has actually r
     .mockImplementation(() => (visible ? "visible" : "hidden"));
   f.completeLocation.mockImplementation(() =>
     expect(document.activeElement).toBe(
-      f.host.querySelector('[data-attention-receipt-trace="test-trace"]'),
+      f.host.querySelector(`[data-attention-receipt-trace="${trace}"]`),
     ),
   );
   try {

@@ -50,6 +50,7 @@ export class AttentionModel {
   private readiness = Promise.resolve(true);
   private rendererReady = false;
   private desiredReady: boolean | null = null;
+  private readonly activationFailures = new Set<"readiness" | "completion">();
   private pendingCompletion: { id: string; outcome: ActivationOutcome } | null =
     null;
   private started = false;
@@ -80,7 +81,7 @@ export class AttentionModel {
       previous.snapshot.revision >= snapshot.revision
     ) {
       if (previous.snapshot.revision === snapshot.revision)
-        this.store.setState({ failed: false });
+        this.store.setState({ failed: this.activationFailures.size > 0 });
       return;
     }
     if (
@@ -102,7 +103,11 @@ export class AttentionModel {
           : entry,
       );
     }
-    this.store.setState({ snapshot, byThread, failed: false });
+    this.store.setState({
+      snapshot,
+      byThread,
+      failed: this.activationFailures.size > 0,
+    });
   }
   private async command(command: AttentionCommand): Promise<boolean> {
     if (this.disposed || !this.bridge) return false;
@@ -138,7 +143,11 @@ export class AttentionModel {
     if (!completion || !this.rendererReady) return;
     if (this.stateStore.getState().snapshot?.openRequest?.id === completion.id)
       await this.opened(completion.id, completion.outcome);
-    else this.pendingCompletion = null;
+    else {
+      this.pendingCompletion = null;
+      this.activationFailures.delete("completion");
+      this.store.setState({ failed: this.activationFailures.size > 0 });
+    }
   }
   visible(threadId: ThreadContext["threadId"] | null, force = false) {
     if (!force && threadId === this.visibleThread) return Promise.resolve();
@@ -166,13 +175,19 @@ export class AttentionModel {
         rendererId: this.rendererId,
         ready,
       });
-      if (accepted) this.rendererReady = ready;
+      if (accepted) {
+        this.rendererReady = ready;
+        this.activationFailures.delete("readiness");
+      } else this.activationFailures.add("readiness");
+      if (!this.disposed)
+        this.store.setState({ failed: this.activationFailures.size > 0 });
       return accepted;
     });
     return this.readiness;
   }
   async opened(id: string, outcome: ActivationOutcome = "located") {
-    this.pendingCompletion = { id, outcome };
+    const completion = { id, outcome };
+    this.pendingCompletion = completion;
     const accepted = await this.command({
       kind: "opened",
       traceId: crypto.randomUUID(),
@@ -180,8 +195,14 @@ export class AttentionModel {
       rendererId: this.rendererId,
       outcome,
     });
-    if (accepted && this.pendingCompletion?.id === id)
-      this.pendingCompletion = null;
+    if (this.pendingCompletion === completion) {
+      if (accepted) {
+        this.pendingCompletion = null;
+        this.activationFailures.delete("completion");
+      } else this.activationFailures.add("completion");
+      if (!this.disposed)
+        this.store.setState({ failed: this.activationFailures.size > 0 });
+    }
   }
   async preferences(value: NotificationPreferences) {
     if (this.stateStore.getState().saving || this.disposed) return;
@@ -214,6 +235,10 @@ export class AttentionModel {
       completed: { threadId: target.threadId, outcome },
     });
     if (target.activationId) void this.opened(target.activationId, outcome);
+  }
+  cancelLocation() {
+    const target = this.location.getState().target;
+    if (target) this.completeLocation(target, "cancelled");
   }
   dispose() {
     if (this.disposed) return;

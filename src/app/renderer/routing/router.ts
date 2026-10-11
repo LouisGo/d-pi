@@ -30,6 +30,7 @@ export function createAppRouting(model: AppModel) {
   const commitLocation = router.commitLocation;
   router.commitLocation = async (...args) => {
     if (committing || selecting) return;
+    const previousActivation = model.attention.locationStore.getState().target;
     // The SDK's same-location shortcut bypasses history/admit. An explicit
     // conversation/developer intent must still supersede a pending file reveal.
     if (
@@ -43,6 +44,8 @@ export function createAppRouting(model: AppModel) {
       const waitingForSelection = history.isTransitioning();
       await history.whenIdle();
       if (waitingForSelection) await router.load();
+      if (previousActivation && history.location.href === args[0].href)
+        model.attention.completeLocation(previousActivation, "cancelled");
     } finally {
       committing = false;
       const replace = pendingReplace || history.location.pathname === "/";

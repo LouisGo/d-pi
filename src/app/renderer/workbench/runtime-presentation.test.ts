@@ -48,6 +48,7 @@ it("surfaces an unknown send even when the connected runtime is otherwise ready"
     updatedAt: "1",
   });
   const stateStore = createStore<SubmissionView>()(() => ({
+    listRead: "ready",
     sending: false,
     sendingText: false,
     receipts: [receipt],

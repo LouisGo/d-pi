@@ -246,7 +246,7 @@ export class AppModel {
     if (binding && !binding.boundary.freeze()) return false;
     try {
       const saved = await (thread?.controller.flush() ?? Promise.resolve(true));
-      return (
+      const accepted =
         saved &&
         binding?.boundary.canLeaveView?.() !== false &&
         !this.disposed &&
@@ -256,8 +256,9 @@ export class AppModel {
         this.state.kind === "ready" &&
         !this.state.busy &&
         this.state.threadTransition === undefined &&
-        !this.closeAttempt
-      );
+        !this.closeAttempt;
+      if (accepted) this.attention.cancelLocation();
+      return accepted;
     } finally {
       // A later selection/close may now own the freeze; do not release its lease.
       if (
@@ -691,8 +692,10 @@ export class AppModel {
     if (
       this.state.kind === "ready" &&
       this.activeThread?.context.threadId === threadId
-    )
+    ) {
+      this.attention.cancelLocation();
       return { kind: "applied", selection: this.state.threadSelection };
+    }
     return this.changeThread(
       {
         kind: "select-thread",
@@ -764,6 +767,11 @@ export class AppModel {
         this.publish({ ...state, busy: false });
         return { kind: "blocked", reason: "superseded" };
       }
+      if (
+        command.kind !== "thread-command" ||
+        command.mutation.kind === "delete"
+      )
+        this.attention.cancelLocation();
       const reply = await this.bridge.request(command);
       if (this.isCurrent(generation)) {
         if (reply.kind === "failed")

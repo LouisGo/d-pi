@@ -27,6 +27,7 @@ import {
 } from "./recovery-action-panel";
 
 const emptySubmissionStore = createStore<SubmissionView>()(() => ({
+  listRead: "failed",
   sending: false as const,
   sendingText: false as const,
   receipts: [] as SubmissionReceipt[],

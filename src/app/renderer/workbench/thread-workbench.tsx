@@ -69,6 +69,18 @@ export function ThreadWorkbench({
     [runtime],
   );
   const runtimeReady = useSyncExternalStore(subscribeReady, getReady);
+  const submission = props.threadSelection.thread.submission;
+  const subscribeListRead = useCallback(
+    (listener: () => void) =>
+      submission?.subscribeTo((state) => state.listRead, listener) ??
+      (() => {}),
+    [submission],
+  );
+  const getListRead = useCallback(
+    () => submission?.getSnapshot().listRead ?? "failed",
+    [submission],
+  );
+  const receiptListRead = useSyncExternalStore(subscribeListRead, getListRead);
   const located = useRef<typeof target>(null);
   const attentionFrame = useRef<number | null>(null);
   const scheduledTarget = useRef<typeof target>(null);
@@ -105,6 +117,9 @@ export function ThreadWorkbench({
       !target ||
       located.current === target ||
       transitioning ||
+      ((target.sourceTarget?.kind === "receipt" ||
+        target.sourceTarget?.kind === "result") &&
+        receiptListRead === "pending") ||
       (target.kind === "needs-answer" && !runtimeReady)
     )
       return;
@@ -160,6 +175,7 @@ export function ThreadWorkbench({
     props.readingView,
     transitioning,
     runtimeReady,
+    receiptListRead,
     visible,
     documentVisible,
   ]);

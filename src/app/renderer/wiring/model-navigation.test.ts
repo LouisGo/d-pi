@@ -166,3 +166,37 @@ it("locks unknown selection until an explicit authoritative read, without repeat
   });
   expect(input.model.getSnapshot()).not.toHaveProperty("threadTransition");
 });
+
+function locate(input: Awaited<ReturnType<typeof fixture>>) {
+  input.model.attention.locate(
+    {
+      threadId: input.first.threadId,
+      eventId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+      kind: "needs-answer",
+      unread: true,
+      sourceTarget: { kind: "thread" },
+    },
+    crypto.randomUUID(),
+  );
+  return input.model.attention.locationStore.getState().target;
+}
+it("ends the previous activation on an admitted Thread switch and does not revive it on return", async () => {
+  const input = await fixture();
+  const target = locate(input);
+  expect(target?.activationId).toBeDefined();
+  await input.model.selectThread(input.second.threadId);
+  expect(input.model.attention.locationStore.getState()).toMatchObject({
+    target: null,
+    completed: { outcome: "cancelled" },
+  });
+  await input.model.selectThread(input.first.threadId);
+  expect(input.model.attention.locationStore.getState().target).toBeNull();
+});
+it("keeps an activation when composing input refuses a Thread switch", async () => {
+  const input = await fixture();
+  const target = locate(input);
+  input.compose();
+  await input.model.selectThread(input.second.threadId);
+  expect(input.model.attention.locationStore.getState().target).toBe(target);
+});

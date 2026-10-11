@@ -9,6 +9,7 @@ import { AttentionModel } from "./attention-model";
 it("retries a failed readiness registration only on explicit refresh", async () => {
   const snapshot = sample();
   let fail = true;
+  let receive: (snapshot: AttentionSnapshot) => void = () => {};
   const request = vi.fn<AttentionBridge["request"]>(async (command) => {
     if (command.kind === "activation-ready" && fail) {
       fail = false;
@@ -16,15 +17,25 @@ it("retries a failed readiness registration only on explicit refresh", async () 
     }
     return { kind: "snapshot", traceId: command.traceId, snapshot };
   });
-  const model = new AttentionModel({ request, subscribe: () => () => {} });
+  const model = new AttentionModel({
+    request,
+    subscribe: (listener) => {
+      receive = listener;
+      return () => {};
+    },
+  });
   await model.start();
   await model.activationReady(true);
   expect(model.stateStore.getState().failed).toBe(true);
   expect(request).toHaveBeenCalledTimes(2);
+  receive(snapshot);
+  await model.visible(null);
+  expect(model.stateStore.getState().failed).toBe(true);
   await model.refresh();
   expect(request.mock.calls.map(([command]) => command.kind)).toEqual([
     "snapshot",
     "activation-ready",
+    "visible",
     "snapshot",
     "activation-ready",
   ]);
@@ -49,6 +60,7 @@ it("retains a failed DOM acknowledgement for explicit refresh without redoing na
     },
   };
   let fail = true;
+  let receive: (snapshot: AttentionSnapshot) => void = () => {};
   const request = vi.fn<AttentionBridge["request"]>(async (command) => {
     if (command.kind === "opened") {
       if (fail) {
@@ -59,13 +71,22 @@ it("retains a failed DOM acknowledgement for explicit refresh without redoing na
     }
     return { kind: "snapshot", traceId: command.traceId, snapshot };
   });
-  const model = new AttentionModel({ request, subscribe: () => () => {} });
+  const model = new AttentionModel({
+    request,
+    subscribe: (listener) => {
+      receive = listener;
+      return () => {};
+    },
+  });
   await model.start();
   await model.activationReady(true);
   model.locate(entry, id);
   model.completeLocation(model.locationStore.getState().target!, "located");
   await vi.waitFor(() => expect(model.stateStore.getState().failed).toBe(true));
   expect(model.locationStore.getState().target).toBeNull();
+  receive({ ...snapshot, revision: 2 });
+  await model.visible(entry.threadId);
+  expect(model.stateStore.getState().failed).toBe(true);
   await model.refresh();
   expect(
     request.mock.calls.filter(([command]) => command.kind === "opened"),

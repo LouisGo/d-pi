@@ -407,3 +407,35 @@ it("lets a later conversation intent supersede a pending workspace reveal on the
   });
   expect(work.stateStore.getState().workspaceNavigation).toBeNull();
 });
+
+it.each(["conversation", "history", "files"] as const)(
+  "ends an old activation on an admitted same-Thread %s navigation",
+  async (view) => {
+    const f = await fixture();
+    await f.router.navigate({
+      to: "/threads/$threadId",
+      params: { threadId: f.first.threadId },
+      search: { view: "conversation" },
+    });
+    f.model.attention.locate(
+      {
+        threadId: f.first.threadId,
+        eventId: crypto.randomUUID(),
+        traceId: crypto.randomUUID(),
+        kind: "needs-answer",
+        unread: true,
+        sourceTarget: { kind: "thread" },
+      },
+      crypto.randomUUID(),
+    );
+    await f.router.navigate({
+      to: "/threads/$threadId",
+      params: { threadId: f.first.threadId },
+      search: { view },
+    });
+    expect(f.model.attention.locationStore.getState()).toMatchObject({
+      target: null,
+      completed: { outcome: "cancelled" },
+    });
+  },
+);
