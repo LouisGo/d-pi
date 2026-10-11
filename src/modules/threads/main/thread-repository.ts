@@ -350,6 +350,9 @@ export class ThreadRepository implements ThreadReader {
       this.db.prepare("DELETE FROM submission WHERE thread_id=?").run(id);
       this.db.prepare("DELETE FROM input_attachment WHERE thread_id=?").run(id);
       this.db
+        .prepare("DELETE FROM interaction_history WHERE thread_id=?")
+        .run(id);
+      this.db
         .prepare("DELETE FROM native_session_index WHERE thread_id=?")
         .run(id);
       this.db.prepare("DELETE FROM native_session WHERE thread_id=?").run(id);

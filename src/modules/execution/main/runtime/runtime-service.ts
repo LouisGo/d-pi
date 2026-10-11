@@ -139,7 +139,10 @@ export class RuntimeService {
   private instanceDirectory: DirectoryIdentity | undefined;
   private commandsInFlight = 0;
   private readonly interactionAdmissions = new Set<string>();
-  private readonly pendingDefaultAnswers = new Set<string>();
+  private readonly pendingDefaultAnswers = new Map<
+    string,
+    { prepared: boolean }
+  >();
   private released = false;
   private uncertainLifetime = false;
   constructor(
@@ -614,15 +617,15 @@ export class RuntimeService {
           nativeFailure,
         }) => {
           if (connectionGeneration !== this.currentConnectionGeneration) return;
-          if (
-            operation === "answer" &&
-            this.pendingDefaultAnswers.delete(traceId)
-          ) {
+          const defaultAnswer = this.pendingDefaultAnswers.get(traceId);
+          if (operation === "answer" && defaultAnswer) {
+            this.pendingDefaultAnswers.delete(traceId);
             try {
-              this.store.answerHistory.finish(
-                traceId,
-                answerSendObservation(status),
-              );
+              if (defaultAnswer.prepared)
+                this.store.answerHistory.finish(
+                  traceId,
+                  answerSendObservation(status),
+                );
             } catch {
               this.lostEvidence = true;
               this.update({
@@ -846,7 +849,14 @@ export class RuntimeService {
     request: Extract<HostMessage, { kind: "prepare-default-answer" }>,
   ): Promise<void> {
     const { requestKey: key, traceId, answer } = request;
+    // Register ownership before authorization awaits: Host may time out while
+    // sampling the directory. Its terminal result must cancel this exact owner.
+    if (this.pendingDefaultAnswers.has(traceId)) return;
+    const owner = { prepared: false };
+    if (this.pendingDefaultAnswers.size < 32)
+      this.pendingDefaultAnswers.set(traceId, owner);
     const current = () =>
+      this.pendingDefaultAnswers.get(traceId) === owner &&
       this.connection.connected &&
       this.view?.threadId === key.threadId &&
       this.currentConnectionGeneration === key.connectionGeneration &&
@@ -875,7 +885,6 @@ export class RuntimeService {
       if (
         !current() ||
         item?.status !== "pending" ||
-        this.pendingDefaultAnswers.size >= 32 ||
         !isDeepStrictEqual(
           DialogSchema.parse(item),
           DialogSchema.parse(request.dialog),
@@ -890,11 +899,13 @@ export class RuntimeService {
         answer,
         "default",
       );
-      if (allowed) this.pendingDefaultAnswers.add(traceId);
+      owner.prepared = allowed;
     } catch {
       // No permission means no native write. A question-history persistence
       // failure is already visible through its independent observation path.
     }
+    if (!allowed && this.pendingDefaultAnswers.get(traceId) === owner)
+      this.pendingDefaultAnswers.delete(traceId);
     try {
       this.connection.send({
         kind: "answer-permit",

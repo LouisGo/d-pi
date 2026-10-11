@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "14d086e84ea6cad340dd0aa4754d9335c57c7131c67ce4058d9c54d4d0365a96",
+  "inputsHash": "4005672ca574aa9795b90f2bf38f37665a11d7a031aecbc79d00e0fded9bd3c8",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 669,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 299,
-      "lines": 59358,
+      "lines": 59380,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -263,7 +263,7 @@
       ],
       "materialized": true,
       "files": 4,
-      "lines": 500,
+      "lines": 503,
       "publicEntries": [
         {
           "path": "src/modules/threads/contracts/public.ts",
@@ -352,7 +352,7 @@
       ],
       "materialized": true,
       "files": 67,
-      "lines": 17874,
+      "lines": 17898,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -7495,6 +7495,15 @@
       "to": "src/app/main/wiring/app-storage.ts",
       "targetModule": "app",
       "targetEnvironment": "main"
+    },
+    {
+      "from": "src/app/main/wiring/thread-management.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "main",
+      "test": true,
+      "specifier": "node:crypto",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/app/main/wiring/thread-management.test.ts",

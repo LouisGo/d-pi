@@ -239,6 +239,8 @@ Main在用户写前持久冻结题目与答案，写前失败不派发；写后�
 
 参考固定OMP RPC与既有App默认合同；本地T3 pendingUserInput及orchestration-v2/ProjectionStore核对真实请求/响应上下文与来源，未迁入其provider projection或额外业务解释。来源竞态固定f9e2985..9b5af77独立复核已闭合，无新增高价值问题。新增历史测试先记录模块缺失；Host事实分离、Main写前缺口和默认许可缺口均有真实失败反例转绿。11文件162项通过，包含完整Main62→63项、Host44项、SQLite重开/75请求150事实、中文字节页、默认许可/取消/拒绝与写后失败。五环境类型通过；Core原TextEncoder不在平台无关lib内，改复用现有utf8ByteLength并核验。生产build与40项架构通过，保留既有大chunk警告；本段没有实机GUI、真实ask供应商/OMP组合或生产Workbench性能trace。GUI多题/AnswerHistory组件、Dock、Recovery/Activation和整包验收仍继续，正式rich ask尚未启用，goal保持active。
 
+固定 `9b5af77..ca810f8` 独立复核发现两项P2，已用正式链路失败反例修正：Thread删除在原有事务清理归属答案历史，原生删除失败仍可读、重开后显式重试完成；默认许可在目录授权await前登记精确准备owner，Host超时结果取消该owner，晚到探测不能复活dispatching或许可。Main运行时64项及Thread管理4项共68/68、Main类型通过。完整WB04仍继续，GUI与正式rich opt-in未据此标完成。
+
 ### WB00 milestone（2026-10-11）
 
 - 先写 InteractionOperation/InteractionDraft 与执行模块合同。红灯确认同题双击两次派发、Host respond 缺失；实现后对应反例转绿。Thread-owned RuntimeModel 保留表单、冻结回答、操作结果和后续收据关联；Main 等待精确 Host 结果，授权 await 后再次校验代次，Host 单次 write 兜底。普通 interaction 状态和 answer operation 改名 written，收据 ACK 不变。

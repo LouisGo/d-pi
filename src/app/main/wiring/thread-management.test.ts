@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -60,6 +61,25 @@ it("keeps failed deletion readable and resumes the explicit intent after reopeni
       sessionId: "native",
       sessionFile: join(root, "history.jsonl"),
     });
+    const operationId = randomUUID();
+    store.answerHistory.prepare(
+      {
+        threadId: thread.threadId,
+        nativeSessionKey: "native",
+        connectionGeneration: randomUUID(),
+        requestId: "question",
+      },
+      {
+        id: "question",
+        method: "input",
+        title: "Question",
+        status: "pending",
+        expiresAt: null,
+      },
+      operationId,
+      { kind: "value", value: "frozen" },
+    );
+    store.answerHistory.finish(operationId, "written");
     const failing = new ThreadCommandService(
       store,
       {
@@ -75,6 +95,7 @@ it("keeps failed deletion readable and resumes the explicit intent after reopeni
     expect(store.threads.threadContext(thread.threadId)).toMatchObject({
       threadId: thread.threadId,
     });
+    expect(store.answerHistory.page(thread.threadId).entries).toHaveLength(2);
     store.close();
     store = AppStorage.open(path);
     let retried = false;
@@ -91,6 +112,7 @@ it("keeps failed deletion readable and resumes the explicit intent after reopeni
     await service.execute(thread.threadId, { kind: "delete" });
     expect(retried).toBe(true);
     expect(store.threads.list()).toHaveLength(0);
+    expect(store.answerHistory.page(thread.threadId).entries).toHaveLength(0);
   } finally {
     store.close();
     rmSync(root, { recursive: true, force: true });

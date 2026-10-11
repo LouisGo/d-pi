@@ -38,6 +38,7 @@ import { SessionExecutionLease } from "../../src/modules/execution/main/transpor
 import { RuntimeModel } from "../../src/modules/execution/renderer/runtime/runtime-model";
 import type { ContentPreparationResult } from "../../src/modules/input/contracts/public";
 import { ToolDetailReplySchema } from "../../src/modules/resources/contracts/public";
+import * as filesystem from "../../src/platform/node/filesystem/public";
 import { TraceIdSchema } from "../../src/shared/identity";
 
 const electron = vi.hoisted(() => ({ fork: vi.fn() }));
@@ -2703,6 +2704,85 @@ it("persists the exact default intent before issuing Host permission and records
     { status: "written" },
   );
   expect(f.runtime.hasActiveWork()).toBe(false);
+});
+it("accepts a default permit timeout during directory authorization without reviving dispatch or retaining the runtime", async () => {
+  const f = await running(),
+    ready = await f.act("inspect");
+  const generation = ready.connectionGeneration!;
+  const dialog = {
+    id: "default",
+    method: "input",
+    title: "Question",
+    prefill: "frozen",
+    status: "pending",
+    expiresAt: null,
+  };
+  const publish = (status: string) =>
+    f.host.emit("message", {
+      kind: "interactions",
+      view: {
+        connectionGeneration: generation,
+        nativeSessionKey: "native",
+        unsupported: false,
+        items: [{ ...dialog, status }],
+      },
+    });
+  publish("pending");
+  const identity = await filesystem.identifyDirectory(f.project);
+  let resume: (() => void) | undefined;
+  const blocked = new Promise<typeof identity>((resolve) => {
+    resume = () => resolve(identity);
+  });
+  const probe = vi
+    .spyOn(filesystem, "identifyDirectory")
+    .mockReturnValueOnce(blocked);
+  try {
+    const traceId = crypto.randomUUID();
+    f.host.emit("message", {
+      kind: "prepare-default-answer",
+      traceId,
+      requestKey: {
+        threadId: f.draft.threadId,
+        nativeSessionKey: "native",
+        connectionGeneration: generation,
+        requestId: dialog.id,
+      },
+      dialog,
+      answer: { kind: "value", value: "frozen" },
+    });
+    await vi.waitFor(() => expect(probe).toHaveBeenCalled());
+    expect(f.runtime.hasActiveWork()).toBe(true);
+    f.host.emit("message", {
+      kind: "operation-result",
+      operation: "answer",
+      traceId,
+      connectionGeneration: generation,
+      status: "not-dispatched",
+    });
+    resume?.();
+    await vi.waitFor(() =>
+      expect(
+        f.postMessage.mock.calls.map(
+          ([raw]) => HostTransportCommandSchema.parse(raw).command,
+        ),
+      ).toContainEqual({
+        kind: "answer-permit",
+        traceId,
+        connectionGeneration: generation,
+        allowed: false,
+      }),
+    );
+    expect(
+      f.store.answerHistory
+        .page(f.draft.threadId)
+        .entries.filter((entry) => entry.kind === "answer"),
+    ).toEqual([]);
+    publish("cancelled");
+    expect(f.runtime.hasActiveWork()).toBe(false);
+  } finally {
+    resume?.();
+    probe.mockRestore();
+  }
 });
 it("keeps a post-write persistence failure unknown and blocks another answer instead of returning a safe retry", async () => {
   const f = await running(),
