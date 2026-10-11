@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "inputsHash": "98d87ff142bde6a8f83d3a727323e01faebd0446dcebe1f17eb24e6a4dbbb605",
+  "inputsHash": "18634be8131546a705e1b91bdf713d227e1dd0696e28e288ffc5c46983b02f46",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
-    "sourceFiles": 647,
-    "scannedFiles": 647,
+    "sourceFiles": 652,
+    "scannedFiles": 652,
     "unscanned": []
   },
   "modules": [
@@ -19,8 +19,8 @@
         "renderer"
       ],
       "materialized": true,
-      "files": 287,
-      "lines": 56887,
+      "files": 292,
+      "lines": 57869,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -110,7 +110,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 3885,
+      "lines": 3904,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -311,7 +311,7 @@
       ],
       "materialized": true,
       "files": 45,
-      "lines": 11059,
+      "lines": 11169,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -1597,6 +1597,34 @@
     {
       "module": "app",
       "environment": "renderer",
+      "dependency": "changes",
+      "targetEnvironment": "contracts",
+      "testOnly": true
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "changes",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "changes",
+      "targetEnvironment": "renderer",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
+      "dependency": "threads",
+      "targetEnvironment": "contracts",
+      "testOnly": false
+    },
+    {
+      "module": "app",
+      "environment": "renderer",
       "dependency": "execution",
       "targetEnvironment": "renderer",
       "testOnly": true
@@ -1655,13 +1683,6 @@
       "environment": "renderer",
       "dependency": "threads",
       "targetEnvironment": "contracts",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "threads",
-      "targetEnvironment": "contracts",
       "testOnly": true
     },
     {
@@ -1765,30 +1786,9 @@
     {
       "module": "app",
       "environment": "renderer",
-      "dependency": "changes",
-      "targetEnvironment": "contracts",
-      "testOnly": true
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
       "dependency": "files",
       "targetEnvironment": "contracts",
       "testOnly": true
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "changes",
-      "targetEnvironment": "contracts",
-      "testOnly": false
-    },
-    {
-      "module": "app",
-      "environment": "renderer",
-      "dependency": "changes",
-      "targetEnvironment": "renderer",
-      "testOnly": false
     },
     {
       "module": "app",
@@ -10174,6 +10174,288 @@
       "targetEnvironment": "renderer"
     },
     {
+      "from": "src/app/renderer/reading/changed-files-summary.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "@tanstack/react-query",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "react-dom/client",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/changes/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/changes/contracts/public.ts",
+      "targetModule": "changes",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/conversation/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/conversation/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../workbench/tool-inspector",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/tool-inspector.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../workbench/window-workbench",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/window-workbench.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./changed-files-summary",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/changed-files-summary.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./reported-changes",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/reported-changes.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "react",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "zustand",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/changes/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/changes/contracts/public.ts",
+      "targetModule": "changes",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/changes/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/changes/renderer/public.ts",
+      "targetModule": "changes",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/conversation/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/threads/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/ui/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/ui/renderer/public.ts",
+      "targetModule": "ui",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../components/ui/path-label",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/components/ui/path-label.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../workbench/file-read-reason",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/file-read-reason.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../workbench/source-target",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/source-target.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../workbench/tool-inspector",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/tool-inspector.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/changed-files-summary.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./reported-changes",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/reported-changes.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/reading/continuous-reading-renderer.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -10760,6 +11042,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../../modules/changes/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/changes/contracts/public.ts",
+      "targetModule": "changes",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/reading/conversation.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../../modules/conversation/contracts/public",
       "kind": "import",
       "resolution": "module",
@@ -10790,6 +11084,18 @@
       "to": "src/modules/preferences/renderer/public.ts",
       "targetModule": "preferences",
       "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/conversation.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/threads/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/renderer/reading/conversation.tsx",
@@ -10836,6 +11142,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/reading/activity-reading-window.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/conversation.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./changed-files-summary",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/changed-files-summary.tsx",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -12256,6 +12574,87 @@
       "targetEnvironment": "core"
     },
     {
+      "from": "src/app/renderer/reading/reported-changes.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "vitest",
+      "kind": "import",
+      "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/reported-changes.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./reported-changes",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/reported-changes.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/reported-changes.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "./reported-changes",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/reported-changes.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/reported-changes.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/conversation/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/reading/reported-changes.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/conversation/core/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
+      "from": "src/app/renderer/reading/reported-changes.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/resources/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/resources/contracts/public.ts",
+      "targetModule": "resources",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/reading/reported-changes.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../workbench/window-workbench",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/window-workbench.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
       "from": "src/app/renderer/reading/saved-conversation.test.ts",
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
@@ -12332,6 +12731,30 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": true,
+      "specifier": "../workbench/tool-inspector",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/tool-inspector.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/saved-conversation.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
+      "specifier": "../workbench/window-workbench",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/window-workbench.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/saved-conversation.test.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": true,
       "specifier": "./saved-conversation",
       "kind": "import",
       "resolution": "module",
@@ -12374,6 +12797,18 @@
       "specifier": "zustand",
       "kind": "import",
       "resolution": "external"
+    },
+    {
+      "from": "src/app/renderer/reading/saved-conversation.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/changes/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/changes/contracts/public.ts",
+      "targetModule": "changes",
+      "targetEnvironment": "contracts"
     },
     {
       "from": "src/app/renderer/reading/saved-conversation.tsx",
@@ -12428,6 +12863,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "../../../modules/threads/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/threads/contracts/public.ts",
+      "targetModule": "threads",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/reading/saved-conversation.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "../../../modules/ui/renderer/public",
       "kind": "import",
       "resolution": "module",
@@ -12464,6 +12911,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./changed-files-summary",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/changed-files-summary.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/saved-conversation.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./conversation",
       "kind": "import",
       "resolution": "module",
@@ -12492,6 +12951,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/app/renderer/reading/message-media.tsx",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/reading/saved-conversation.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "./reported-changes",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/reading/reported-changes.ts",
       "targetModule": "app",
       "targetEnvironment": "renderer"
     },
@@ -20565,6 +21036,18 @@
       "sourceModule": "app",
       "sourceEnvironment": "renderer",
       "test": false,
+      "specifier": "./file-read-reason",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/app/renderer/workbench/file-read-reason.ts",
+      "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-panel.tsx",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
       "specifier": "./refresh-state",
       "kind": "import",
       "resolution": "module",
@@ -20582,6 +21065,42 @@
       "resolution": "module",
       "to": "src/app/renderer/workbench/source-target.ts",
       "targetModule": "app",
+      "targetEnvironment": "renderer"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-read-reason.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/changes/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/changes/contracts/public.ts",
+      "targetModule": "changes",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-read-reason.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/files/contracts/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/files/contracts/public.ts",
+      "targetModule": "files",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/app/renderer/workbench/file-read-reason.ts",
+      "sourceModule": "app",
+      "sourceEnvironment": "renderer",
+      "test": false,
+      "specifier": "../../../modules/preferences/renderer/public",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/preferences/renderer/public.ts",
+      "targetModule": "preferences",
       "targetEnvironment": "renderer"
     },
     {

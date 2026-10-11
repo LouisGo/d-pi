@@ -166,6 +166,14 @@
 - `pnpm exec vite validation/m2/viewer --config validation/m2/viewer/vite.config.ts --host 127.0.0.1 --port 5179 --strictPort` 配合 `pnpm exec electron validation/m2/viewer.cjs`：Electron44.4.5真实Monaco文件1 model、Diff2 models；关闭/原生window.hide后models/queries/Worker归零，重开目标恢复；Diff共启动并关闭3个真实Worker，最终0。fixture只替代文件/Git IPC，无原生Agent/provider；独立临时数据和窗口已关闭，不触及现有Dev。该证据不是全工作台生产trace/输入延迟/用户验收。
 - WB02变化汇总、WB03折叠浏览器细化/原生warm/子会话/其余可见性和生产trace、WB04完整交互仍待完成，继续goal active，不推送或发布。
 
+### WB02 milestone：来源明确的变化文件汇总（2026-10-11）
+
+- 对照本地 T3 `ChangedFilesTree.tsx` 的路径汇总与实际来源，沿用 OMP18.8.9 成功 result 路径语义，不复制 T3 的运行身份或把当前 Git 状态推断成 Agent 因果。正式实时/保存会话默认折叠汇总；只覆盖已加载记录，最多128路径/每路径8来源，partial/截断明确显示。保存报告带实际 native record、冻结 source revision 和原 tool cursor，实时报告带实际 connection/tool 身份。
+- 用户主动采样当前 Git 后单独展示 repository/HEAD/采样时间/范围，选择路径捕获真实左右内容版本后再进入 Diff。读取开始即取得窗口意图；晚到返回不能覆盖后续来源导航。报告路径仅能打开同 Thread/目录下的当前工作区文件，越界或归属不符禁用；Main权限与只读操作合同继续拥有读取权。
+- ConversationModel增加有界变化证据 revision，只比较最多8个路径元数据与原生身份，不比较正文/patch；100次正文追加不重扫汇总，同数量路径替换仍刷新。隐藏汇总卸载最后Query observer、取消只读请求并清空无observer缓存，不发送执行abort。
+- 跨Thread路径回归先失败后通过；七文件组合62/62通过，随后增加冻结保存来源回归，保存/汇总两文件33/33通过（与矩阵重叠）。Core类型、design/i18n及快速门禁通过；Renderer仅既有composer-tag.tsx:134 TS7053，React act提示仍存在。未将这些检查当作原生provider、完整生产Electron性能trace或用户验收。
+- 固定 `d4dfa42..bbb9cc4` 独立review确认延迟定位P2已闭合，Viewer释放与轻位置恢复未发现新增可行动高价值问题。其余WB03原生warm/子会话/可见性/生产trace及WB04继续本轮goal，不推送或发布。
+
 WB01 合同细化：resources/contracts 是无反向依赖的来源叶子；sourceRef 仅 provenance，不授予文件或执行权限。Host 原始工具输出 reader 通过现有 MessagePort 订阅，与 timeline 摘要分离。窗口最多8 Surface，共享 reader；每工具输出256KiB、参数32KiB，Host 总缓存2MiB/64项，预算或缺失生命周期标 partial。关闭释放读取 lease，不发送 abort。FrozenContext 使用独立长度封套和原生来源，范围为冻结版本的 UTF-16 偏移，选区最多64KiB；唯一 Thread 草稿用 threadId 标识，revision+sequence 防竞争。当前挂载 editor 单笔 undo transaction，未挂载语义写入并保留缓存 undo。返回捕获导航 ticket，后续导航/关闭使其失效。待完成切片后追加实际命令、结果、提交、review 与未覆盖范围。
 
 ### WB00 milestone（2026-10-11）

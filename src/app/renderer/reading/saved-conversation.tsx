@@ -10,6 +10,7 @@ import {
 } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
+import type { GitBridge } from "../../../modules/changes/contracts/public";
 import type {
   ConversationItem,
   HistoryBridge,
@@ -25,6 +26,7 @@ import {
 } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import type { SourceRef } from "../../../modules/resources/contracts/public";
+import type { ThreadContext } from "../../../modules/threads/contracts/public";
 import {
   Button,
   Disclosure,
@@ -36,9 +38,11 @@ import {
   ActivityReadingWindow,
   activityMember,
 } from "./activity-reading-window";
+import { ChangedFilesSummary } from "./changed-files-summary";
 import { ConversationItemView } from "./conversation";
 import { historyToolEvidenceMessage } from "./history";
 import { MessageMedia } from "./message-media";
+import type { ToolChangeEvidence } from "./reported-changes";
 
 /** One saved timeline survives execution startup and the bounded live window. */
 export function SavedConversation({
@@ -48,9 +52,15 @@ export function SavedConversation({
   threadTitle,
   active,
   positions,
+  resource,
+  git,
+  summaryActive = active,
   initializing = false,
 }: {
   model: ConversationModel;
+  resource?: ThreadContext | undefined;
+  git?: GitBridge | undefined;
+  summaryActive?: boolean;
   bridge: HistoryBridge;
   threadId: string;
   threadTitle?: string | undefined;
@@ -435,6 +445,60 @@ export function SavedConversation({
           {t("ui.history.earlier")}
         </Button>
       )}
+      <ChangedFilesSummary
+        model={model}
+        resource={resource}
+        git={git}
+        active={summaryActive}
+        evidence={() =>
+          rows.flatMap<ToolChangeEvidence>((row) => {
+            const entry = row.entry;
+            const savedSource = entry && savedSources.get(entry.id);
+            if (entry?.tool?.semantic && entry.toolCursor && savedSource)
+              return [
+                {
+                  semantic: entry.tool.semantic,
+                  target: {
+                    source: savedSource,
+                    cursor: entry.toolCursor,
+                    title: entry.tool.name,
+                    threadTitle: threadTitle ?? threadId,
+                    rowId: row.key,
+                  },
+                },
+              ];
+            const state = model.stateStore.getState();
+            const item =
+              row.liveId === undefined
+                ? undefined
+                : state.itemsById.get(row.liveId);
+            const view = state.view;
+            if (
+              !item?.tool?.semantic ||
+              !view?.nativeSessionKey ||
+              !view.connectionGeneration
+            )
+              return [];
+            return [
+              {
+                semantic: item.tool.semantic,
+                target: {
+                  source: {
+                    kind: "live-tool" as const,
+                    threadId,
+                    nativeSessionKey: view.nativeSessionKey,
+                    connectionGeneration: view.connectionGeneration,
+                    toolCallId: item.tool.toolCallId,
+                  },
+                  title: item.tool.name,
+                  threadTitle: threadTitle ?? threadId,
+                  rowId: row.key,
+                },
+              },
+            ];
+          })
+        }
+      />
       <ActivityReadingWindow
         model={model}
         liveKeys={

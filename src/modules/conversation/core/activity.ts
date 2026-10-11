@@ -50,12 +50,13 @@ const facts = (member: ActivityMember) => ({
   changedFiles: member.changedFiles ?? 0,
 });
 /** Native result evidence only. Intent paths do not prove a completed mutation. */
+export const reportedChanges = (semantic: ToolSemantic | undefined) =>
+  semantic?.kind === "file-change" && semantic.phase === "result"
+    ? semantic.changes.filter((change) => !change.failed)
+    : [];
 export const reportedChangeCount = (
   semantic: ToolSemantic | undefined,
-): number =>
-  semantic?.kind === "file-change" && semantic.phase === "result"
-    ? semantic.changes.filter((change) => !change.failed).length
-    : 0;
+): number => reportedChanges(semantic).length;
 
 /** Thread-owned reading projection. It stores small membership facts, never another body or scheduler. */
 export class ActivityReadModel {

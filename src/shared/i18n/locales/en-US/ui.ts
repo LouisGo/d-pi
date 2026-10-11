@@ -1,4 +1,14 @@
 export const ui = {
+  "activity.changedFiles": "Changed files",
+  "activity.captureUnavailable":
+    "Could not navigate to the sampled Diff. Select the file again.",
+  "activity.changesCoverage":
+    "Loaded records only. Tool reports and current Git samples are shown separately; no causality is inferred.",
+  "activity.toolChanges": "Tool-reported changes",
+  "activity.noReportedChanges": "No successful change paths in loaded records.",
+  "activity.changesPartial": "Some tool reports or paths are not fully shown.",
+  "activity.gitChanges": "Current Git sample",
+  "activity.sampleGit": "Sample current Git changes",
   "activity.modelChanged": "Native model change observed",
   "activity.retryStarted": "Native retry started (attempt {attempt})",
   "activity.retryEnded": "Native retry ended (attempt {attempt})",

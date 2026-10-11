@@ -172,6 +172,12 @@ export class WindowWorkbench {
       intent.target.kind === "file" ? intent.target.file : intent.target.diff;
     return identity.threadId === threadId ? intent.ticket : undefined;
   }
+  /** Own a source intent before a read can obtain the versions needed to reveal it. */
+  beginSourceCapture(): () => boolean {
+    this.cancelReturn();
+    const ticket = this.navigation;
+    return () => this.isNavigation(ticket);
+  }
   completeWorkspaceNavigation(ticket: number): void {
     if (this.store.getState().workspaceNavigation?.ticket === ticket)
       this.store.setState({ workspaceNavigation: null });

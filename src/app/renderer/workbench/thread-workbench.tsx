@@ -348,6 +348,9 @@ const ThreadContent = memo(function ThreadContent({
                 initializing={initializing}
                 model={thread.reading}
                 bridge={model.history}
+                resource={thread.context}
+                git={model.git}
+                summaryActive={readingView === "conversation" && visible}
                 threadId={thread.context.threadId}
                 threadTitle={thread.context.title}
                 active={readingView === "conversation"}
@@ -364,6 +367,9 @@ const ThreadContent = memo(function ThreadContent({
                 <Conversation
                   initializing={initializing}
                   model={thread.reading}
+                  resource={thread.context}
+                  git={model.git}
+                  active={readingView === "conversation" && visible}
                   threadTitle={thread.context.title}
                   positions={thread.readingSources}
                 />

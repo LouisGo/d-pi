@@ -1,4 +1,13 @@
 export const ui = {
+  "activity.changedFiles": "变化文件",
+  "activity.captureUnavailable": "未跳转到采样的 Diff。请重新选择文件。",
+  "activity.changesCoverage":
+    "仅汇总已加载记录。工具报告与当前 Git 采样分别显示，不据此推断因果。",
+  "activity.toolChanges": "工具报告的变化",
+  "activity.noReportedChanges": "已加载记录中没有成功的变化路径报告。",
+  "activity.changesPartial": "部分工具报告或路径未完整显示。",
+  "activity.gitChanges": "当前 Git 采样",
+  "activity.sampleGit": "采样当前 Git 变化",
   "activity.modelChanged": "已观察到原生模型变更",
   "activity.retryStarted": "原生重试开始（第 {attempt} 次）",
   "activity.retryEnded": "原生重试结束（第 {attempt} 次）",

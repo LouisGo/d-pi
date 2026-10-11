@@ -14,6 +14,75 @@ const item = (
   label: { kind: "literal", text: "OMP" },
 });
 
+it("publishes change evidence separately from body appends and catches same-count path replacements", () => {
+  const { model, deliver, connectionGeneration } = connected();
+  const observed = (
+    path: string,
+    phase: "intent" | "result",
+  ): ConversationItem => ({
+    ...item(1, "", "complete"),
+    role: "tool",
+    tool: {
+      toolCallId: "edit-1",
+      name: "edit",
+      lifecycle: "succeeded",
+      coverage: "complete",
+      truncated: false,
+      observed: { start: true, end: true, result: true },
+      semantic: {
+        kind: "file-change",
+        transportTool: "edit",
+        effectiveTool: "edit",
+        phase,
+        partial: false,
+        truncated: false,
+        changes: [{ path, failed: false, snapshotsPruned: false }],
+      },
+    },
+  });
+  deliver({
+    kind: "snapshot",
+    connectionGeneration,
+    seq: 0,
+    gap: false,
+    items: [observed("intent.ts", "intent")],
+  });
+  const before = model.stateStore.getState().changeRevision;
+  deliver({
+    kind: "update",
+    connectionGeneration,
+    seq: 1,
+    gap: false,
+    droppedBefore: 0,
+    item: observed("a.ts", "result"),
+  });
+  expect(model.stateStore.getState().changeRevision).toBe(before + 1);
+  deliver({
+    kind: "update",
+    connectionGeneration,
+    seq: 2,
+    gap: false,
+    droppedBefore: 0,
+    item: observed("b.ts", "result"),
+  });
+  expect(model.stateStore.getState().changeRevision).toBe(before + 2);
+  const result = observed("b.ts", "result");
+  const { text: _text, ...metadata } = result;
+  for (let seq = 3; seq < 103; seq++)
+    deliver({
+      kind: "append",
+      connectionGeneration,
+      seq,
+      gap: false,
+      droppedBefore: 0,
+      item: metadata,
+      text: "x",
+      thinking: "",
+    });
+  expect(model.stateStore.getState().changeRevision).toBe(before + 2);
+  model.dispose();
+});
+
 function connected(): {
   model: ConversationModel;
   deliver: (event: ConversationEvent) => void;

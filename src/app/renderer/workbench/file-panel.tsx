@@ -50,30 +50,10 @@ import {
 } from "../../../modules/ui/renderer/public";
 import { FileIcon, FolderIcon } from "../components/icons/common";
 import { PathLabel } from "../components/ui/path-label";
+import { fileReadReason as reason } from "./file-read-reason";
 import { readInFlight } from "./refresh-state";
 import type { WorkspaceSourceTarget } from "./source-target";
 
-type UnavailableReason = Extract<
-  FileReply | GitReply,
-  { kind: "unavailable" }
->["reason"];
-function reason(
-  reply: UnavailableReason,
-  t: ReturnType<typeof useI18n>["t"],
-): string {
-  if (reply === "not-git") return t("ui.files.notGit");
-  if (reply === "git-unavailable") return t("ui.files.gitUnavailable");
-  if (reply === "missing") return t("ui.files.reason.missing");
-  if (reply === "denied") return t("ui.files.reason.denied");
-  if (reply === "binary") return t("ui.files.reason.binary");
-  if (reply === "invalid-encoding") return t("ui.files.reason.encoding");
-  if (reply === "too-large") return t("ui.files.reason.large");
-  if (reply === "changed") return t("ui.files.reason.changed");
-  if (reply === "unmerged") return t("ui.files.reason.unmerged");
-  if (reply === "unsupported") return t("ui.files.reason.unsupported");
-  if (reply === "not-file") return t("ui.files.reason.notFile");
-  return t("ui.files.reason.failed");
-}
 function statusLabel(
   status: Extract<GitReply, { kind: "changes" }>["entries"][number]["status"],
   t: ReturnType<typeof useI18n>["t"],

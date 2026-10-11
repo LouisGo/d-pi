@@ -13,6 +13,8 @@ import {
   ReadingPositions,
 } from "../../../modules/conversation/core/public";
 import { I18nProvider } from "../../../modules/preferences/renderer/public";
+import { ToolWorkbenchContext } from "../workbench/tool-inspector";
+import { WindowWorkbench } from "../workbench/window-workbench";
 import { SavedConversation } from "./saved-conversation";
 
 vi.mock("./markdown", () => ({
@@ -29,6 +31,7 @@ async function mount(
   page?: HistoryPage,
   reader?: HistoryBridge["read"],
   positions?: ReadingPositions,
+  workbench?: WindowWorkbench,
 ) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   let emit: ((event: ConversationEvent) => void) | undefined;
@@ -86,13 +89,17 @@ async function mount(
           { client },
           createElement(I18nProvider, {
             initialSnapshot: { preference: "en-US", resolvedLocale: "en-US" },
-            children: createElement(SavedConversation, {
-              model,
-              bridge,
-              threadId: "A",
-              active,
-              positions,
-            }),
+            children: createElement(
+              ToolWorkbenchContext,
+              { value: workbench ?? null },
+              createElement(SavedConversation, {
+                model,
+                bridge,
+                threadId: "A",
+                active,
+                positions,
+              }),
+            ),
           }),
         ),
       ),
@@ -113,6 +120,90 @@ async function mount(
     },
   };
 }
+it("routes a saved change report with the frozen native record source and original cursor", async () => {
+  const workbench = new WindowWorkbench({
+    insert: vi.fn(),
+    select: async () => true,
+  });
+  const reveal = vi.spyOn(workbench, "reveal");
+  const cursor = { threadId: "A", source: "saved-version", offset: 0 };
+  const view = await mount(
+    true,
+    {
+      kind: "page",
+      source: "saved-version",
+      nativeSessionKey: "native",
+      coverage: "append-order",
+      next: null,
+      incompleteTail: false,
+      omitted: 0,
+      entries: [
+        {
+          id: "record",
+          parentId: null,
+          role: "toolResult",
+          text: "wrote",
+          toolCursor: cursor,
+          tool: {
+            toolCallId: "write-call",
+            name: "write",
+            lifecycle: "succeeded",
+            coverage: "complete",
+            truncated: false,
+            observed: { start: true, end: true, result: true },
+            semantic: {
+              kind: "file-change",
+              transportTool: "write",
+              effectiveTool: "write",
+              phase: "result",
+              partial: false,
+              truncated: false,
+              changes: [
+                { path: "saved.ts", failed: false, snapshotsPruned: false },
+              ],
+            },
+          },
+        },
+      ],
+    },
+    undefined,
+    undefined,
+    workbench,
+  );
+  await act(async () => {
+    await vi.waitFor(() =>
+      expect(view.container.textContent).toContain("wrote"),
+    );
+  });
+  const details = view.container.querySelector("details");
+  if (!details) throw Error("missing summary");
+  await act(() => {
+    details.open = true;
+    details.dispatchEvent(new Event("toggle", { bubbles: true }));
+  });
+  const summary = view.container.querySelector("[data-changed-files-summary]");
+  expect(summary?.textContent).toContain("saved.ts");
+  const source = summary?.querySelector("button");
+  if (!source) throw Error("missing source action");
+  await act(() => source.click());
+  expect(reveal).toHaveBeenCalledWith({
+    kind: "activity",
+    activity: {
+      source: {
+        kind: "native-record",
+        threadId: "A",
+        nativeSessionKey: "native",
+        recordId: "record",
+        revision: "saved-version",
+      },
+      cursor,
+      rowId: "record",
+      title: "write",
+      threadTitle: "A",
+    },
+  });
+  workbench.dispose();
+});
 it.each(["focus", "anchor"])(
   "protects saved group members when the group header owns %s during cache eviction",
   async (occupancy) => {

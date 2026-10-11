@@ -4,6 +4,7 @@ export {
   ActivityReadModel,
   type ActivityRow,
   reportedChangeCount,
+  reportedChanges,
 } from "./activity";
 export {
   type BoundHistoryAttempt,

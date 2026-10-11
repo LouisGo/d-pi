@@ -1,6 +1,7 @@
 import { type ReactNode, useContext, useLayoutEffect } from "react";
 import { match } from "ts-pattern";
 import { useStore } from "zustand";
+import type { GitBridge } from "../../../modules/changes/contracts/public";
 import type { ConversationItem } from "../../../modules/conversation/contracts/public";
 import {
   type ConversationModel,
@@ -8,6 +9,7 @@ import {
   readingSourceKey,
 } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
+import type { ThreadContext } from "../../../modules/threads/contracts/public";
 import {
   Button,
   Disclosure,
@@ -24,6 +26,7 @@ import {
   ActivityReadingWindow,
   activityMember,
 } from "./activity-reading-window";
+import { ChangedFilesSummary } from "./changed-files-summary";
 import { LifecycleEventRow, TurnOutcomeSummary } from "./lifecycle-event";
 import {
   MessageActions,
@@ -42,8 +45,14 @@ export function Conversation({
   positions,
   initializing = false,
   threadTitle,
+  resource,
+  git,
+  active = true,
 }: {
   model: ConversationModel;
+  resource?: ThreadContext | undefined;
+  git?: GitBridge | undefined;
+  active?: boolean;
   positions?: ReadingPositions | undefined;
   initializing?: boolean;
   threadTitle?: string | undefined;
@@ -109,6 +118,46 @@ export function Conversation({
           {t("subagents.reconnect")}
         </Button>
       )}
+      <ChangedFilesSummary
+        model={model}
+        resource={resource}
+        git={git}
+        active={active}
+        evidence={() => {
+          const state = model.stateStore.getState();
+          const view = state.view;
+          if (
+            !state.threadId ||
+            !view?.nativeSessionKey ||
+            !view.connectionGeneration
+          )
+            return [];
+          const ownerThreadId = state.threadId;
+          const ownerSessionKey = view.nativeSessionKey;
+          return state.itemIds.flatMap((id) => {
+            const tool = state.itemsById.get(id)?.tool;
+            return tool?.semantic
+              ? [
+                  {
+                    semantic: tool.semantic,
+                    target: {
+                      source: {
+                        kind: "live-tool" as const,
+                        threadId: ownerThreadId,
+                        nativeSessionKey: ownerSessionKey,
+                        connectionGeneration: view.connectionGeneration,
+                        toolCallId: tool.toolCallId,
+                      },
+                      title: tool.name,
+                      threadTitle: threadTitle ?? ownerThreadId,
+                      rowId: String(id),
+                    },
+                  },
+                ]
+              : [];
+          });
+        }}
+      />
       <ActivityReadingWindow
         model={model}
         liveKeys={new Map(itemIds.map((id) => [id, String(id)]))}

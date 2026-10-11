@@ -10,6 +10,7 @@ import {
   type ActivityMember,
   ActivityReadModel,
   reportedChangeCount,
+  reportedChanges,
 } from "./activity";
 import { ItemIndex } from "./item-index";
 
@@ -21,6 +22,7 @@ export interface ConversationState {
   messageCount: number;
   truncatedCount: number;
   bodyRevision: number;
+  changeRevision: number;
   threadId: string | null;
   epoch: number;
   resyncing: boolean;
@@ -39,6 +41,7 @@ const initial: StateCreator<
   messageCount: 0,
   truncatedCount: 0,
   bodyRevision: 0,
+  changeRevision: 0,
   threadId: null,
   epoch: 0,
   resyncing: false,
@@ -108,12 +111,17 @@ export class ConversationModel {
         : nextIds;
     this.index = new ItemIndex();
     let changedBody = false;
+    let changedReports =
+      itemIds !== previous.itemIds ||
+      previous.view?.connectionGeneration !== view.connectionGeneration;
     let messageCount = 0;
     let truncatedCount = 0;
     for (const item of view.items) {
       this.updateActivity(item);
       this.index = this.index.with(item);
       changedBody ||= bodyChanged(item, previous.itemsById.get(item.id));
+      changedReports ||=
+        changeStamp(item) !== changeStamp(previous.itemsById.get(item.id));
       messageCount += isMessage(item) ? 1 : 0;
       truncatedCount += item.truncated ? 1 : 0;
     }
@@ -131,6 +139,7 @@ export class ConversationModel {
       messageCount,
       truncatedCount,
       bodyRevision: previous.bodyRevision + (changedBody ? 1 : 0),
+      changeRevision: previous.changeRevision + Number(changedReports),
     });
   }
   connect(threadId: string): void {
@@ -175,6 +184,7 @@ export class ConversationModel {
             nativeIdentities: [],
             messageCount: 0,
             truncatedCount: 0,
+            changeRevision: previous.changeRevision + 1,
           }
         : {}),
     });
@@ -277,6 +287,14 @@ export class ConversationModel {
         truncatedCount,
         bodyRevision:
           previous.bodyRevision + (bodyChanged(item, prior) ? 1 : 0),
+        changeRevision:
+          previous.changeRevision +
+          Number(
+            removed > 0 ||
+              !prior ||
+              prior.nativeRecordId !== item.nativeRecordId ||
+              changeStamp(item) !== changeStamp(prior),
+          ),
       });
     });
   }
@@ -287,6 +305,27 @@ export class ConversationModel {
     this.remove?.();
     this.remove = null;
   }
+}
+
+function changeStamp(item: ConversationItem | undefined): string {
+  const semantic = item?.tool?.semantic;
+  const changes = reportedChanges(semantic);
+  // Compare at most eight bounded native paths, never output text or patches.
+  return changes.length
+    ? JSON.stringify([
+        item?.nativeRecordId,
+        item?.tool?.toolCallId,
+        item?.tool?.name,
+        semantic?.partial,
+        semantic?.truncated,
+        ...changes.map((change) => [
+          change.path,
+          change.firstChangedLine,
+          change.operation,
+          change.sourcePath,
+        ]),
+      ])
+    : "";
 }
 
 function isMessage(item: ConversationItem): boolean {
