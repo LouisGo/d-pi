@@ -20,7 +20,7 @@
 | M2 | [长会话连续体验修复](../.scratch/m2-first-release/spec.md) | 工程完成 | 已交付待试用 | 待认可 | Dev source c4bc00b [证据1](../.scratch/m2-first-release/long-session-repair.md) | 本地Dev三项修复已交付，两次冷恢复及真实模型/GUI/双轴评审通过；等待用户复试认可，M2其它项保持。 |
 | M2 | [Provider 与 Models 完整闭环](../.scratch/providers-models/spec.md) | 工程完成 | 已交付待试用 | 待认可 | main merge 55550021；source 99ec699b；历史 GUI 构建身份见交接 [证据1](../.scratch/providers-models/local-merge.md) · [证据2](../.scratch/providers-models/handoff.md) · [证据3](../.scratch/providers-models/validation.md) · [证据4](../.scratch/providers-models/review.md) | 已合入 main 并 push；从原项目目录 pnpm dev 试用实际账户与 Provider/Models 体验 |
 | M2 | [会话默认流程体验](../.scratch/m2-first-release/spec.md) | 工程完成 | 已交付待试用 | 待认可 | Dev source f795b82 [证据1](../.scratch/m2-first-release/seamless-sessions.md) | 默认历史与按项目整理、重复新建免授权免手动启动、CLI 原会话续问和冷重启续问、生成中阅读已完成正式 GUI 与真实模型复核；等待用户复试认可。 |
-| M2 | [会话组件体系 WB00–WB01](../.scratch/session-components/spec.md) | 实施中 | 未交付 | 待认可 | — [证据1](product/session-components-plan-2026-10-11.md) | 完成独立操作与首条工作台生产闭环 |
+| M2 | [会话组件体系 WB00–WB01](../.scratch/session-components/spec.md) | 工程完成 | 已交付待试用 | 待认可 | — [证据1](product/session-components-plan-2026-10-11.md) | 重启Dev试用WB00/WB01；下一轮先读方案/跟踪推进WB02 |
 | M3 | [M3 后续增强](../.scratch/development-foundation/spec.md) | 未实施 | 未交付 | 待认可 | —  | 未启动，保留边界 |
 | M3 | [集成终端 B 方案](../.scratch/integrated-terminal/spec.md) | 未实施 | 未交付 | 待认可 | — [证据1](../.scratch/integrated-terminal/handoff.md) · [证据2](architecture/terminal.md) · [证据3](validation/terminal.md) | B与xterm路线已确认、文档已交付；待关联/退出产品答复及后续开发授权。 |
 | 基建 | [AI 工作流升级](../.scratch/ai-workflow-v13/spec.md) | 工程完成 | 不适用 | 不适用 | — [证据1](../.scratch/ai-workflow-v13/handoff.md) · [证据2](../.scratch/ai-workflow-v13/validation.md) · [证据3](../.scratch/ai-workflow-v13/review.md) · [证据4](../.scratch/ai-workflow-v13/research.md) · [证据5](../.scratch/ai-workflow-v13/m2-retro-2026-10-06.md) · [证据6](../.scratch/ai-workflow-v13/m2-retro-handoff.md) · [证据7](../.scratch/ai-workflow-v13/m2-retro-validation.md) · [证据8](../.scratch/ai-workflow-v13/m2-retro-review.md) · [证据9](../.scratch/ai-workflow-v13/validation-retro-2026-10-07.md) · [证据10](../.scratch/ai-workflow-v13/evidence/pnpm-entry-probe.json) | 2026-10-09单人维护流程与pnpm隔离探测已修正；普通任务默认main串行、相关验证、一处简记与Dev交付；下一轮核对正常入口无需临时包装器 |
@@ -94,4 +94,4 @@
 - [状态与查询对齐](../.scratch/state-query-alignment/spec.md)：刷新失败保留旧采样的体验尚待试用；不因工程通过改变产品策略。
 - [T3 研究与基础重构](../.scratch/t3-foundations/spec.md)：unknown 不重发，冷恢复只读；native/live 无可靠原生身份时保持独立来源；M3 能力仅作设计储备
 
-<!-- source-sha256: 0e2962a59186833a7474b67765546c895253d6a76746abfb70f7e688a4ac5c7f; sources: 187 -->
+<!-- source-sha256: 9b37aec7b044a49f9bac13d7857c05717f65616bed5169c7bdb9522f251c5be8; sources: 187 -->
