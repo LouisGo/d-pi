@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "c9db849c41d4390e61c3cbe092fcb096c4584a6ba00c77e2adfa9d1ec012b783",
+  "inputsHash": "51967e5ec0994914e5658af65449b067d5deed5b91e8bde818017dc4fbefcc6b",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 633,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 281,
-      "lines": 54530,
+      "lines": 54616,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -106,7 +106,7 @@
       "defaultEnvironment": "shared",
       "materialized": true,
       "files": 23,
-      "lines": 3866,
+      "lines": 3869,
       "publicEntries": [
         {
           "path": "src/shared/build-info.ts",
@@ -307,7 +307,7 @@
       ],
       "materialized": true,
       "files": 39,
-      "lines": 8788,
+      "lines": 8940,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -29039,6 +29039,18 @@
       "targetEnvironment": "core"
     },
     {
+      "from": "src/modules/conversation/core/activity.test.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": true,
+      "specifier": "./tool-semantic",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/core/tool-semantic.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "core"
+    },
+    {
       "from": "src/modules/conversation/core/activity.ts",
       "sourceModule": "conversation",
       "sourceEnvironment": "core",
@@ -29065,6 +29077,18 @@
       "kind": "import",
       "resolution": "module",
       "to": "src/modules/conversation/contracts/public.ts",
+      "targetModule": "conversation",
+      "targetEnvironment": "contracts"
+    },
+    {
+      "from": "src/modules/conversation/core/activity.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "core",
+      "test": false,
+      "specifier": "../contracts/tool-semantic",
+      "kind": "import",
+      "resolution": "module",
+      "to": "src/modules/conversation/contracts/tool-semantic.ts",
       "targetModule": "conversation",
       "targetEnvironment": "contracts"
     },

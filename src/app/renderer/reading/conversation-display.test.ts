@@ -48,6 +48,30 @@ const base: ConversationItem = {
   label: { kind: "literal", text: "You" },
   text: "Keep **literal** prompt\nSecond line",
 };
+it("labels planned write paths as intent rather than reported changes", async () => {
+  const container = await mount({
+    ...base,
+    role: "tool",
+    state: "streaming",
+    tool: {
+      name: "write",
+      toolCallId: "intent",
+      lifecycle: "running",
+      observed: ["start"],
+      coverage: "observed",
+      truncated: false,
+      semantic: decodeToolSemantic(
+        "write",
+        { path: "/a" },
+        undefined,
+        "intent",
+      ),
+    },
+  });
+  await act(() => container.querySelector("summary")?.click());
+  expect(container.textContent).toContain("Planned file paths");
+  expect(container.textContent).not.toContain("Tool-reported changes");
+});
 it("isolates a presenter exception, preserves raw evidence and recovers on a new revision", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.spyOn(console, "error").mockImplementation(() => {});

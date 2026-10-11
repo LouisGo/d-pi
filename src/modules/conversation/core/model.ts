@@ -5,7 +5,11 @@ import type {
   ConversationPort,
   ConversationSnapshot,
 } from "../contracts/public";
-import { type ActivityMember, ActivityReadModel } from "./activity";
+import {
+  type ActivityMember,
+  ActivityReadModel,
+  reportedChangeCount,
+} from "./activity";
 import { ItemIndex } from "./item-index";
 
 export interface ConversationState {
@@ -72,10 +76,7 @@ export class ConversationModel {
     this.activities.update({
       key,
       state: item.state,
-      changedFiles:
-        item.tool?.semantic?.kind === "file-change"
-          ? item.tool.semantic.changes.filter((change) => !change.failed).length
-          : 0,
+      changedFiles: reportedChangeCount(item.tool?.semantic),
     });
   }
   getSnapshot = (): ConversationSnapshot | null => this.store.getState().view;

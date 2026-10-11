@@ -1,6 +1,7 @@
 import { subscribeWithSelector } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 import type { ConversationItem } from "../contracts/public";
+import type { ToolSemantic } from "../contracts/tool-semantic";
 import { ItemIndex } from "./item-index";
 
 /** Proven association supplied by the native adapter, never inferred from timestamps. */
@@ -48,6 +49,13 @@ const facts = (member: ActivityMember) => ({
   running: Number(member.state === "streaming"),
   changedFiles: member.changedFiles ?? 0,
 });
+/** Native result evidence only. Intent paths do not prove a completed mutation. */
+export const reportedChangeCount = (
+  semantic: ToolSemantic | undefined,
+): number =>
+  semantic?.kind === "file-change" && semantic.phase === "result"
+    ? semantic.changes.filter((change) => !change.failed).length
+    : 0;
 
 /** Thread-owned reading projection. It stores small membership facts, never another body or scheduler. */
 export class ActivityReadModel {
@@ -87,8 +95,9 @@ export class ActivityReadModel {
     this.visible = visible;
   }
   setProtected(keys: ReadonlySet<string>): void {
+    const released = [...this.protectedKeys].some((key) => !keys.has(key));
     this.protectedKeys = keys;
-    if (!keys.size && this.pending) {
+    if (released && this.pending) {
       const pending = this.pending.map((member) => ({
         ...member,
         ...this.pendingFacts.get(member.key),
@@ -98,8 +107,95 @@ export class ActivityReadModel {
       this.reconcile(pending);
     }
   }
+  /** Freeze only connected old/new grouping components touched by selection or focus. */
+  private protectStructure(
+    input: readonly ActivityMember[],
+  ): readonly ActivityMember[] {
+    const edges = new Map<string, Set<string>>();
+    const link = (a: string, b: string) => {
+      if (!edges.has(a)) edges.set(a, new Set());
+      if (!edges.has(b)) edges.set(b, new Set());
+      edges.get(a)?.add(b);
+      edges.get(b)?.add(a);
+    };
+    const connect = (members: readonly ActivityMember[]) => {
+      for (let i = 1; i < members.length; i++) {
+        const a = members[i - 1],
+          b = members[i];
+        if (a && b && relationKey(a) && relationKey(a) === relationKey(b))
+          link(a.key, b.key);
+      }
+    };
+    const previous = [...this.members.values()];
+    connect(previous);
+    connect(input);
+    const seeds = [...this.protectedKeys].flatMap((key) => {
+      const slot = this.slots.find((row) => row.key === key);
+      return slot?.kind === "group"
+        ? (this.groups.get(slot.id)?.members ?? [])
+        : [key];
+    });
+    const componentFor = new Map<string, number>();
+    let serial = 0;
+    for (const seed of seeds) {
+      if (
+        componentFor.has(seed) ||
+        (!this.members.has(seed) && !edges.has(seed))
+      )
+        continue;
+      const id = serial++;
+      const queue = [seed];
+      componentFor.set(seed, id);
+      for (let i = 0; i < queue.length; i++)
+        for (const key of edges.get(queue[i] ?? "") ?? [])
+          if (!componentFor.has(key)) {
+            componentFor.set(key, id);
+            queue.push(key);
+          }
+    }
+    const oldComponents = new Map<number, ActivityMember[]>();
+    const incoming = new Map(input.map((member) => [member.key, member]));
+    for (const old of previous) {
+      const id = componentFor.get(old.key);
+      if (id === undefined) continue;
+      const next = incoming.get(old.key);
+      const members = oldComponents.get(id) ?? [];
+      members.push({
+        ...old,
+        state: next?.state ?? old.state,
+        changedFiles: next?.changedFiles ?? old.changedFiles ?? 0,
+      });
+      oldComponents.set(id, members);
+    }
+    const emitted = new Set<number>();
+    const safe: ActivityMember[] = [];
+    for (const member of input) {
+      const id = componentFor.get(member.key);
+      if (id === undefined) safe.push(member);
+      else {
+        if (!emitted.has(id)) {
+          safe.push(...(oldComponents.get(id) ?? []));
+          emitted.add(id);
+        }
+        // New calls remain readable while their move into the protected group waits.
+        if (!this.members.has(member.key))
+          safe.push({
+            key: member.key,
+            state: member.state,
+            changedFiles: member.changedFiles ?? 0,
+          });
+      }
+    }
+    return safe;
+  }
   reconcile(input: readonly ActivityMember[]): void {
     const previous = [...this.members.values()];
+    if (this.protectedKeys.size) {
+      const safe = this.protectStructure(input);
+      this.pending = input;
+      this.pendingFacts.clear();
+      input = safe;
+    }
     const structural =
       input.length !== previous.length ||
       input.some(
@@ -110,13 +206,6 @@ export class ActivityReadModel {
       );
     if (!structural) {
       for (const member of input) this.update(member);
-      return;
-    }
-    if (this.protectedKeys.size) {
-      this.pending = input;
-      this.pendingFacts.clear();
-      for (const member of input)
-        if (this.members.has(member.key)) this.update(member);
       return;
     }
     const previousMembership = this.membership;

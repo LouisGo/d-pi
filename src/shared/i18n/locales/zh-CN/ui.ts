@@ -32,6 +32,7 @@ export const ui = {
   "tool.semantic.snapshot": "本次读取快照；当前文件可能已变化。",
   "tool.semantic.startLine": "从第 {line} 行开始",
   "tool.semantic.toolChanges": "工具报告的变化；当前 Git 变化是独立来源。",
+  "tool.semantic.plannedPaths": "计划操作的文件路径；尚未报告完成的变化。",
   "tool.semantic.noPatch": "没有可得的原生 patch。",
   "tool.semantic.snapshotsPruned": "原生前后快照已被裁剪。",
   "tool.semantic.matches": "{count} 处命中",

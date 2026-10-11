@@ -1,10 +1,11 @@
 import { type ComponentProps, useLayoutEffect, useMemo, useRef } from "react";
 import { useStore } from "zustand";
 import type { ConversationItem } from "../../../modules/conversation/contracts/public";
-import type {
-  ActivityMember,
-  ActivityReadModel,
-  ConversationModel,
+import {
+  type ActivityMember,
+  type ActivityReadModel,
+  type ConversationModel,
+  reportedChangeCount,
 } from "../../../modules/conversation/core/public";
 import { useI18n } from "../../../modules/preferences/renderer/public";
 import {
@@ -25,10 +26,7 @@ export function activityMember(
     ...(parentId
       ? { relation: { kind: "native-call-batch", id: parentId } }
       : {}),
-    changedFiles:
-      item?.tool?.semantic?.kind === "file-change"
-        ? item.tool.semantic.changes.filter((change) => !change.failed).length
-        : 0,
+    changedFiles: reportedChangeCount(item?.tool?.semantic),
   };
 }
 

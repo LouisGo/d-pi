@@ -35,6 +35,8 @@ export const ui = {
   "tool.semantic.startLine": "Starts at line {line}",
   "tool.semantic.toolChanges":
     "Tool-reported changes; current Git changes are a separate source.",
+  "tool.semantic.plannedPaths":
+    "Planned file paths; completed changes are not yet reported.",
   "tool.semantic.noPatch": "No native patch available.",
   "tool.semantic.snapshotsPruned": "Native before/after snapshots were pruned.",
   "tool.semantic.matches": "{count} matches",

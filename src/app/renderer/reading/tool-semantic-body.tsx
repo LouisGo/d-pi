@@ -145,7 +145,13 @@ function SemanticContent({
     .with({ kind: "search" }, (s) => <SearchResults semantic={s} />)
     .with({ kind: "file-change" }, (s) => (
       <>
-        <p>{t("tool.semantic.toolChanges")}</p>
+        <p>
+          {t(
+            s.phase === "result"
+              ? "tool.semantic.toolChanges"
+              : "tool.semantic.plannedPaths",
+          )}
+        </p>
         {s.changes.map((change, index) => (
           <Disclosure
             key={JSON.stringify([change.path, index])}

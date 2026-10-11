@@ -1,5 +1,10 @@
 import { expect, it, vi } from "vitest";
-import { type ActivityMember, ActivityReadModel } from "./activity";
+import {
+  type ActivityMember,
+  ActivityReadModel,
+  reportedChangeCount,
+} from "./activity";
+import { decodeToolSemantic } from "./tool-semantic";
 
 const member = (
   key: string,
@@ -101,4 +106,60 @@ it("defers structural regrouping while a member owns selection or focus, but upd
   expect(
     model.stateStore.getState().groups.get(model.groupFor("a") ?? -1)?.running,
   ).toBe(1);
+});
+it("keeps protected groups stable while publishing unrelated appended and prepended rows", () => {
+  const model = new ActivityReadModel();
+  model.reconcile([
+    member("a", "left"),
+    member("b", "left"),
+    member("c", "right"),
+    member("d", "right"),
+  ]);
+  const group = model.groupFor("b");
+  model.setProtected(new Set(["b"]));
+  model.reconcile([
+    member("before"),
+    ...["a", "b", "c", "d"].map((key) => member(key, "joined")),
+    member("new-reply"),
+    member("new-tool", "next"),
+    member("other-tool", "next"),
+  ]);
+  expect(model.groupFor("b")).toBe(group);
+  expect(
+    model.stateStore
+      .getState()
+      .rows.map((row) => (row.kind === "member" ? row.key : "group")),
+  ).toEqual(["before", "group", "group", "new-reply", "group"]);
+  model.setProtected(new Set());
+  expect(model.stateStore.getState().rows.map((row) => row.kind)).toEqual([
+    "member",
+    "group",
+    "member",
+    "group",
+  ]);
+});
+it("counts only successful native result paths, never intent, progress or failed results", () => {
+  const intent = decodeToolSemantic(
+    "write",
+    { path: "/a" },
+    undefined,
+    "intent",
+  );
+  expect(reportedChangeCount(intent)).toBe(0);
+  const result = decodeToolSemantic(
+    "write",
+    { path: "/a" },
+    { details: { path: "/a", diff: "patch" } },
+    "result",
+  );
+  expect(reportedChangeCount(result)).toBe(1);
+  expect(reportedChangeCount({ ...result, phase: "progress" })).toBe(0);
+  const failed = decodeToolSemantic(
+    "write",
+    { path: "/a" },
+    { details: { path: "/a", diff: "patch" } },
+    "result",
+    true,
+  );
+  expect(reportedChangeCount(failed)).toBe(0);
 });

@@ -159,6 +159,64 @@ it("groups verified call siblings, keeps failed counts visible, and remembers ex
     f.container.querySelector('[data-reading-row="read-one"]'),
   ).not.toBeNull();
 });
+it("shows a new live reply while a saved row retains selection and keyboard focus", async () => {
+  const f = await mount(true, {
+    kind: "page",
+    source: "saved",
+    coverage: "append-order",
+    next: null,
+    incompleteTail: false,
+    omitted: 0,
+    entries: [
+      {
+        id: "old",
+        parentId: null,
+        role: "assistant",
+        text: "stable old reply",
+      },
+    ],
+  });
+  await vi.waitFor(() =>
+    expect(f.container.textContent).toContain("stable old reply"),
+  );
+  const row = f.container.querySelector<HTMLElement>(
+    '[data-reading-row="old"]',
+  );
+  const text = row?.querySelector("[data-reading-text] p")?.firstChild;
+  const button = row?.querySelector<HTMLButtonElement>("button");
+  if (!row || !text || !button) throw Error("missing saved row");
+  button.focus();
+  const range = document.createRange();
+  range.setStart(text, 0);
+  range.setEnd(text, 6);
+  const selection = document.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+  document.dispatchEvent(new Event("selectionchange"));
+  await act(async () => {
+    await Promise.resolve();
+    f.emit({
+      kind: "snapshot",
+      connectionGeneration: "g",
+      seq: 1,
+      gap: false,
+      items: [
+        {
+          id: 1,
+          role: "assistant",
+          state: "streaming",
+          label: { kind: "literal", text: "OMP" },
+          text: "new live reply",
+        },
+      ],
+    });
+  });
+  expect(f.container.textContent).toContain("new live reply");
+  expect(f.container.querySelector('[data-reading-row="old"]')).toBe(row);
+  expect(document.activeElement).toBe(button);
+  expect(selection?.toString()).toBe("stable");
+  selection?.removeAllRanges();
+});
 it("reuses fresh saved messages on return without another disk read or loading prose", async () => {
   const f = await mount(true, {
     kind: "page",
