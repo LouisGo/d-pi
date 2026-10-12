@@ -12,6 +12,110 @@ import { ThreadIdSchema } from "../../../shared/identity";
 import { ConversationVisibilityContext } from "../shell/layout/conversation-visibility";
 import { AnswerHistory } from "./answer-history";
 
+it.each([
+  { selectedOptions: [], customInput: "  原始自填中文  ", empty: false },
+  { selectedOptions: [], customInput: undefined, empty: true },
+  { selectedOptions: ["  原始选项  "], customInput: "  补充  ", empty: false },
+])(
+  "distinguishes custom answers from explicit empty selections (%j)",
+  async ({ selectedOptions, customInput, empty }) => {
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    const client = new QueryClient();
+    const threadId = ThreadIdSchema.parse(crypto.randomUUID());
+    const entry: AnswerHistoryEntry = {
+      kind: "answer",
+      operationId: crypto.randomUUID(),
+      origin: "user",
+      status: "written",
+      requestKey: {
+        threadId,
+        nativeSessionKey: "native",
+        connectionGeneration: crypto.randomUUID(),
+        requestId: "ask",
+      },
+      dialog: {
+        id: "ask",
+        method: "ask",
+        title: "问题",
+        questions: [
+          {
+            id: "q",
+            question: "选项或自填",
+            multi: true,
+            options: [{ label: "  原始选项  " }],
+          },
+        ],
+      },
+      answer: {
+        kind: "ask",
+        answers: [
+          {
+            id: "q",
+            selectedOptions,
+            ...(customInput !== undefined ? { customInput } : {}),
+          },
+        ],
+      },
+      createdAt: "2026-10-12T02:00:00.000Z",
+      updatedAt: "2026-10-12T02:00:01.000Z",
+    };
+    const bridge = {
+      request: vi.fn(
+        async (): Promise<AnswerHistoryPage> => ({
+          threadId,
+          source: "app-observed",
+          entries: [entry],
+          cursor: null,
+        }),
+      ),
+    };
+    const host = document.createElement("div");
+    document.body.append(host);
+    const root = createRoot(host);
+    try {
+      await act(() =>
+        root.render(
+          createElement(QueryClientProvider, {
+            client,
+            children: createElement(I18nProvider, {
+              initialSnapshot: { preference: "zh-CN", resolvedLocale: "zh-CN" },
+              children: createElement(AnswerHistory, { bridge, threadId }),
+            }),
+          }),
+        ),
+      );
+      await act(() => {
+        const detail = host.querySelector<HTMLDetailsElement>("details")!;
+        detail.open = true;
+        detail.dispatchEvent(new Event("toggle"));
+      });
+      await act(async () => {
+        await vi.waitFor(() =>
+          expect(host.querySelector(".answer-history-entry")).not.toBeNull(),
+        );
+      });
+      await act(() => {
+        const detail = host.querySelector<HTMLDetailsElement>(
+          ".answer-history-entry details",
+        )!;
+        detail.open = true;
+        detail.dispatchEvent(new Event("toggle"));
+      });
+      const answer = host.querySelector("dd")!;
+      expect(answer.textContent?.includes("不选择任何项")).toBe(empty);
+      if (customInput !== undefined)
+        expect(answer.querySelector("p")?.textContent).toBe(customInput);
+      if (selectedOptions.length)
+        expect(answer.textContent).toContain(selectedOptions[0]);
+    } finally {
+      await act(() => root.unmount());
+      client.clear();
+      host.remove();
+      vi.unstubAllGlobals();
+    }
+  },
+);
+
 it("reveals history on an explicit recovery action and does not reclaim focus when the window returns", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const scroll = vi

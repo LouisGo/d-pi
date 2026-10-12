@@ -2482,109 +2482,244 @@ it.each(["prepared", "unknown"] as const)(
   },
 );
 
-it("awaits independent answer writes with Main admission while stop stays available", async () => {
-  const f = await running();
-  const ready = await f.act("inspect");
-  const generation = ready.connectionGeneration!;
-  f.host.emit("message", {
-    kind: "interactions",
-    view: {
-      connectionGeneration: generation,
-      nativeSessionKey: "native",
-      unsupported: false,
-      items: ["A", "B"].map((id) => ({
-        id,
-        method: "input",
-        title: id,
-        status: "pending",
-        expiresAt: null,
-      })),
-    },
-  });
-  const command = (id: string) =>
-    RuntimeCommandSchema.parse({
-      kind: "answer",
-      threadId: f.draft.threadId,
-      traceId: crypto.randomUUID(),
-      connectionGeneration: generation,
-      id,
-      answer: { kind: "value", value: id },
+it.each(["interactions", "operation-result"] as const)(
+  "awaits independent answers and resolves late %s evidence without resending",
+  async (evidenceKind) => {
+    const f = await running();
+    const ready = await f.act("inspect");
+    const generation = ready.connectionGeneration!;
+    f.host.emit("message", {
+      kind: "interactions",
+      view: {
+        connectionGeneration: generation,
+        nativeSessionKey: "native",
+        unsupported: false,
+        items: ["A", "B"].map((id) => ({
+          id,
+          method: "input",
+          title: id,
+          status: "pending",
+          expiresAt: null,
+        })),
+      },
     });
-  const a = command("A");
-  const b = command("B");
-  const pendingA = f.runtime.execute(a);
-  const duplicate = f.runtime.execute(command("A"));
-  await expect(duplicate).rejects.toThrow("Duplicate answer");
-  const pendingB = f.runtime.execute(b);
-  await vi.waitFor(() =>
+    const command = (id: string) =>
+      RuntimeCommandSchema.parse({
+        kind: "answer",
+        threadId: f.draft.threadId,
+        traceId: crypto.randomUUID(),
+        connectionGeneration: generation,
+        id,
+        answer: { kind: "value", value: id },
+      });
+    const a = command("A");
+    const b = command("B");
+    const pendingA = f.runtime.execute(a);
+    const duplicate = f.runtime.execute(command("A"));
+    await expect(duplicate).rejects.toThrow("Duplicate answer");
+    const pendingB = f.runtime.execute(b);
+    await vi.waitFor(() =>
+      expect(
+        f.postMessage.mock.calls.filter(
+          ([raw]) =>
+            HostTransportCommandSchema.parse(raw).command.kind === "answer",
+        ),
+      ).toHaveLength(2),
+    );
+    expect(
+      f.store.answerHistory
+        .page(f.draft.threadId)
+        .entries.filter((entry) => entry.kind === "answer"),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          operationId: a.traceId,
+          status: "dispatching",
+          answer: a.kind === "answer" ? a.answer : undefined,
+        }),
+        expect.objectContaining({
+          operationId: b.traceId,
+          status: "dispatching",
+        }),
+      ]),
+    );
+    await f.runtime.execute(
+      RuntimeCommandSchema.parse({
+        kind: "stop",
+        threadId: f.draft.threadId,
+        traceId: crypto.randomUUID(),
+        connectionGeneration: generation,
+      }),
+    );
+    f.host.emit("message", {
+      kind: "operation-result",
+      operation: "answer",
+      status: "written",
+      connectionGeneration: generation,
+      traceId: b.traceId,
+    });
+    await expect(pendingB).resolves.toMatchObject({
+      interactionOperations: [
+        expect.objectContaining({ requestId: "B", status: "written" }),
+      ],
+    });
+    f.host.emit("message", {
+      kind: "operation-result",
+      operation: "answer",
+      status: "unknown",
+      connectionGeneration: generation,
+      traceId: a.traceId,
+    });
+    const view = await pendingA;
+    expect(view.interactionOperations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ requestId: "A", status: "unknown" }),
+        expect.objectContaining({ requestId: "B", status: "written" }),
+      ]),
+    );
+    expect(
+      f.store.answerHistory
+        .page(f.draft.threadId)
+        .entries.filter((entry) => entry.kind === "answer"),
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ operationId: a.traceId, status: "unknown" }),
+        expect.objectContaining({ operationId: b.traceId, status: "written" }),
+      ]),
+    );
+    if (evidenceKind === "operation-result")
+      f.host.emit("message", {
+        kind: "operation-result",
+        operation: "answer",
+        connectionGeneration: generation,
+        traceId: a.traceId,
+        status: "written",
+      });
+    else
+      f.host.emit("message", {
+        kind: "interactions",
+        view: {
+          connectionGeneration: generation,
+          nativeSessionKey: "native",
+          unsupported: false,
+          items: [
+            {
+              id: "A",
+              method: "input",
+              title: "A",
+              status: "written",
+              expiresAt: null,
+              answerEvidence: {
+                operationId: a.traceId,
+                origin: "user",
+                status: "written",
+                observedAt: "2026-10-12T02:19:07.567Z",
+              },
+            },
+          ],
+        },
+      });
+    const checked = await f.act("inspect");
+    expect(checked.interactionOperations).toContainEqual(
+      expect.objectContaining({
+        operationId: a.traceId,
+        requestId: "A",
+        status: "written",
+      }),
+    );
+    expect(f.store.answerHistory.page(f.draft.threadId).entries).toContainEqual(
+      expect.objectContaining({ operationId: a.traceId, status: "written" }),
+    );
+    await expect(f.runtime.execute(a)).rejects.toThrow();
     expect(
       f.postMessage.mock.calls.filter(
         ([raw]) =>
           HostTransportCommandSchema.parse(raw).command.kind === "answer",
       ),
-    ).toHaveLength(2),
+    ).toHaveLength(2);
+  },
+);
+
+it("keeps persisted written evidence when the operation wait subsequently becomes unknown", async () => {
+  const f = await running();
+  const generation = (await f.act("inspect")).connectionGeneration!;
+  const dialog = {
+    id: "A",
+    method: "input",
+    title: "A",
+    status: "pending",
+    expiresAt: null,
+  };
+  const publish = (answerEvidence?: {
+    operationId: string;
+    origin: "user";
+    status: "written";
+    observedAt: string;
+  }) =>
+    f.host.emit("message", {
+      kind: "interactions",
+      view: {
+        connectionGeneration: generation,
+        nativeSessionKey: "native",
+        unsupported: false,
+        items: [
+          {
+            ...dialog,
+            ...(answerEvidence ? { status: "written", answerEvidence } : {}),
+          },
+        ],
+      },
+    });
+  publish();
+  const command = RuntimeCommandSchema.parse({
+    kind: "answer",
+    threadId: f.draft.threadId,
+    connectionGeneration: generation,
+    traceId: crypto.randomUUID(),
+    id: "A",
+    answer: { kind: "value", value: "once" },
+  });
+  const pending = f.runtime.execute(command);
+  await vi.waitFor(() =>
+    expect(
+      f.postMessage.mock.calls.map(
+        ([raw]) => HostTransportCommandSchema.parse(raw).command,
+      ),
+    ).toContainEqual({ kind: "answer", command }),
   );
-  expect(
-    f.store.answerHistory
-      .page(f.draft.threadId)
-      .entries.filter((entry) => entry.kind === "answer"),
-  ).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        operationId: a.traceId,
-        status: "dispatching",
-        answer: a.kind === "answer" ? a.answer : undefined,
-      }),
-      expect.objectContaining({
-        operationId: b.traceId,
-        status: "dispatching",
-      }),
-    ]),
-  );
-  await f.runtime.execute(
-    RuntimeCommandSchema.parse({
-      kind: "stop",
-      threadId: f.draft.threadId,
-      traceId: crypto.randomUUID(),
-      connectionGeneration: generation,
+  publish({
+    operationId: command.traceId,
+    origin: "user",
+    status: "written",
+    observedAt: "2026-10-12T02:19:07.567Z",
+  });
+  f.host.emit("message", {
+    kind: "operation-result",
+    operation: "answer",
+    traceId: command.traceId,
+    connectionGeneration: generation,
+    status: "unknown",
+  });
+  const view = await pending;
+  expect(view.interactionOperations).toContainEqual(
+    expect.objectContaining({
+      operationId: command.traceId,
+      status: "written",
     }),
   );
-  f.host.emit("message", {
-    kind: "operation-result",
-    operation: "answer",
-    status: "written",
-    connectionGeneration: generation,
-    traceId: b.traceId,
-  });
-  await expect(pendingB).resolves.toMatchObject({
-    interactionOperations: [
-      expect.objectContaining({ requestId: "B", status: "written" }),
-    ],
-  });
-  f.host.emit("message", {
-    kind: "operation-result",
-    operation: "answer",
-    status: "unknown",
-    connectionGeneration: generation,
-    traceId: a.traceId,
-  });
-  const view = await pendingA;
-  expect(view.interactionOperations).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({ requestId: "A", status: "unknown" }),
-      expect.objectContaining({ requestId: "B", status: "written" }),
-    ]),
+  expect(f.store.answerHistory.page(f.draft.threadId).entries).toContainEqual(
+    expect.objectContaining({
+      operationId: command.traceId,
+      status: "written",
+    }),
   );
+  await expect(f.runtime.execute(command)).rejects.toThrow();
   expect(
-    f.store.answerHistory
-      .page(f.draft.threadId)
-      .entries.filter((entry) => entry.kind === "answer"),
-  ).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({ operationId: a.traceId, status: "unknown" }),
-      expect.objectContaining({ operationId: b.traceId, status: "written" }),
-    ]),
-  );
+    f.postMessage.mock.calls.filter(
+      ([raw]) =>
+        HostTransportCommandSchema.parse(raw).command.kind === "answer",
+    ),
+  ).toHaveLength(1);
 });
 
 it("does not write an answer when its frozen intent cannot be persisted", async () => {

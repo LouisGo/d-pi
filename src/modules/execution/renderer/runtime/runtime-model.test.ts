@@ -359,7 +359,7 @@ it("keeps independent answers, admission locks and failed A beside written B", a
   model.dispose();
 });
 
-it("keeps an unknown answer locked while stop and another answer remain available", async () => {
+it("keeps an unknown answer locked and converges exact late write evidence without resending", async () => {
   const threadId = ThreadIdSchema.parse(crypto.randomUUID());
   const generation = crypto.randomUUID();
   const calls: string[] = [];
@@ -386,8 +386,12 @@ it("keeps an unknown answer locked while stop and another answer remain availabl
       })),
     },
   };
+  let deliver: (value: RuntimeView) => void = () => {};
   const model = new RuntimeModel({
-    subscribe: () => () => {},
+    subscribe: (listener) => {
+      deliver = listener;
+      return () => {};
+    },
     request: async (command) => {
       calls.push(command.kind === "answer" ? command.id : command.kind);
       if (command.kind === "answer") throw Error("transport lost");
@@ -403,6 +407,36 @@ it("keeps an unknown answer locked while stop and another answer remain availabl
   expect(calls).toEqual(["inspect", "A", "stop", "B"]);
   expect(model.interactionOperation("A")?.status).toBe("unknown");
   expect(model.interactionDraft("A")?.value).toBe("draft");
+  const operation = model.interactionOperation("A")!;
+  for (const foreign of [
+    { operationId: crypto.randomUUID() },
+    { requestId: "B" },
+    { connectionGeneration: crypto.randomUUID() },
+    { threadId: ThreadIdSchema.parse(crypto.randomUUID()) },
+    { kind: "dismiss" as const },
+  ]) {
+    deliver({
+      ...view,
+      revision: 2,
+      interactionOperations: [{ ...operation, status: "written", ...foreign }],
+    });
+    expect(model.interactionOperation("A")?.status).toBe("unknown");
+  }
+  deliver({
+    ...view,
+    revision: 3,
+    interactionOperations: [{ ...operation, status: "written" }],
+  });
+  expect(model.interactionOperation("A")?.status).toBe("written");
+  // A stale timeout observation cannot undo a confirmed pipe write.
+  deliver({
+    ...view,
+    revision: 2,
+    interactionOperations: [{ ...operation, status: "unknown" }],
+  });
+  expect(model.interactionOperation("A")?.status).toBe("written");
+  await model.answer("A", { kind: "value", value: "duplicate" });
+  expect(calls).toEqual(["inspect", "A", "stop", "B"]);
   model.dispose();
 });
 

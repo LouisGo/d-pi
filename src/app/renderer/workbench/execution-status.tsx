@@ -92,13 +92,19 @@ export function ExecutionStatus({
   const receipt = useStore(submissionStore, (state) => state.receipts[0]);
   const message = useStore(submissionStore, (state) => state.message);
   const readingStore = reading?.stateStore ?? noReading;
-  // Select only the latest native item; unrelated old rows do not repaint this strip.
-  const item = useStore(readingStore, (state) =>
-    state.view?.connectionGeneration === view?.connectionGeneration
-      ? state.itemsById.get(state.itemIds.at(-1) ?? -1)
-      : undefined,
-  );
-  const stage = executionStage(view, receipt, sending, item);
+  // Parallel tools update their original row, not the list tail. Select the
+  // phase rather than a body so progress text does not repaint this strip.
+  const stage = useStore(readingStore, (state) => {
+    let item: ConversationItem | undefined;
+    if (state.view?.connectionGeneration === view?.connectionGeneration) {
+      const runningTool = state.itemIds.findLast((id) => {
+        const value = state.itemsById.get(id);
+        return value?.role === "tool" && value.state === "streaming";
+      });
+      item = state.itemsById.get(runningTool ?? state.itemIds.at(-1) ?? -1);
+    }
+    return executionStage(view, receipt, sending, item);
+  });
   if (!stage && !message) return null;
   const danger =
     stage === "failed" ||

@@ -38,8 +38,11 @@ function AnswerText({ answer }: { answer: Answer }) {
           <div key={value.id}>
             <dt>{value.id}</dt>
             <dd data-selectable>
-              {value.selectedOptions.join("、") ||
-                t("ui.interaction.selectNone")}
+              {value.selectedOptions.length
+                ? value.selectedOptions.join("、")
+                : value.customInput === undefined
+                  ? t("ui.interaction.selectNone")
+                  : null}
               {value.customInput !== undefined && <p>{value.customInput}</p>}
             </dd>
           </div>

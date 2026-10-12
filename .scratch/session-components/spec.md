@@ -423,3 +423,16 @@ Activation 独立复核（固定 `5a520bf..d17e3d5`）确认三项 P2，并逐�
 - [证据](evidence/real-conversation-dev.json)含5条真实收据、15条native消息、4条SQLite题目/答案事实与参与源码SHA；[真实回复截图](evidence/formal-real-reply.png)、[Markdown预览](evidence/formal-rich-preview.png)、[重启后历史](evidence/formal-answer-history.png)可直接核查。旧布局截图单独标为before-layout，不当新布局或等待模型首响应截图。
 
 试用：当前Dev停留在 typex-pc 原Thread，可直接继续提问；发送后Composer上方显示实际阶段。要求AI调用ask后，选择/多选/其他回答→检查全部回答→发送回答；标题行转交Timeline/Dock，切Thread返回继续草稿；回答记录展开后按需读取历史。出现失败/unknown可打开详情、发送记录与恢复入口核对，unknown不自动重发。WB03长段落输入延迟、退出冷却未确认继续保留，本轮未推送、未发布。
+
+### WB04 外部测试反馈修复（2026-10-12）
+
+用户提供固定 `9b04b2b` 的 Linux Electron/原生 SDK 测试报告与精选截图，授权先修复问题再说明 UI 体验原因。本轮沿当前 main 实施四项修复；报告中的建议作为证据，不扩大为 WB05–WB08、隐藏视图性能或整页重设计授权。
+
+- ARTIFACT-HANDOFF-003：ToolDetails 从真实 `message_end.message.dPiRecordId` 取得有界合法身份，不接受外层事件、进度或文本猜测。正式 Host→Preload→Router→Inspector 组合回归验证保存前入口禁用、真实形状身份到达后完整 artifact 可读，原成员来源、跨 Thread 摘录与 Undo/Redo 保留。
+- UNKNOWN-CONVERGENCE-004：Main 和 Renderer 允许同 RequestKey/operationId 的迟到 written 证据推进 unknown，支持来源观察及迟到 operation-result 两个入口。独立复核发现“先 source-written、后等待 unknown”的反序遗漏，红灯复现后由 AnswerHistoryRepository.finish 返回事务提交后的实际单向持久状态供 Main 建镜像，避免 written 回退。完整身份与旧代次隔离、持久失败保留 unknown/gap、不重发及 written 不冒称原生接受继续有效；刷新独立 Spec/Standards 复核无新增可行动问题。
+- STATUS-PARALLEL-002：执行条查找当前连接仍运行的工具，后发 read 完成不遮蔽较早 bash；选择阶段字符串，正文进度不导致同阶段执行条重绘。真实挂载覆盖进度、完成及旧连接对照。
+- HISTORY-CUSTOM-001：纯自填不显示空选标签；真正空多选、选项加自填分开回归，保留自填与选项原始空格，不更改原生解析或答案编码。
+- 四项目标反例先红后绿；最终九文件 113 项自动化回归通过，reading-session 原生事件形状/对象身份等四项 Node 检查通过。Main/Renderer/Host 类型、design/i18n、Biome、交互及快速门禁通过；结构与状态报告重新生成。额外根 `tsc --noEmit` 仍有 57 项既有 tests/validation 诊断，与干净 HEAD 源码副本对照无新增诊断，不宣称完整 typecheck/check 通过。组合回归沿用既有 React act 提示，断言通过。
+- 本轮没有启动 GUI、付费/真实远程模型、重启用户 Dev 或制作包；Linux 报告与既有 macOS 证据均不冒称本轮 macOS 实测。正常重启 `pnpm dev` 后载入 Main 修复再复试；不推送、不发布，用户认可仍 pending，WB02/WB03 缺口保持。
+
+体验判断依据报告截图及当前组合：多处状态各自正确不保证一致，技术来源/协议说明与任务内容混排，历史/恢复/问答各有滚动区并占用阅读空间；完成判断曾依赖限定协议/组件组合，漏掉真实事件形状、并行顺序和迟到收敛。四项修复恢复关键反馈可信度，不代表信息层级与整体交互已经完成；后续 UI 应围绕正文、当前待办和一个明确下一步整合入口。长正文性能失败仍按 WB03 保留，隐藏 Inspector 继续更新的观察不足以单独证明可见卡顿。

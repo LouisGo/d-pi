@@ -45,10 +45,10 @@ it("reads raw progress independently of card truncation, replaces progress with 
   });
   details.accept({
     type: "message_end",
-    dPiRecordId: "native-record",
     message: {
       role: "toolResult",
       toolCallId: "bash-1",
+      dPiRecordId: "native-record",
       content: [{ type: "text", text: "final" }],
     },
   } as NativeFrame);
@@ -148,5 +148,47 @@ it("keeps native truncation partial even when the observed text fits the App bud
     kind: "tool-detail",
     detail: { text: "native tail", truncated: true, coverage: "partial" },
   });
+  details.dispose();
+});
+
+it("does not certify saved output from an enclosing event, progress frame or malformed message identity", () => {
+  const scope = {
+    threadId: crypto.randomUUID(),
+    connectionGeneration: crypto.randomUUID(),
+    nativeSessionKey: "native",
+  };
+  const details = new ToolDetails(scope);
+  let latest: ToolDetailReply | undefined;
+  details.accept({
+    type: "tool_execution_start",
+    toolCallId: "bash",
+    toolName: "bash",
+    dPiRecordId: "wrong-envelope",
+  } as NativeFrame);
+  details.watch(
+    crypto.randomUUID(),
+    { kind: "live-tool", ...scope, toolCallId: "bash" },
+    (value) => {
+      latest = value;
+    },
+  );
+  for (const dPiRecordId of [undefined, "", "x".repeat(513), 123]) {
+    details.accept({
+      type: "message_end",
+      dPiRecordId: "wrong-envelope",
+      message: {
+        role: "toolResult",
+        toolCallId: "bash",
+        content: [{ type: "text", text: "identical output" }],
+        dPiRecordId,
+      },
+    } as NativeFrame);
+    expect(latest).toMatchObject({
+      kind: "tool-detail",
+      detail: { lifecycle: "completed" },
+    });
+    if (latest?.kind === "tool-detail")
+      expect(latest.detail.nativeRecordId).toBeUndefined();
+  }
   details.dispose();
 });

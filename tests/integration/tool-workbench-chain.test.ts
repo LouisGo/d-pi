@@ -443,7 +443,6 @@ it.each([
         await act(() =>
           host.accept({
             type: "tool_execution_end",
-            dPiRecordId: "native-result",
             toolCallId: "bash-1",
             toolName: "bash",
             isError: false,
@@ -461,6 +460,30 @@ it.each([
           } as NativeFrame),
         );
         await settle();
+        expect(button("Read saved output").disabled).toBe(true);
+        await act(() =>
+          host.accept({
+            type: "message_end",
+            message: {
+              role: "toolResult",
+              toolCallId: "bash-1",
+              toolName: "bash",
+              dPiRecordId: "native-result",
+              isError: false,
+              content: [{ type: "text", text: raw }],
+              details: {
+                meta: {
+                  truncation: {
+                    artifactId: "0",
+                    totalBytes: artifactText.length,
+                  },
+                },
+              },
+            },
+          } as NativeFrame),
+        );
+        await settle();
+        expect(button("Read saved output").disabled).toBe(false);
         await act(() => button("Read saved output").click());
         await settle();
       }

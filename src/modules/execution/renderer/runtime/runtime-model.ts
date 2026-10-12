@@ -696,7 +696,9 @@ export class RuntimeModel {
       if (
         !existing ||
         (existing.operationId === result.operationId &&
-          existing.status === "dispatching")
+          existing.kind === result.kind &&
+          (existing.status === "dispatching" ||
+            (existing.status === "unknown" && result.status !== "dispatching")))
       )
         operations.set(key, result);
     }

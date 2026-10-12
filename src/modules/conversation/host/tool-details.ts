@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { NativeFrame } from "../../../platform/omp/protocol/public";
 import type {
   SourceRef,
@@ -22,6 +23,7 @@ type Reader = {
 };
 const MAX_TEXT = 256 * 1024;
 const MAX_TOTAL = 2 * 1024 * 1024;
+const NativeRecordIdSchema = z.string().min(1).max(512);
 function bounded(
   text: string,
   bytes: number,
@@ -179,8 +181,10 @@ export class ToolDetails {
     if (type === "tool_execution_end" || record)
       entry.lifecycle =
         (record?.isError ?? value.isError) === true ? "failed" : "completed";
-    if (typeof value.dPiRecordId === "string")
-      entry.nativeRecordId = value.dPiRecordId;
+    // The reading-session adapter certifies the persisted message object,
+    // never the enclosing lifecycle event or a tool progress frame.
+    const recordId = NativeRecordIdSchema.safeParse(record?.dPiRecordId);
+    if (recordId.success) entry.nativeRecordId = recordId.data;
     entry.coverage =
       entry.started && !entry.truncated && !entry.partial
         ? "observed"

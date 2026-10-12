@@ -639,6 +639,45 @@ export class RuntimeService {
               });
             }
           }
+          if (operation === "answer") {
+            const answer = this.view?.interactionOperations?.find(
+              (value) =>
+                value.kind === "answer" &&
+                value.operationId === traceId &&
+                value.connectionGeneration === connectionGeneration &&
+                value.threadId === this.view?.threadId &&
+                value.nativeSessionKey ===
+                  this.view?.interactions?.nativeSessionKey &&
+                value.status === "unknown",
+            );
+            if (answer?.nativeSessionKey) {
+              try {
+                const observed = this.store.answerHistory.finish(
+                  traceId,
+                  answerSendObservation(status),
+                  undefined,
+                  {
+                    threadId: answer.threadId,
+                    nativeSessionKey: answer.nativeSessionKey,
+                    connectionGeneration: answer.connectionGeneration,
+                    requestId: answer.requestId,
+                  },
+                );
+                this.update({
+                  interactionOperations: this.view?.interactionOperations?.map(
+                    (value) =>
+                      value === answer ? { ...value, status: observed } : value,
+                  ),
+                });
+              } catch {
+                this.lostEvidence = true;
+                this.update({
+                  evidenceCoverage: "gap",
+                  message: uiMessage("runtime.evidenceGap"),
+                });
+              }
+            }
+          }
           if (
             operation === "manage-queue" ||
             operation === "configure-subagent"
@@ -706,6 +745,7 @@ export class RuntimeService {
       })
       .with({ kind: "interactions" }, ({ view }) => {
         if (view.connectionGeneration === this.currentConnectionGeneration) {
+          let operations = this.view?.interactionOperations;
           if (view.nativeSessionKey && this.view) {
             try {
               for (const item of view.items) {
@@ -718,11 +758,27 @@ export class RuntimeService {
                 this.store.answerHistory.observeRequest(key, item);
                 if (item.answerEvidence) {
                   const evidence = item.answerEvidence;
-                  this.store.answerHistory.finish(
+                  const observed = this.store.answerHistory.finish(
                     evidence.operationId,
                     evidence.status,
                     evidence.observedAt,
                     key,
+                  );
+                  // Persisted write evidence may arrive after the transport wait
+                  // timed out. Resolve only its exact operation and request;
+                  // written still does not prove native acceptance.
+                  operations = operations?.map((operation) =>
+                    operation.kind === "answer" &&
+                    operation.operationId === evidence.operationId &&
+                    operation.threadId === key.threadId &&
+                    operation.connectionGeneration ===
+                      key.connectionGeneration &&
+                    operation.nativeSessionKey === key.nativeSessionKey &&
+                    operation.requestId === key.requestId &&
+                    (operation.status === "dispatching" ||
+                      operation.status === "unknown")
+                      ? { ...operation, status: observed }
+                      : operation,
                   );
                   this.pendingDefaultAnswers.delete(evidence.operationId);
                 }
@@ -742,7 +798,10 @@ export class RuntimeService {
             )
           )
             this.idleConfirmed = false;
-          this.update({ interactions: view });
+          this.update({
+            interactions: view,
+            interactionOperations: operations,
+          });
         }
       })
       .with({ kind: "control" }, ({ connectionGeneration, state }) => {
@@ -1228,7 +1287,14 @@ export class RuntimeService {
           .catch(() => ({ status: "unknown" as const }));
         let status = answerSendObservation(result.status);
         try {
-          this.store.answerHistory.finish(command.traceId, status);
+          // Source evidence can be committed before this wait returns unknown.
+          // The transaction's monotonic status is authoritative for the mirror.
+          status = this.store.answerHistory.finish(
+            command.traceId,
+            status,
+            undefined,
+            requestKey,
+          );
         } catch {
           // A failed post-write commit cannot be returned as a safe retry.
           status = "unknown";

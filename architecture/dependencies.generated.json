@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "inputsHash": "672f78e80385f7666a9f2b57c37a8e81b62e9915981651ac308f80af59600c79",
+  "inputsHash": "b1e12eaf1cc1c914887f34a5f1f01a233691e439b870f6aa0fbbd10c7c9fe0b9",
   "scanner": "TypeScript lexical scanner; literal import/export/require only",
   "coverage": {
     "sourceFiles": 686,
@@ -20,7 +20,7 @@
       ],
       "materialized": true,
       "files": 310,
-      "lines": 63588,
+      "lines": 63830,
       "publicEntries": [
         {
           "path": "src/app/contracts/desktop-bridge.ts",
@@ -319,7 +319,7 @@
       ],
       "materialized": true,
       "files": 45,
-      "lines": 11328,
+      "lines": 11374,
       "publicEntries": [
         {
           "path": "src/modules/conversation/contracts/public.ts",
@@ -352,7 +352,7 @@
       ],
       "materialized": true,
       "files": 72,
-      "lines": 18820,
+      "lines": 18920,
       "publicEntries": [
         {
           "path": "src/modules/execution/contracts/public.ts",
@@ -32680,6 +32680,15 @@
       "to": "src/modules/conversation/host/tool-details.ts",
       "targetModule": "conversation",
       "targetEnvironment": "host"
+    },
+    {
+      "from": "src/modules/conversation/host/tool-details.ts",
+      "sourceModule": "conversation",
+      "sourceEnvironment": "host",
+      "test": false,
+      "specifier": "zod",
+      "kind": "import",
+      "resolution": "external"
     },
     {
       "from": "src/modules/conversation/host/tool-details.ts",

@@ -115,27 +115,25 @@ export class AnswerHistoryRepository {
     status: "written" | "not-dispatched" | "unknown",
     observedAt?: string,
     expectedKey?: RequestKey,
-  ): void {
+  ): "written" | "not-dispatched" | "unknown" {
     AnswerSendStatusSchema.parse(status);
-    this.database.transaction(() => {
+    return this.database.transaction(() => {
       const id = answerId(operationId),
         entry = this.find(id);
       if (!entry || entry.kind !== "answer")
         throw Error("Unknown answer intent");
       if (expectedKey && !isDeepStrictEqual(entry.requestKey, expectedKey))
         throw Error("Answer history identity conflict");
-      if (
-        entry.status === "written" ||
-        entry.status === "not-dispatched" ||
-        entry.status === status
-      )
-        return;
+      if (entry.status === "written" || entry.status === "not-dispatched")
+        return entry.status;
+      if (entry.status === status) return status;
       this.write(id, {
         ...entry,
         status,
         ...(observedAt ? { answerObservedAt: observedAt } : {}),
         updatedAt: new Date().toISOString(),
       });
+      return status;
     });
   }
   page(threadId: string, cursor: number | null = null): AnswerHistoryPage {
